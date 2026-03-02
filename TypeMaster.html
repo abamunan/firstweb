@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TypeMaster | Munan</title>
+    <style>
+        /* --- CSS VARIABLES & RESET --- */
+        :root {
+            --bg-color: #0f0f17;
+            --surface-color: #1e1e2e;
+            --primary-color: #cba6f7;
+            --secondary-color: #89b4fa;
+            --text-color: #cdd6f4;
+            --sub-text-color: #a6adc8;
+            --correct-color: #a6e3a1;
+            --wrong-color: #f38ba8;
+            --key-bg: #313244;
+            --key-shadow: #181825;
+            --font-family: 'Segoe UI', Roboto, -apple-system, sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-family);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        /* --- NEW SMART HEADER STYLE --- */
+        header { 
+            text-align: center; 
+            margin-bottom: 10px;
+        }
+        
+        .logo-main {
+            font-size: 3rem;
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: block;
+            line-height: 2;
+        }
+
+        .logo-sub {
+            font-size: 0.9rem;
+            font-weight: 400;
+            letter-spacing: 3px;
+            color: var(--sub-text-color);
+            text-transform: uppercase;
+            margin-top: 5px;
+            display: block;
+            opacity: 0.8;
+        }
+
+        /* --- CONFIG AREA --- */
+        .config-area {
+            background: var(--surface-color);
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid rgba(203, 166, 247, 0.1);
+        }
+
+        textarea#custom-text-input {
+            width: 100%; height: 70px;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--key-bg);
+            color: var(--text-color);
+            padding: 12px; border-radius: 10px;
+            resize: none; font-family: 'Courier New', monospace;
+        }
+
+        button#set-text-btn {
+            margin-top: 10px; float: right;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--bg-color);
+            border: none; padding: 10px 24px;
+            border-radius: 8px; cursor: pointer;
+            font-weight: 700; transition: transform 0.2s;
+        }
+
+        button#set-text-btn:hover { transform: scale(1.05); }
+
+        /* --- STATS --- */
+        .stats-bar {
+            display: flex; justify-content: space-around;
+            background: var(--surface-color);
+            padding: 20px; border-radius: 16px;
+            font-size: 1.2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .stat-item span { color: var(--primary-color); font-weight: bold; }
+
+        /* --- TYPING AREA --- */
+        .typing-container {
+            background: var(--surface-color);
+            padding: 30px; border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        #display-text {
+            font-size: 1.5rem; line-height: 1.8;
+            color: var(--sub-text-color); margin-bottom: 20px;
+            white-space: pre-wrap;
+        }
+
+        .char-correct { color: var(--correct-color); }
+        .char-wrong { background: rgba(243, 139, 168, 0.3); color: var(--wrong-color); border-radius: 2px; }
+        .char-current { border-bottom: 3px solid var(--primary-color); animation: blink 1s infinite; }
+
+        @keyframes blink { 50% { border-color: transparent; } }
+
+        #typing-input {
+            width: 100%; background: var(--bg-color);
+            border: 2px solid var(--key-bg); color: var(--text-color);
+            padding: 15px; border-radius: 12px; outline: none; font-size: 1.2rem;
+        }
+
+        /* --- KEYBOARD --- */
+        .keyboard {
+            display: flex; flex-direction: column; gap: 8px;
+            background: var(--surface-color); padding: 25px;
+            border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+        }
+        .row { display: flex; justify-content: center; gap: 6px; }
+        .key {
+            height: 50px; width: 50px; background: var(--key-bg);
+            border-radius: 10px; border-bottom: 4px solid var(--key-shadow);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; color: var(--sub-text-color); transition: all 0.1s;
+        }
+        .key.wide { width: 85px; }
+        .key.space { width: 350px; }
+        .key.active { transform: translateY(4px); border-bottom: 0px; background: var(--primary-color); color: var(--bg-color); }
+        .key.correct { background: var(--correct-color); color: #1e1e2e; }
+        .key.wrong { background: var(--wrong-color); color: #1e1e2e; }
+
+        /* --- HISTORY --- */
+        .history-section {
+            margin-top: 20px; background: var(--surface-color);
+            padding: 25px; border-radius: 16px; display: none;
+        }
+        .history-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .history-table th { color: var(--sub-text-color); padding: 12px; border-bottom: 2px solid var(--bg-color); text-align: left;}
+        .history-table td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+
+        /* --- AUTHOR SECTION --- */
+        .author-card {
+            margin-top: 50px;
+            padding: 40px;
+            border-radius: 30px;
+            background: linear-gradient(145deg, #1e1e2e, #161622);
+            border: 1px solid rgba(203, 166, 247, 0.2);
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .author-card::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(203,166,247,0.07) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .author-label {
+            font-size: 0.8rem; text-transform: uppercase; letter-spacing: 4px;
+            color: var(--primary-color); margin-bottom: 15px; display: block;
+        }
+
+        .author-name {
+            font-size: 2.2rem; font-weight: 800;
+            background: linear-gradient(to right, #cba6f7, #89b4fa, #a6e3a1);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+        }
+
+        .author-info-container {
+            display: flex; flex-direction: column; gap: 10px; align-items: center;
+        }
+
+        .author-detail {
+            font-size: 1rem; color: var(--sub-text-color);
+            text-decoration: none; transition: all 0.3s;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .author-detail:hover { color: var(--primary-color); transform: translateY(-2px); }
+
+        .icon { color: var(--primary-color); font-size: 1.1rem; }
+
+        @media (max-width: 600px) {
+            .logo-main { font-size: 2.2rem; }
+            .key { width: 32px; height: 42px; font-size: 0.7rem; }
+            .key.wide { width: 50px; }
+            .key.space { width: 160px; }
+            .author-name { font-size: 1.6rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <span class="logo-main">TypeMaster</span>
+           
+        </header>
+
+        <div class="config-area">
+            <label style="display:block; margin-bottom:8px; font-size:0.9rem; color:var(--sub-text-color);">Set Practice Text:</label>
+            <textarea id="custom-text-input">Master the keyboard with TypeMaster by Abdullah All Munan</textarea>
+            <button id="set-text-btn">Start Practice</button>
+            <div style="clear:both;"></div>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-item">WPM: <span id="wpm">0</span></div>
+            <div class="stat-item">Accuracy: <span id="accuracy">100%</span></div>
+            <div class="stat-item">Time: <span id="time">0s</span></div>
+        </div>
+
+        <div class="typing-container">
+            <div id="display-text"></div>
+            <input type="text" id="typing-input" placeholder="Type here to start..." autocomplete="off">
+        </div>
+
+        <div class="keyboard" id="keyboard">
+            <div class="row">
+                <div class="key" data-key="Backquote">`</div><div class="key" data-key="Digit1">1</div><div class="key" data-key="Digit2">2</div><div class="key" data-key="Digit3">3</div><div class="key" data-key="Digit4">4</div><div class="key" data-key="Digit5">5</div><div class="key" data-key="Digit6">6</div><div class="key" data-key="Digit7">7</div><div class="key" data-key="Digit8">8</div><div class="key" data-key="Digit9">9</div><div class="key" data-key="Digit0">0</div><div class="key" data-key="Minus">-</div><div class="key" data-key="Equal">=</div><div class="key wide" data-key="Backspace">BKSP</div>
+            </div>
+            <div class="row">
+                <div class="key wide" data-key="Tab">TAB</div><div class="key" data-key="KeyQ">Q</div><div class="key" data-key="KeyW">W</div><div class="key" data-key="KeyE">E</div><div class="key" data-key="KeyR">R</div><div class="key" data-key="KeyT">T</div><div class="key" data-key="KeyY">Y</div><div class="key" data-key="KeyU">U</div><div class="key" data-key="KeyI">I</div><div class="key" data-key="KeyO">O</div><div class="key" data-key="KeyP">P</div><div class="key" data-key="BracketLeft">[</div><div class="key" data-key="BracketRight">]</div>
+            </div>
+            <div class="row">
+                <div class="key wide" data-key="CapsLock">CAPS</div><div class="key" data-key="KeyA">A</div><div class="key" data-key="KeyS">S</div><div class="key" data-key="KeyD">D</div><div class="key" data-key="KeyF">F</div><div class="key" data-key="KeyG">G</div><div class="key" data-key="KeyH">H</div><div class="key" data-key="KeyJ">J</div><div class="key" data-key="KeyK">K</div><div class="key" data-key="KeyL">L</div><div class="key" data-key="Semicolon">;</div><div class="key" data-key="Quote">'</div><div class="key wide" data-key="Enter">ENTER</div>
+            </div>
+            <div class="row">
+                <div class="key wide" data-key="ShiftLeft">SHIFT</div><div class="key" data-key="KeyZ">Z</div><div class="key" data-key="KeyX">X</div><div class="key" data-key="KeyC">C</div><div class="key" data-key="KeyV">V</div><div class="key" data-key="KeyB">B</div><div class="key" data-key="KeyN">N</div><div class="key" data-key="KeyM">M</div><div class="key" data-key="Comma">,</div><div class="key" data-key="Period">.</div><div class="key" data-key="Slash">/</div><div class="key wide" data-key="ShiftRight">SHIFT</div>
+            </div>
+            <div class="row">
+                <div class="key space" data-key="Space">SPACEBAR</div>
+            </div>
+        </div>
+
+        <div class="history-section" id="history-section">
+            <h3 style="color: var(--primary-color); font-weight: 400; margin-bottom:10px;">Session History</h3>
+            <table class="history-table">
+                <thead><tr><th>WPM</th><th>Accuracy</th><th>Time</th><th>Mistakes</th></tr></thead>
+                <tbody id="history-body"></tbody>
+            </table>
+        </div>
+
+        <footer class="author-card">
+            <span class="author-label">Developed By</span>
+            <div class="author-name">Abdullah All Munan</div>
+            <div class="author-info-container">
+                <a href="mailto:allmunanabdullah@gmail.com" class="author-detail">
+                    <span class="icon">✉</span> allmunanabdullah@gmail.com
+                </a>
+                <a href="tel:01302785940" class="author-detail">
+                    <span class="icon">📞</span> 01302785940
+                </a>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        const displayTextEl = document.getElementById('display-text');
+        const inputEl = document.getElementById('typing-input');
+        const wpmEl = document.getElementById('wpm');
+        const accuracyEl = document.getElementById('accuracy');
+        const timeEl = document.getElementById('time');
+        const setTextBtn = document.getElementById('set-text-btn');
+        const customTextInput = document.getElementById('custom-text-input');
+        const historySection = document.getElementById('history-section');
+        const historyBody = document.getElementById('history-body');
+
+        let targetText = "";
+        let timer = null;
+        let startTime = null;
+        let isRunning = false;
+        let charIndex = 0;
+        let errors = 0;
+
+        function init() {
+            targetText = customTextInput.value.trim();
+            displayTextEl.innerHTML = targetText.split('').map(char => `<span>${char}</span>`).join('');
+            inputEl.value = "";
+            inputEl.disabled = false;
+            clearInterval(timer);
+            isRunning = false;
+            startTime = null;
+            charIndex = 0;
+            errors = 0;
+            wpmEl.innerText = "0";
+            accuracyEl.innerText = "100%";
+            timeEl.innerText = "0s";
+            if(displayTextEl.firstChild) displayTextEl.firstChild.classList.add('char-current');
+        }
+
+        function startTimer() {
+            if (isRunning) return;
+            isRunning = true;
+            startTime = new Date();
+            timer = setInterval(() => {
+                const elapsed = Math.floor((new Date() - startTime) / 1000);
+                timeEl.innerText = `${elapsed}s`;
+                updateStats();
+            }, 1000);
+        }
+
+        function updateStats() {
+            if (!startTime) return;
+            const timeMins = (new Date() - startTime) / 60000;
+            const wpm = Math.round((charIndex / 5) / timeMins) || 0;
+            const acc = Math.round(((charIndex - errors) / charIndex) * 100) || 100;
+            wpmEl.innerText = wpm;
+            accuracyEl.innerText = `${acc}%`;
+            return { wpm, acc };
+        }
+
+        inputEl.addEventListener('input', () => {
+            const spans = displayTextEl.querySelectorAll('span');
+            const typedText = inputEl.value;
+            if (!isRunning && typedText.length > 0) startTimer();
+
+            if (typedText.length < charIndex) {
+                for (let i = typedText.length; i < charIndex; i++) spans[i].className = '';
+                charIndex = typedText.length;
+            } else {
+                const i = typedText.length - 1;
+                if (typedText[i] === targetText[i]) {
+                    spans[i].className = 'char-correct';
+                    highlightKey(typedText[i], 'correct');
+                } else {
+                    spans[i].className = 'char-wrong';
+                    errors++;
+                    highlightKey(typedText[i], 'wrong');
+                }
+                charIndex = typedText.length;
+            }
+
+            spans.forEach(s => s.classList.remove('char-current'));
+            if (charIndex < targetText.length) {
+                spans[charIndex].classList.add('char-current');
+            } else {
+                finishSession();
+            }
+        });
+
+        function finishSession() {
+            clearInterval(timer);
+            inputEl.disabled = true;
+            const stats = updateStats();
+            historySection.style.display = 'block';
+            const row = `<tr><td>${stats.wpm}</td><td>${stats.acc}%</td><td>${timeEl.innerText}</td><td>${errors}</td></tr>`;
+            historyBody.insertAdjacentHTML('afterbegin', row);
+            historySection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function highlightKey(char, type) {
+            const keyEl = Array.from(document.querySelectorAll('.key')).find(k => 
+                k.innerText === (char === " " ? "SPACEBAR" : char.toUpperCase())
+            );
+            if (keyEl) {
+                keyEl.classList.add(type);
+                setTimeout(() => keyEl.classList.remove(type), 200);
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            const key = document.querySelector(`.key[data-key="${e.code}"]`);
+            if (key) key.classList.add('active');
+            if (document.activeElement !== customTextInput) inputEl.focus();
+        });
+
+        document.addEventListener('keyup', (e) => {
+            const key = document.querySelector(`.key[data-key="${e.code}"]`);
+            if (key) key.classList.remove('active');
+        });
+
+        setTextBtn.addEventListener('click', init);
+        window.onload = init;
+    </script>
+</body>
+</html>

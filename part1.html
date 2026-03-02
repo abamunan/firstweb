@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Link Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --bg-start: #1F1711;
+            --bg-mid: #3A2C22;
+            --bg-end: #C9A96E;
+            --glass-bg: rgba(42, 33, 27, 0.48);
+            --glass-border: rgba(232, 185, 35, 0.25);
+            --text-primary: #F5EDE0;
+            --text-secondary: #D4C3A8;
+            --accent-gold: #E8B923;
+            --accent-gold-hover: #F0D05A;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Poppins', system-ui, sans-serif;
+            background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-mid) 45%, var(--bg-end) 100%);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+        }
+        header {
+            text-align: center;
+            padding: 4.5rem 1.5rem 3rem;
+            position: relative;
+        }
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 50%;
+            transform: translateX(-50%);
+            width: 120px; height: 3px;
+            background: linear-gradient(to right, transparent, var(--accent-gold), transparent);
+            opacity: 0.6;
+        }
+        h1 {
+            font-size: clamp(3rem, 8vw, 5.2rem);
+            font-weight: 700;
+            letter-spacing: -3px;
+            background: linear-gradient(90deg, #F5EDE0, var(--accent-gold), #F5EDE0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .tagline { font-size: 1.15rem; color: var(--text-secondary); margin-top: 0.8rem; opacity: 0.9; }
+        main { flex: 1; padding: 1.5rem; max-width: 1280px; margin: 0 auto; width: 100%; }
+        .section-title {
+            text-align: center; font-size: 1.75rem; font-weight: 600;
+            margin-bottom: 2.5rem; opacity: 0.95; letter-spacing: -0.5px;
+        }
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.8rem;
+        }
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2rem 1.8rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+            display: flex; flex-direction: column;
+            position: relative; overflow: hidden;
+        }
+        .card::before {
+            content: ''; position: absolute;
+            top: -50%; left: -50%; width: 40%; height: 40%;
+            background: radial-gradient(circle, rgba(232,185,35,0.12) 0%, transparent 70%);
+            opacity: 0; transition: all 0.5s ease; pointer-events: none;
+        }
+        .card:hover::before { opacity: 1; transform: scale(2); }
+        .card:hover { transform: translateY(-14px) scale(1.04); box-shadow: 0 25px 50px rgba(0,0,0,0.45); }
+        .card-icon { font-size: 2.8rem; margin-bottom: 1.2rem; color: var(--accent-gold); transition: transform 0.4s ease; }
+        .card:hover .card-icon { transform: scale(1.15) rotate(8deg); }
+        .card h3 { font-size: 1.45rem; font-weight: 600; margin-bottom: 0.6rem; }
+        .card p { color: var(--text-secondary); font-size: 0.98rem; margin-bottom: 1.8rem; flex-grow: 1; }
+        .visit-btn {
+            display: inline-flex; align-items: center; gap: 10px;
+            background: var(--accent-gold); color: #1F1711; font-weight: 600;
+            padding: 0.85rem 1.6rem; border-radius: 50px; text-decoration: none;
+            font-size: 1rem; transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+            box-shadow: 0 4px 15px rgba(232,185,35,0.3);
+        }
+        .visit-btn:hover { background: var(--accent-gold-hover); transform: translateY(-3px); box-shadow: 0 8px 25px rgba(232,185,35,0.4); }
+        .visit-btn i { transition: transform 0.3s ease; }
+        .visit-btn:hover i { transform: translateX(6px); }
+        footer {
+            text-align: center; padding: 2.5rem 1.5rem; font-size: 0.95rem;
+            color: var(--text-secondary); opacity: 0.75;
+            border-top: 1px solid rgba(232,185,35,0.15); margin-top: auto;
+        }
+        @media (max-width: 640px) {
+            .cards-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+            header { padding: 3.5rem 1rem 2.5rem; }
+            h1 { font-size: 3.6rem; }
+        }
+        html { scroll-behavior: smooth; }
+
+        /* === PASSWORD MODAL === */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.65);
+            backdrop-filter: blur(8px);
+            z-index: 999; align-items: center; justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-box {
+            background: rgba(42, 33, 27, 0.95);
+            border: 1px solid rgba(232,185,35,0.35);
+            border-radius: 24px;
+            padding: 2.5rem 2rem;
+            width: 100%; max-width: 380px;
+            text-align: center;
+            animation: popUp 0.3s cubic-bezier(0.4,0,0.2,1);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        @keyframes popUp {
+            from { transform: scale(0.85) translateY(20px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        .modal-box .lock-emoji { font-size: 3rem; margin-bottom: 1rem; }
+        .modal-box h2 { font-size: 1.4rem; font-weight: 600; margin-bottom: 0.4rem; }
+        .modal-box p { color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 1.5rem; }
+        .input-wrap { position: relative; margin-bottom: 0.6rem; }
+        .input-wrap input {
+            width: 100%; padding: 0.9rem 3rem 0.9rem 1.2rem;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(232,185,35,0.25);
+            border-radius: 12px; color: var(--text-primary);
+            font-family: 'Poppins', sans-serif; font-size: 1rem;
+            outline: none; transition: border-color 0.2s;
+        }
+        .input-wrap input:focus { border-color: var(--accent-gold); }
+        .input-wrap input.shake { animation: shake 0.35s; border-color: #e05252; }
+        @keyframes shake {
+            0%,100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+        .eye-btn {
+            position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+            background: none; border: none; cursor: pointer;
+            color: var(--text-secondary); font-size: 1rem;
+        }
+        .err-msg { font-size: 0.8rem; color: #e05252; min-height: 18px; margin-bottom: 1rem; }
+        .modal-btns { display: flex; gap: 10px; }
+        .btn-cancel {
+            flex: 1; padding: 0.85rem; background: transparent;
+            border: 1px solid rgba(232,185,35,0.2); border-radius: 12px;
+            color: var(--text-secondary); cursor: pointer;
+            font-family: 'Poppins', sans-serif; font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .btn-cancel:hover { border-color: var(--accent-gold); color: var(--text-primary); }
+        .btn-confirm {
+            flex: 2; padding: 0.85rem;
+            background: var(--accent-gold); border: none; border-radius: 12px;
+            color: #1F1711; font-weight: 700; cursor: pointer;
+            font-family: 'Poppins', sans-serif; font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .btn-confirm:hover { background: var(--accent-gold-hover); }
+
+        /* locked card style */
+        .card.locked-card { border-color: rgba(232,185,35,0.5); }
+        .unlock-btn {
+            display: inline-flex; align-items: center; gap: 10px;
+            background: transparent;
+            border: 2px solid var(--accent-gold);
+            color: var(--accent-gold); font-weight: 600;
+            padding: 0.85rem 1.6rem; border-radius: 50px;
+            font-size: 1rem; cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+        }
+        .unlock-btn:hover { background: var(--accent-gold); color: #1F1711; transform: translateY(-3px); }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Abdullah All Munan</h1>
+        <p class="tagline">My personal premium link collection</p>
+    </header>
+    <main>
+        <div class="container">
+            <h2 class="section-title">Curated Essentials</h2>
+            <div class="cards-grid">
+                
+                
+                <div class="card locked-card" id="driveCard">
+                    <div class="card-icon"><i class="fab fa-google-drive"></i></div>
+                    <h3>Google Drive</h3>
+                    <p>My important docoment</p>
+                    <button class="unlock-btn" onclick="openModal()">
+                        <i class="fas fa-lock"></i> Unlock to Visit
+                    </button>
+                </div>
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                <div class="card">
+                    <div class="card-icon"><i class="fab fa-google"></i></div>
+                    <h3>Google</h3>
+                    <p>The world's most powerful search engine for everything you need.</p>
+                    <a href="https://www.google.com" target="_blank" class="visit-btn">Visit Site <i class="fas fa-arrow-right"></i></a>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fab fa-github"></i></div>
+                    <h3>GitHub</h3>
+                    <p>Host, review, and collaborate on code with the global developer community.</p>
+                    <a href="https://github.com" target="_blank" class="visit-btn">Visit Site <i class="fas fa-arrow-right"></i></a>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fab fa-youtube"></i></div>
+                    <h3>YouTube</h3>
+                    <p>Watch, learn, and discover the best video content on the internet.</p>
+                    <a href="https://www.youtube.com" target="_blank" class="visit-btn">Visit Site <i class="fas fa-arrow-right"></i></a>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-robot"></i></div>
+                    <h3>ChatGPT</h3>
+                    <p>Intelligent conversations and creative assistance powered by OpenAI.</p>
+                    <a href="https://chat.openai.com" target="_blank" class="visit-btn">Visit Site <i class="fas fa-arrow-right"></i></a>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fab fa-figma"></i></div>
+                    <h3>Figma</h3>
+                    <p>Collaborative interface design tool loved by designers worldwide.</p>
+                    <a href="https://www.figma.com" target="_blank" class="visit-btn">Visit Site <i class="fas fa-arrow-right"></i></a>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fab fa-x-twitter"></i></div>
+                    <h3>X (Twitter)</h3>
+                    <p>Real-time conversations and breaking news from around the world.</p>
+                    <a href="https://x.com" target="_blank" class="visit-btn">Visit Site <i class="fas fa-arrow-right"></i></a>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fab fa-linkedin"></i></div>
+                    <h3>LinkedIn</h3>
+                    <p>Build your professional network and discover career opportunities.</p>
+                    <a href="https://www.linkedin.com" target="_blank" class="visit-btn">Visit Site <i class="fas fa-arrow-right"></i></a>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fab fa-spotify"></i></div>
+                    <h3>Spotify</h3>
+                    <p>Millions of songs, playlists, and podcasts at your fingertips.</p>
+                    <a href="https://open.spotify.com" target="_blank" class="visit-btn">Visit Site <i class="fas fa-arrow-right"></i></a>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-palette"></i></div>
+                    <h3>Canva</h3>
+                    <p>Easy-to-use design platform for stunning visuals and presentations.</p>
+                    <a href="https://www.canva.com" target="_blank" class="visit-btn">Visit Site <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer>Created by Abdullah All Munan</footer>
+
+    <!-- Password Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-box">
+            <div class="lock-emoji">🔐</div>
+            <h2>Password Required</h2>
+            <p>Google Drive access করতে password দিন।</p>
+            <div class="input-wrap">
+                <input type="password" id="passInput" placeholder="Password লিখুন..." onkeydown="if(event.key==='Enter') checkPass()">
+                <button class="eye-btn" onclick="toggleEye()">👁️</button>
+            </div>
+            <div class="err-msg" id="errMsg"></div>
+            <div class="modal-btns">
+                <button class="btn-cancel" onclick="closeModal()">বাতিল</button>
+                <button class="btn-confirm" onclick="checkPass()">Unlock <i class="fas fa-unlock"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const DRIVE_URL = "https://drive.google.com/drive/folders/182xz2M84kai2ZUeAjYno2avEqTyOarg5?usp=drive_link";
+        const PASSWORD = "MnDV##";
+
+        function openModal() {
+            document.getElementById('modalOverlay').classList.add('active');
+            setTimeout(() => document.getElementById('passInput').focus(), 100);
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+            document.getElementById('passInput').value = '';
+            document.getElementById('errMsg').textContent = '';
+        }
+
+        function checkPass() {
+            const input = document.getElementById('passInput');
+            const err = document.getElementById('errMsg');
+            if (input.value === PASSWORD) {
+                closeModal();
+                window.open(DRIVE_URL, '_blank');
+                // card unlock করো
+                const btn = document.querySelector('#driveCard .unlock-btn');
+                btn.innerHTML = '<i class="fas fa-unlock"></i> Visit Drive';
+                btn.onclick = () => window.open(DRIVE_URL, '_blank');
+            } else {
+                err.textContent = '❌ Password ভুল! আবার চেষ্টা করুন।';
+                input.classList.add('shake');
+                input.value = '';
+                setTimeout(() => input.classList.remove('shake'), 400);
+            }
+        }
+
+        function toggleEye() {
+            const inp = document.getElementById('passInput');
+            inp.type = inp.type === 'password' ? 'text' : 'password';
+        }
+
+        document.getElementById('modalOverlay').addEventListener('click', e => {
+            if (e.target === e.currentTarget) closeModal();
+        });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+    </script>
+</body>
+</html>

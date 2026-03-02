@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Munan | Link Hub 2026</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* সব লিঙ্কের আন্ডারলাইন সরবে */
+                a {
+                 text-decoration: none; transition: 0.3s; /* মসৃণ পরিবর্তনের জন্য */
+                  }
+
+        /* মাউস কার্সর লিঙ্কের ওপর নিলে আন্ডারলাইন দেখা যাবে */
+                a:hover {
+                 text-decoration: underline;
+                        }
+
+
+
+
+
+
+
+
+
+
+
+        /* --- DYNAMIC THEME VARIABLES --- */
+        :root {
+            /* DARK MODE: Black to Deep Blue Mid */
+            --main-bg: linear-gradient(180deg, #020617 0%, #030816 40%, #0c1a33 100%);
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(0, 212, 255, 0.15);
+            --text-main: #ffffff;
+            --text-muted: #94a3b8;
+            --accent: #00d4ff;
+            --nav-bg: rgba(2, 6, 23, 0.85);
+        }
+
+        [data-theme="light"] {
+            /* LIGHT MODE: Ocean Blue to White */
+            --main-bg: linear-gradient(180deg, #0ea5e9 0%, #bae6fd 50%, #ffffff 100%);
+            --card-bg: rgba(255, 255, 255, 0.5);
+            --card-border: rgba(14, 165, 233, 0.25);
+            --text-main: #0f172a;
+            --text-muted: #334155;
+            --accent: #0284c7;
+            --nav-bg: rgba(14, 165, 233, 0.85);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--main-bg);
+            background-attachment: fixed;
+            color: var(--text-main);
+            font-family: 'Poppins', 'Hind Siliguri', sans-serif;
+            transition: background 0.5s ease;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        /* --- SMART NAVBAR --- */
+        .navbar {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 8%; height: 65px; background: var(--nav-bg);
+            backdrop-filter: blur(15px); position: fixed; width: 100%; top: 0;
+            z-index: 1000; border-bottom: 1px solid var(--card-border);
+            transition: top 0.4s ease;
+        }
+        .navbar-hidden { top: -80px; }
+        .logo { font-size: 1.2rem; font-weight: 700; letter-spacing: 1px; }
+        .logo span { color: var(--accent); }
+
+        .theme-toggle {
+            cursor: pointer; width: 35px; height: 35px; display: flex;
+            align-items: center; justify-content: center; background: var(--card-bg);
+            border: 1px solid var(--card-border); border-radius: 50%; color: var(--text-main);
+        }
+
+        /* --- HERO & INTRO --- */
+        .hero { padding: 140px 20px 40px; text-align: center; }
+        .hero h1 { font-size: 2.4rem; margin-bottom: 10px; font-weight: 700; }
+        .hero p { font-size: 1rem; color: var(--text-muted); margin-bottom: 25px; }
+
+        .intro-box {
+            max-width: 650px; margin: 0 auto 40px; padding: 20px;
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-radius: 15px; backdrop-filter: blur(8px); font-size: 0.9rem;
+        }
+
+        /* --- SEARCH --- */
+        .search-wrap { display: flex; justify-content: center; margin-bottom: 40px; }
+        #search {
+            width: 300px; padding: 10px 20px; border-radius: 25px;
+            border: 1px solid var(--card-border); background: var(--card-bg);
+            color: var(--text-main); outline: none; transition: 0.3s;
+        }
+        #search:focus { border-color: var(--accent); width: 350px; }
+
+        /* --- GRID --- */
+        .container { max-width: 1200px; margin: 0 auto; padding-bottom: 60px; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 15px; padding: 0 5%;
+        }
+
+        .card {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-radius: 12px; padding: 20px; transition: all 0.3s ease;
+            display: flex; flex-direction: column; align-items: flex-start;
+        }
+        .card:hover {
+            transform: translateY(-5px); border-color: var(--accent);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        [data-theme="light"] .card:hover { background: rgba(255, 255, 255, 0.8); }
+
+        .card i { font-size: 1.5rem; color: var(--accent); margin-bottom: 12px; }
+        .card h3 { font-size: 1.05rem; margin-bottom: 8px; font-weight: 600; }
+        .card p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px; flex-grow: 1; }
+
+        .btn {
+            width: 100%; text-align: center; padding: 8px;
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-radius: 6px; color: var(--text-main); font-size: 0.8rem;
+            font-weight: 600; transition: 0.3s;
+        }
+        .btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+        /* --- GORGEOUS FOOTER --- */
+        footer { margin-top: 50px; padding: 60px 0; text-align: center; }
+        .footer-card {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            display: inline-block; padding: 35px 50px; border-radius: 25px;
+            backdrop-filter: blur(15px); transition: 0.3s;
+        }
+        .footer-card:hover { border-color: var(--accent); box-shadow: 0 0 30px var(--card-border); }
+        .footer-card h2 { font-size: 1.8rem; margin-bottom: 8px; }
+        .footer-card h2 span { color: var(--accent); }
+        
+        .socials { display: flex; gap: 12px; justify-content: center; margin: 15px 0; }
+        .socials a {
+            width: 40px; height: 40px; background: var(--card-border);
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%; transition: 0.3s; color: var(--text-main);
+        }
+        .socials a:hover { background: var(--accent); color: white; transform: rotate(360deg); }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 1.8rem; }
+            .grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar" id="navbar">
+        <div class="logo">Munan<span>.hub</span></div>
+        <div class="theme-toggle" id="themeBtn">
+            <i class="fas fa-moon"></i>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <h1>Knowledge & Creation Zone</h1>
+        <p>Exploring the boundaries of Tech and Design</p>
+        
+        <div class="intro-box">
+            <p>
+                Hi, I’m <strong>Munan</strong>. I'm a developer and thinker from Bangladesh. 
+                I love turning complex problems into clean, functional code. 
+                Always exploring, always learning.
+            </p>
+        </div>
+    </header>
+
+    <div class="search-wrap">
+        <input type="text" id="search" placeholder="Search my links...">
+    </div>
+
+    <section class="container">
+        <div class="grid" id="linkGrid">
+            
+            <div class="card">
+                <i class="fas fa-rocket"></i>
+                <h3>Personal Portfolio</h3>
+                <p>My main website showcasing my web development projects and resume.</p>
+                <a href="https://facebook.com" class="btn">Visit Website</a>
+            </div>
+
+            <div class="card">
+                <i class="fas fa-keyboard"></i>
+                <h2>TypeMaster</h2>
+                <p>Level up your productivity with TypeMaster by Abdullah All Munan. 
+                    It tracks your WPM and accuracy in real-time as you 
+                    practice with custom text. With interactive keyboard highlights
+                     and session history, you'll see your progress instantly.
+                    </p>
+                <a href="TypeMaster.html" class="btn" style="text-decoration: none;" >Be Master</a>
+            </div>
+
+            <div class="card">
+                <i class="fas fa-globe"></i>
+                <h3>Link Hub</h3>
+                <p> My personal amd premium link hub</p>
+                <a href="part1.html" class="btn">View</a>
+            </div>
+
+            <div class="card">
+                <i class="fas fa-tools"></i>
+                <h3>My Toolbox</h3>
+                <p>A list of software, extensions, and hardware I use every day.</p>
+                <a href="https://facebook.com" class="btn">Check Tools</a>
+            </div>
+
+            <div class="card">
+                <i class="fab fa-github"></i>
+                <h3>GitHub Profile</h3>
+                <p>Explore my open-source contributions and active repositories.</p>
+                <a href="https://github.com" class="btn">Follow GitHub</a>
+            </div>
+
+            <div class="card">
+                <i class="fas fa-pen-nib"></i>
+                <h3>Blog Posts</h3>
+                <p>Articles about technology trends and productivity hacks.</p>
+                <a href="https://facebook.com" class="btn">Read Articles</a>
+            </div>
+
+            <div class="card">
+                <i class="fas fa-camera"></i>
+                <h3>Photography</h3>
+                <p>Capturing moments through my lens during my travels.</p>
+                <a href="https://facebook.com" class="btn">View Gallery</a>
+            </div>
+
+            <div class="card">
+                <i class="fas fa-cloud"></i>
+                <h3>Cloud Skills</h3>
+                <p>Projects deployed using AWS, Firebase, and Netlify services.</p>
+                <a href="https://facebook.com" class="btn">See Deploys</a>
+            </div>
+
+            <div class="card">
+                <i class="fas fa-terminal"></i>
+                <h3>CLI Utilities</h3>
+                <p>Automation scripts I built to speed up my local workflow.</p>
+                <a href="https://facebook.com" class="btn">Get Scripts</a>
+            </div>
+
+            <div class="card">
+                <i class="fas fa-video"></i>
+                <h3>Video Tutorials</h3>
+                <p>Teaching complex coding concepts in simple Bangla language.</p>
+                <a href="https://facebook.com" class="btn">Watch YouTube</a>
+            </div>
+
+            <div class="card">
+                <i class="fas fa-brain"></i>
+                <h3>AI Prompts</h3>
+                <p>A collection of high-quality prompts for ChatGPT and Midjourney.</p>
+                <a href="https://facebook.com" class="btn">Get Prompts</a>
+            </div>
+
+            <div class="card">
+                <i class="fas fa-palette"></i>
+                <h3>UI Designs</h3>
+                <p>Figma files and design systems I've created for web apps.</p>
+                <a href="https://facebook.com" class="btn">See Design</a>
+            </div>
+
+            <div class="card">
+                <i class="fas fa-map-signs"></i>
+                <h3>Roadmap</h3>
+                <p>My future plans for learning new technologies in 2026.</p>
+                <a href="https://facebook.com" class="btn">View Path</a>
+            </div>
+
+            <div class="card">
+                <i class="fab fa-facebook"></i>
+                <h3>Social Media</h3>
+                <p>Connect with me on Facebook for daily updates and news.</p>
+                <a href="https://facebook.com" class="btn">Connect</a>
+            </div>
+
+            <div class="card">
+                <i class="fas fa-envelope"></i>
+                <h3>Contact Me</h3>
+                <p>Available for collaborations or project consultations.</p>
+                <a href="mailto:allmunanabdullah@gmail.com" class="btn">Send Email</a>
+            </div>
+
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-card">
+            <p style="text-transform: uppercase; letter-spacing: 2px; font-size: 0.7rem; opacity: 0.7;">Developed By</p>
+            <h2>Abdullah All <span>Munan</span></h2>
+            
+            <div class="socials">
+                <a href="mailto:allmunanabdullah@gmail.com"><i class="fas fa-envelope"></i></a>
+                <a href="tel:01302785940"><i class="fas fa-phone"></i></a>
+                <a href="#"><i class="fab fa-facebook"></i></a>
+                <a href="#"><i class="fab fa-linkedin"></i></a>
+            </div>
+
+            <div style="font-size: 0.8rem; margin-top: 20px; opacity: 0.6;">
+                <p>Location: Bangladesh</p>
+                <p>© 2026 Interactive Portal</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 1. Theme Toggle Logic
+        const themeBtn = document.getElementById('themeBtn');
+        const icon = themeBtn.querySelector('i');
+        
+        themeBtn.onclick = () => {
+            if(document.body.getAttribute('data-theme') === 'light') {
+                document.body.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+            } else {
+                document.body.setAttribute('data-theme', 'light');
+                icon.className = 'fas fa-sun';
+            }
+        };
+
+        // 2. Hide Navbar on Scroll
+        let lastScroll = window.scrollY;
+        window.onscroll = () => {
+            const nav = document.getElementById('navbar');
+            if (window.scrollY > lastScroll && window.scrollY > 100) {
+                nav.classList.add('navbar-hidden');
+            } else {
+                nav.classList.remove('navbar-hidden');
+            }
+            lastScroll = window.scrollY;
+        };
+
+        // 3. Search Filter Logic
+        document.getElementById('search').onkeyup = function() {
+            let val = this.value.toLowerCase();
+            document.querySelectorAll('.card').forEach(card => {
+                let text = card.innerText.toLowerCase();
+                card.style.display = text.includes(val) ? "flex" : "none";
+            });
+        };
+    </script>
+</body>
+</html>
