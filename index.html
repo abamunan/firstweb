@@ -21,7 +21,26 @@
 
 
 
-
+/* --- PROFILE PHOTO --- */
+.profile-photo-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+.profile-photo {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 3px solid var(--accent);
+    box-shadow: 0 0 25px rgba(0, 212, 255, 0.4), 0 0 60px rgba(0, 212, 255, 0.15);
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.profile-photo:hover {
+    transform: scale(1.06);
+    box-shadow: 0 0 40px rgba(0, 212, 255, 0.65), 0 0 80px rgba(0, 212, 255, 0.2);
+}
 
 
 
@@ -169,6 +188,20 @@
     </nav>
 
     <header class="hero">
+
+
+<!-- Round Profile Photo -->
+<div class="profile-photo-wrap">
+    <img 
+        src="Image.jpeg" 
+        alt="Munan's Profile Photo" 
+        class="profile-photo"
+    >
+
+
+
+</div>
+
         <h1>Knowledge & Creation Zone</h1>
         <p>Exploring the boundaries of Tech and Design</p>
         
@@ -191,20 +224,23 @@
             <div class="card">
                 <i class="fas fa-rocket"></i>
                 <h3>Personal Portfolio</h3>
-                <p>My main website showcasing my web development projects and resume.</p>
-                <a href="https://facebook.com" class="btn">Visit Website</a>
+                <p>My main website showcasing my web development projects.</p>
+                <a href="https://munan07.github.io/firstweb/" class="btn">Visit Website</a>
             </div>
+
+
 
             <div class="card">
                 <i class="fas fa-keyboard"></i>
                 <h2>TypeMaster</h2>
                 <p>Level up your productivity with TypeMaster by Abdullah All Munan. 
-                    It tracks your WPM and accuracy in real-time as you 
-                    practice with custom text. With interactive keyboard highlights
-                     and session history, you'll see your progress instantly.
+                    It tracks your WPM, accuracy in real-time
+                    and session history, you'll see your progress instantly.
                     </p>
                 <a href="TypeMaster.html" class="btn" style="text-decoration: none;" >Be Master</a>
             </div>
+
+
 
             <div class="card">
                 <i class="fas fa-globe"></i>
@@ -212,6 +248,14 @@
                 <p> My personal amd premium link hub</p>
                 <a href="part1.html" class="btn">View</a>
             </div>
+
+            <div class="card">
+                <i class="fas fa-envelope"></i>
+                <h3>Get in Touch</h3>
+                <p>Have question or want to connect? Send a message and i'll reply soon!.</p>
+                <a href="contact.html" class="btn">Message</a>
+            </div>
+
 
             <div class="card">
                 <i class="fas fa-tools"></i>
@@ -225,13 +269,6 @@
                 <h3>GitHub Profile</h3>
                 <p>Explore my open-source contributions and active repositories.</p>
                 <a href="https://github.com" class="btn">Follow GitHub</a>
-            </div>
-
-            <div class="card">
-                <i class="fas fa-pen-nib"></i>
-                <h3>Blog Posts</h3>
-                <p>Articles about technology trends and productivity hacks.</p>
-                <a href="https://facebook.com" class="btn">Read Articles</a>
             </div>
 
             <div class="card">
