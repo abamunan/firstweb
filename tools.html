@@ -3,158 +3,129 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Tools & Extensions</title>
+  <meta name="description" content="Abdullah's personal toolbox — dev tools, AI assistants, extensions, and productivity apps." />
+  <meta name="theme-color" content="#bae6fd" />
+  <title>Toolbox — Munan</title>
+  <link rel="icon" type="image/png" href="icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
 <body>
 
-
 <!-- ╔══════════════════════════════════════════════════════╗ -->
-<!-- ║  ✏️  YOUR TOOLS LIST — ONLY EDIT THIS PART           ║ -->
-<!-- ║                                                      ║ -->
-<!-- ║  To ADD a tool   → copy one block and fill it in     ║ -->
-<!-- ║  To REMOVE one   → delete the whole { ... } block    ║ -->
-<!-- ║  To CHANGE one   → just update the values inside     ║ -->
+<!-- ║  ✏️  YOUR TOOLS LIST — ONLY EDIT THIS SECTION        ║ -->
+<!-- ║  ADD  → copy one line and fill it in                 ║ -->
+<!-- ║  REMOVE → delete the whole { ... } line              ║ -->
 <!-- ╚══════════════════════════════════════════════════════╝ -->
-
 <script>
 const MY_TOOLS = [
 
+  /* ── Dev ───────────────────────────────────────────────── */
+  { name: "GitHub",     desc: "Host and review code, manage projects, and build software alongside millions of developers.",                                                               icon: "fa-brands fa-github",             iconBg: "linear-gradient(135deg,#1a1e2a,#3a3f52)", accent: "#7ec8e8", tag: "Dev", url: "https://github.com"                  },
+  { name: "VS Code",    desc: "Free, open-source code editor by Microsoft — powerful, fast, and endlessly extensible.",                                                                   icon: "fa-solid fa-code",                iconBg: "linear-gradient(135deg,#0065a9,#007acc)", accent: "#007acc", tag: "Dev", url: "https://code.visualstudio.com"       },
+  { name: "v0",         desc: "Vercel's AI that generates clean React and Tailwind UI components from a text prompt — ideal for quickly prototyping real dev projects.",                  icon: "fa-solid fa-wand-magic-sparkles", iconBg: "linear-gradient(135deg,#000000,#333333)", accent: "#d4d4d4", tag: "Dev", url: "https://v0.dev"                   },
+  { name: "Bolt",       desc: "Prompt-to-full-stack app builder powered by StackBlitz — generates, runs, and deploys complete web apps directly in the browser.",                         icon: "fa-solid fa-bolt-lightning",      iconBg: "linear-gradient(135deg,#1a1a2e,#7c3aed)", accent: "#7c3aed", tag: "Dev", url: "https://bolt.new"                 },
+  { name: "Lovable",    desc: "Turn a plain English prompt into a fully functional web app with backend, auth, and database — syncs directly to GitHub.",                                 icon: "fa-solid fa-heart-pulse",         iconBg: "linear-gradient(135deg,#e11d48,#fb7185)", accent: "#fb7185", tag: "Dev", url: "https://lovable.dev"               },
+  { name: "Framer AI",  desc: "Design-first AI website builder that generates stunning, animation-rich sites from a prompt — best for portfolios and landing pages.",                     icon: "fa-solid fa-paintbrush",          iconBg: "linear-gradient(135deg,#0b0b0f,#1d4ed8)", accent: "#60a5fa", tag: "Dev", url: "https://framer.com"                 },
+  { name: "Durable",    desc: "Generates a complete business website with copy, images, and contact forms in under a minute — no design or coding skills needed.",                        icon: "fa-solid fa-globe",               iconBg: "linear-gradient(135deg,#0f766e,#14b8a6)", accent: "#14b8a6", tag: "Dev", url: "https://durable.co"                },
 
+  /* ── AI ────────────────────────────────────────────────── */
+  { name: "Claude",     desc: "Anthropic's AI assistant known for nuanced reasoning, long-context understanding, and safe, thoughtful responses across writing, coding, and analysis.",   icon: "fa-solid fa-brain",                  iconBg: "linear-gradient(135deg,#111111,#10a37f)", accent: "#1bc89a", tag: "AI", url: "https://claude.ai"               },
+  { name: "ChatGPT",    desc: "OpenAI's conversational AI for writing, coding, brainstorming, and answering complex questions.",                                                           icon: "fa-solid fa-robot",                  iconBg: "linear-gradient(135deg,#10a37f,#1bc89a)", accent: "#1bc89a", tag: "AI", url: "https://chat.openai.com"          },
+  { name: "Whisper",    desc: "OpenAI's speech-to-text AI that transcribes and translates audio in 99 languages with remarkable accuracy.",                                               icon: "fa-solid fa-microphone-lines",       iconBg: "linear-gradient(135deg,#0f172a,#1e40af)", accent: "#60a5fa", tag: "AI", url: "https://openai.com/index/whisper"  },
+  { name: "Gemini",     desc: "Google's multimodal AI assistant with deep Google Workspace integration, strong image generation, and real-time search grounding.",                        icon: "fa-solid fa-gem",                    iconBg: "linear-gradient(135deg,#4285f4,#34a853)", accent: "#4285f4", tag: "AI", url: "https://gemini.google.com"          },
+  { name: "Grok",       desc: "xAI's real-time AI assistant focused on trending topics, unfiltered answers, and image and video generation.",                                             icon: "fa-solid fa-bolt",                   iconBg: "linear-gradient(135deg,#1a1a1a,#444444)", accent: "#888888", tag: "AI", url: "https://grok.com"                    },
+  { name: "Perplexity", desc: "AI-powered answer engine that searches the web and cites sources in real time — ideal for research and fact-finding.",                                     icon: "fa-solid fa-magnifying-glass-chart", iconBg: "linear-gradient(135deg,#20b2aa,#008080)", accent: "#20b2aa", tag: "AI", url: "https://www.perplexity.ai"          },
+  { name: "Copilot",    desc: "Microsoft's AI assistant deeply embedded in Office 365, Windows, and Edge for productivity, writing, and coding help.",                                    icon: "fa-solid fa-microchip",              iconBg: "linear-gradient(135deg,#0078d4,#005a9e)", accent: "#0078d4", tag: "AI", url: "https://copilot.microsoft.com"      },
+  { name: "Mistral",    desc: "Open-weight European AI models known for efficiency and strong performance, available via API and self-hosting.",                                           icon: "fa-solid fa-wind",                   iconBg: "linear-gradient(135deg,#f97316,#c2410c)", accent: "#f97316", tag: "AI", url: "https://mistral.ai"                  },
+  { name: "DeepSeek",   desc: "High-performance open-source AI models rivaling top frontier models, with strong coding and reasoning capabilities.",                                      icon: "fa-solid fa-flask",                  iconBg: "linear-gradient(135deg,#6366f1,#4338ca)", accent: "#6366f1", tag: "AI", url: "https://www.deepseek.com"             },
+  { name: "NotebookLM", desc: "Google's document-grounded AI that answers questions solely from your uploaded sources, with podcast-style Audio Overviews.",                              icon: "fa-solid fa-book-open",              iconBg: "linear-gradient(135deg,#34a853,#1e7e34)", accent: "#34a853", tag: "AI", url: "https://notebooklm.google.com"       },
 
-  /* ── Developer ──────────────────────────────────────────── */
-  { name: "GitHub",    desc: "Host and review code, manage projects, and build software alongside millions of developers.",icon:      "fa-brands fa-github",iconBg:    "linear-gradient(135deg,#1a1e2a,#3a3f52)",accent:    "#7ec8e8",tag:       "Dev",url:       "https://github.com"},
-  { name: "VS Code",   desc: "Free, open-source code editor by Microsoft — powerful, fast, and endlessly extensible.",icon:      "fa-solid fa-code",iconBg:    "linear-gradient(135deg,#0065a9,#007acc)",accent:    "#007acc",tag:       "Dev",url:       "https://code.visualstudio.com"},
-  { name: "Whisper",   desc: "OpenAI's state-of-the-art speech-to-text AI that transcribes and translates audio in 99 languages with remarkable accuracy.",                icon: "fa-solid fa-microphone-lines",    iconBg: "linear-gradient(135deg,#0f172a,#1e40af)", accent: "#60a5fa",  tag: "AI", url: "https://openai.com/index/whisper" },
-  { name: "v0",        desc: "Vercel's AI that generates clean React and Tailwind UI components from a text prompt — ideal for quickly prototyping real dev projects.",     icon: "fa-solid fa-wand-magic-sparkles", iconBg: "linear-gradient(135deg,#000000,#333333)", accent: "#ffffff", tag: "Dev", url: "https://v0.dev"                  },
-  { name: "Bolt",      desc: "Prompt-to-full-stack app builder powered by StackBlitz — generates, runs, and deploys complete web apps directly in the browser.",           icon: "fa-solid fa-bolt-lightning",      iconBg: "linear-gradient(135deg,#1a1a2e,#7c3aed)", accent: "#7c3aed",  tag: "Dev", url: "https://bolt.new"                },
-  { name: "Lovable",   desc: "Turn a plain English prompt into a fully functional web app with backend, auth, and database — syncs directly to GitHub.",                   icon: "fa-solid fa-heart-pulse",         iconBg: "linear-gradient(135deg,#e11d48,#fb7185)", accent: "#fb7185",  tag: "Dev", url: "https://lovable.dev"              },
-  { name: "Framer AI", desc: "Design-first AI website builder that generates stunning, animation-rich sites from a prompt — best for portfolios and landing pages.",       icon: "fa-solid fa-paintbrush",          iconBg: "linear-gradient(135deg,#0b0b0f,#1d4ed8)", accent: "#60a5fa",  tag: "Dev", url: "https://framer.com"                },
-  { name: "Durable",   desc: "Generates a complete business website with copy, images, and contact forms in under a minute — no design or coding skills needed.",          icon: "fa-solid fa-globe",               iconBg: "linear-gradient(135deg,#0f766e,#14b8a6)", accent: "#14b8a6",  tag: "Dev", url: "https://durable.co"               },
+  /* ── Extension ─────────────────────────────────────────── */
+  { name: "Grammarly",              desc: "AI writing assistant that checks grammar, tone, clarity, and style as you type anywhere on the web.",                                           icon: "fa-solid fa-spell-check",  iconBg: "linear-gradient(135deg,#15c39a,#00b386)", accent: "#15c39a", tag: "Extension", url: "https://grammarly.com"                                                                                     },
+  { name: "SBlock",                 desc: "Blocks ads and pop-ups on YouTube, Twitch, LinkedIn, Reddit, and 100+ other websites using exclusive, regularly updated scripts.",              icon: "fa-solid fa-shield-halved",iconBg: "linear-gradient(135deg,#4a90d9,#1a5fa8)", accent: "#4a90d9", tag: "Extension", url: "https://sblock.ch"                                                                                        },
+  { name: "News Feed Eradicator",   desc: "Replaces addictive social media feeds with a single inspirational quote — curbs mindless scrolling on Facebook, YouTube, LinkedIn, and more.", icon: "fa-solid fa-ban",          iconBg: "linear-gradient(135deg,#6c757d,#343a40)", accent: "#6c757d", tag: "Extension", url: "https://chromewebstore.google.com/detail/news-feed-eradicator/fjcldmjmjhkklehbacihaiopjklihlgg"},
+  { name: "Forest",                 desc: "Grow a virtual tree during focus sessions — open a distracting site and the tree dies, making procrastination feel personal.",                  icon: "fa-solid fa-tree",         iconBg: "linear-gradient(135deg,#2d6a4f,#52b788)", accent: "#52b788", tag: "Extension", url: "https://forestapp.cc"                                                                                      },
+  { name: "Scholarcy",              desc: "Summarizes research papers into interactive flashcards with key points, highlights, and linked references — saves hours of reading.",           icon: "fa-solid fa-file-lines",   iconBg: "linear-gradient(135deg,#e76f51,#f4a261)", accent: "#f4a261", tag: "Extension", url: "https://www.scholarcy.com"                                                                                },
+  { name: "Dark Reader",            desc: "Applies a customizable dark mode to every website — reduces eye strain during long study or coding sessions at night.",                         icon: "fa-solid fa-moon",         iconBg: "linear-gradient(135deg,#1a1a2e,#16213e)", accent: "#7ec8e8", tag: "Extension", url: "https://darkreader.org"                                                                                   },
+  { name: "Video Speed Controller", desc: "Control playback speed of any HTML5 video on any site — watch lectures at 1.5x or 2x and save hours every week.",                             icon: "fa-solid fa-gauge-high",   iconBg: "linear-gradient(135deg,#7b2d8b,#c77dff)", accent: "#c77dff", tag: "Extension", url: "https://chromewebstore.google.com/detail/video-speed-controller/nffaoalbilbmmfgbnbgppjihopabppdk" },
 
+  /* ── Productivity ──────────────────────────────────────── */
+  { name: "Notion",          desc: "All-in-one workspace for notes, wikis, databases, tasks, and project planning.",                                                                      icon: "fa-solid fa-layer-group",         iconBg: "linear-gradient(135deg,#1a1a1a,#444444)", accent: "#c0c0c0", tag: "Productivity", url: "https://notion.so"             },
+  { name: "Canva",           desc: "Easy-to-use online design platform for creating stunning graphics, presentations, and social media posts — no design skills needed.",                  icon: "fa-solid fa-pen-nib",             iconBg: "linear-gradient(135deg,#7d2ae8,#00c4cc)", accent: "#00c4cc", tag: "Productivity", url: "https://www.canva.com"          },
+  { name: "Google Drive",    desc: "Store, sync, and share documents, spreadsheets, and files securely in Google's cloud.",                                                               icon: "fa-brands fa-google-drive",       iconBg: "linear-gradient(135deg,#1a73e8,#34a853)", accent: "#34a853", tag: "Productivity", url: "https://drive.google.com"       },
+  { name: "Google Docs",     desc: "Create, edit, and collaborate on documents in real time — works seamlessly with Drive and accessible from any device.",                               icon: "fa-solid fa-file-word",           iconBg: "linear-gradient(135deg,#1a73e8,#4285f4)", accent: "#4285f4", tag: "Productivity", url: "https://docs.google.com"        },
+  { name: "Google Translate",desc: "Instant translation across 100+ languages — text, images, voice, and full web pages.",                                                                icon: "fa-solid fa-language",            iconBg: "linear-gradient(135deg,#4285f4,#34a8f5)", accent: "#4285f4", tag: "Productivity", url: "https://translate.google.com"   },
+  { name: "Google Calendar", desc: "Manage your class schedule, assignment deadlines, and daily routine in one clean, shareable calendar.",                                               icon: "fa-solid fa-calendar-days",       iconBg: "linear-gradient(135deg,#1a73e8,#34a853)", accent: "#34a853", tag: "Productivity", url: "https://calendar.google.com"    },
+  { name: "Google Meet",     desc: "Google's free video conferencing tool — instantly join or host HD meetings with screen sharing, right from your browser.",                            icon: "fa-solid fa-video",               iconBg: "linear-gradient(135deg,#00897b,#00bfa5)", accent: "#00bfa5", tag: "Productivity", url: "https://meet.google.com"         },
+  { name: "Gmail",           desc: "Google's fast, secure email — smart labels and powerful search keep your inbox tidy.",                                                                icon: "fa-solid fa-envelope",            iconBg: "linear-gradient(135deg,#ea4335,#f97b6e)", accent: "#f97b6e", tag: "Productivity", url: "https://mail.google.com"         },
+  { name: "Zoom",            desc: "Industry-standard video meetings platform with breakout rooms, webinars, and reliable HD calls for teams and students alike.",                        icon: "fa-solid fa-users-rectangle",     iconBg: "linear-gradient(135deg,#0b5cff,#2d8cff)", accent: "#2d8cff", tag: "Productivity", url: "https://zoom.us"                },
+  { name: "Todoist",         desc: "Minimal yet powerful task manager with priorities, due dates, and project views to keep assignments and goals on track.",                             icon: "fa-solid fa-circle-check",        iconBg: "linear-gradient(135deg,#db4035,#ff6b6b)", accent: "#db4035", tag: "Productivity", url: "https://todoist.com"             },
+  { name: "WolframAlpha",    desc: "Computational knowledge engine that solves math, physics, chemistry, and complex queries with step-by-step explanations.",                           icon: "fa-solid fa-square-root-variable",iconBg: "linear-gradient(135deg,#e07000,#ff9a00)", accent: "#ff9a00", tag: "Productivity", url: "https://wolframalpha.com"       },
+  { name: "Dropbox",         desc: "Cloud storage for backing up and syncing files across all your devices — a reliable fallback alongside Google Drive.",                                icon: "fa-brands fa-dropbox",            iconBg: "linear-gradient(135deg,#0061ff,#0d7fff)", accent: "#0061ff", tag: "Productivity", url: "https://dropbox.com"            },
 
-  /* ── AI ─────────────────────────────────────────────────── */
- 
-  { name: "Claude",           desc: "Anthropic's AI assistant known for nuanced reasoning, long-context understanding, and safe, thoughtful responses across writing, coding, and analysis.", icon: "fa-solid fa-brain",                  iconBg: "linear-gradient(135deg,#111111,#10a37f)", accent: "#1bc89a", tag: "AI", url: "https://claude.ai"          },
-  { name: "ChatGPT",          desc: "OpenAI's conversational AI for writing, coding, brainstorming, and complex questions.",                                                                  icon: "fa-solid fa-robot",                  iconBg: "linear-gradient(135deg,#10a37f,#1bc89a)", accent: "#1bc89a", tag: "AI", url: "https://chat.openai.com"   },
-  { name: "Gemini",           desc: "Google's multimodal AI assistant with deep integration into Google Workspace, strong image generation, and real-time search grounding.",                 icon: "fa-solid fa-gem",                    iconBg: "linear-gradient(135deg,#4285f4,#34a853)", accent: "#4285f4", tag: "AI", url: "https://gemini.google.com"        },
-  { name: "Grok",             desc: "xAI's real-time AI assistant focused on trending topics, unfiltered answers, and image and video generation.",                                           icon: "fa-solid fa-bolt",                   iconBg: "linear-gradient(135deg,#1a1a1a,#444444)", accent: "#888888", tag: "AI", url: "https://grok.com"                   },
-  { name: "Perplexity",       desc: "AI-powered answer engine that searches the web and cites sources in real time, ideal for research and fact-finding.",                                    icon: "fa-solid fa-magnifying-glass-chart", iconBg: "linear-gradient(135deg,#20b2aa,#008080)", accent: "#20b2aa", tag: "AI", url: "https://www.perplexity.ai"         },
-  { name: "Copilot",          desc: "Microsoft's AI assistant deeply embedded in Office 365, Windows, and Edge for productivity, writing, and coding help.",                                  icon: "fa-solid fa-robot",                  iconBg: "linear-gradient(135deg,#0078d4,#005a9e)", accent: "#0078d4", tag: "AI", url: "https://copilot.microsoft.com"     },
-  { name: "Mistral",          desc: "Open-weight European AI models known for efficiency and performance, available via API and self-hosting.",                                               icon: "fa-solid fa-wind",                   iconBg: "linear-gradient(135deg,#f97316,#c2410c)", accent: "#f97316", tag: "AI", url: "https://mistral.ai"                 },
-  { name: "DeepSeek",         desc: "High-performance open-source AI models from China rivaling top frontier models, with strong coding and reasoning capabilities.",                         icon: "fa-solid fa-brain",                  iconBg: "linear-gradient(135deg,#6366f1,#4338ca)", accent: "#6366f1", tag: "AI", url: "https://www.deepseek.com"           },
-  { name: "NotebookLM",       desc: "Google's document-grounded AI that answers questions solely from your uploaded sources, with podcast-style Audio Overviews.",                            icon: "fa-solid fa-book-open",              iconBg: "linear-gradient(135deg,#34a853,#1e7e34)", accent: "#34a853", tag: "AI", url: "https://notebooklm.google.com"      },
+  /* ── Social ────────────────────────────────────────────── */
+  { name: "Facebook",  desc: "Connect with friends, family, and communities through posts, groups, reels, and messaging on the world's largest social network.",                          icon: "fa-brands fa-facebook",  iconBg: "linear-gradient(135deg,#1877f2,#0a5dc2)", accent: "#1877f2", tag: "Social", url: "https://facebook.com"  },
+  { name: "Instagram", desc: "Share photos, reels, and stories with followers and explore visual content from creators around the world.",                                                icon: "fa-brands fa-instagram", iconBg: "linear-gradient(135deg,#f58529,#8134af)", accent: "#dd2a7b", tag: "Social", url: "https://instagram.com"  },
+  { name: "X",         desc: "Real-time microblogging platform for news, hot takes, tech discussions, and following people who actually matter to you.",                                  icon: "fa-brands fa-x-twitter", iconBg: "linear-gradient(135deg,#000000,#333333)", accent: "#888888", tag: "Social", url: "https://x.com"           },
+  { name: "Discord",   desc: "Voice, video, and text platform built for communities — from gaming servers to study groups and developer hangouts.",                                       icon: "fa-brands fa-discord",   iconBg: "linear-gradient(135deg,#5865f2,#404eed)", accent: "#5865f2", tag: "Social", url: "https://discord.com"      },
+  { name: "Telegram",  desc: "Fast, secure messaging app with channels, bots, file sharing up to 2GB, and group chats of up to 200,000 members.",                                        icon: "fa-brands fa-telegram",  iconBg: "linear-gradient(135deg,#0088cc,#29b6f6)", accent: "#29b6f6", tag: "Social", url: "https://telegram.org"     },
 
-
-
-  /* ── Extension ───────────────────────────────────────── */
-
-  { name: "Grammarly",                 desc: "AI writing assistant that checks grammar, tone, clarity and style as you type anywhere.",                                                      icon: "fa-solid fa-spell-check",  iconBg: "linear-gradient(135deg,#15c39a,#00b386)", accent: "#15c39a", tag: "Extension", url: "https://grammarly.com"  },
-  { name: "SBlock - Super Ad Blocker", desc: "Blocks ads and pop-ups on YouTube, Twitch, LinkedIn, Reddit, and 100+ other websites using exclusive, regularly updated scripts.",             icon: "fa-solid fa-shield-halved",iconBg: "linear-gradient(135deg,#4a90d9,#1a5fa8)", accent: "#4a90d9", tag: "Extension", url: "https://sblock.ch" },
-  { name: "News Feed Eradicator",      desc: "Replaces addictive social media feeds on Facebook, YouTube, LinkedIn, and more with a single inspirational quote to curb mindless scrolling.", icon: "fa-solid fa-ban",          iconBg: "linear-gradient(135deg,#6c757d,#343a40)", accent: "#6c757d", tag: "Extension", url: "https://chromewebstore.google.com/detail/news-feed-eradicator/fjcldmjmjhkklehbacihaiopjklihlgg" },
-  { name: "Forest",                    desc: "Grow a virtual tree during focus sessions — open a distracting site and the tree dies, making procrastination feel personal.",                 icon: "fa-solid fa-tree",         iconBg: "linear-gradient(135deg,#2d6a4f,#52b788)", accent: "#52b788", tag: "Extension", url: "https://forestapp.cc"                                                                                                              },
-  { name: "Scholarcy",                 desc: "Summarizes research papers into interactive flashcards with key points, highlights, and linked references — saves hours of reading.",          icon: "fa-solid fa-file-lines",   iconBg: "linear-gradient(135deg,#e76f51,#f4a261)", accent: "#f4a261", tag: "Extension", url: "https://www.scholarcy.com"                                                                                                          },
-  { name: "Dark Reader",               desc: "Applies a customizable dark mode to every website, reducing eye strain during long study or coding sessions at night.",                        icon: "fa-solid fa-moon",         iconBg: "linear-gradient(135deg,#1a1a2e,#16213e)", accent: "#7ec8e8", tag: "Extension", url: "https://darkreader.org"                                                                                                             },
-  { name: "Video Speed Controller",    desc: "Control playback speed of any HTML5 video on any site — watch lectures at 1.5x or 2x and save hours every week.",                              icon: "fa-solid fa-gauge-high",   iconBg: "linear-gradient(135deg,#7b2d8b,#c77dff)", accent: "#c77dff", tag: "Extension", url: "https://chromewebstore.google.com/detail/video-speed-controller/nffaoalbilbmmfgbnbgppjihopabppdk" },
- 
-
-  /* ── Productivity ───────────────────────────────────────── */
-  { name:  "Notion",          desc: "All-in-one workspace for notes, wikis, databases, tasks and project planning.",icon:      "fa-solid fa-layer-group",iconBg:    "linear-gradient(135deg,#1a1a1a,#444)",accent:    "#c0c0c0",tag:       "Productivity",url:       "https://notion.so"},
-  { name: "Canva",            desc: "Easy-to-use online design platform for creating stunning graphics, presentations, social media posts, and more — no design skills needed.", icon: "fa-solid fa-pen-nib", iconBg: "linear-gradient(135deg,#7d2ae8,#00c4cc)", accent: "#00c4cc", tag: "Productivity", url: "https://www.canva.com" },
-  { name: "Google Drive",    desc: "Store, sync and share documents, spreadsheets, and files securely in Google's cloud.", icon:      "fa-brands fa-google-drive",iconBg:    "linear-gradient(135deg,#1a73e8,#34a853)",accent:    "#34a853",tag:       "Productivity", url:       "https://drive.google.com"},
-  { name: "Google Translate",desc: "Instant translation across 100+ languages — text, images, voice, and full web pages.", icon:      "fa-solid fa-language", iconBg:    "linear-gradient(135deg,#4285f4,#34a8f5)", accent:    "#4285f4",tag:       "Productivity", url:       "https://translate.google.com" },
-  { name: "Google Docs",     desc: "Create, edit, and collaborate on documents in real time — works seamlessly with Drive and accessible from any device.",          icon: "fa-solid fa-file-word",    iconBg: "linear-gradient(135deg,#1a73e8,#4285f4)", accent: "#4285f4", tag: "Productivity", url: "https://docs.google.com"          },
-  { name: "Google Calendar", desc: "Manage your class schedule, assignment deadlines, and daily routine in one clean, shareable calendar.",                          icon: "fa-solid fa-calendar-days", iconBg: "linear-gradient(135deg,#1a73e8,#34a853)", accent: "#34a853", tag: "Productivity", url: "https://calendar.google.com"      },
-  { name: "Zoom",         desc: "Industry-standard video meetings platform with breakout rooms, webinars, and reliable HD calls for teams and students alike.",    icon: "fa-solid fa-users-rectangle", iconBg: "linear-gradient(135deg,#0b5cff,#2d8cff)", accent: "#2d8cff", tag: "Productivity", url: "https://zoom.us"           },
-  { name: "Telegram",     desc: "Fast, secure messaging app with channels, bots, file sharing up to 2GB, and group chats of up to 200,000 members.",              icon: "fa-brands fa-telegram",       iconBg: "linear-gradient(135deg,#0088cc,#29b6f6)", accent: "#29b6f6", tag: "Social",       url: "https://telegram.org"      },
-  { name: "Google Meet",  desc: "Google's free video conferencing tool — instantly join or host HD meetings with screen sharing, right from your browser.",          icon: "fa-solid fa-video",           iconBg: "linear-gradient(135deg,#00897b,#00bfa5)", accent: "#00bfa5", tag: "Productivity", url: "https://meet.google.com"   },
-
-  { name: "Todoist",         desc: "Minimal yet powerful task manager with priorities, due dates, and project views to keep assignments and goals on track.",        icon: "fa-solid fa-circle-check", iconBg: "linear-gradient(135deg,#db4035,#ff6b6b)", accent: "#db4035", tag: "Productivity", url: "https://todoist.com"               },
-  { name: "WolframAlpha",    desc: "Computational knowledge engine that solves math, physics, chemistry, and complex queries with step-by-step explanations.",      icon: "fa-solid fa-square-root-variable", iconBg: "linear-gradient(135deg,#e07000,#ff9a00)", accent: "#ff9a00", tag: "Productivity", url: "https://wolframalpha.com"         },
-  { name: "Dropbox",         desc: "Cloud storage for backing up and syncing files across all your devices — reliable fallback alongside Google Drive.",            icon: "fa-brands fa-dropbox",     iconBg: "linear-gradient(135deg,#0061ff,#0d7fff)", accent: "#0061ff", tag: "Productivity", url: "https://dropbox.com"              },
-  {name:  "Gmail",           desc: "Google's fast, secure email. Smart labels and powerful search keep your inbox tidy.",icon:      "fa-solid fa-envelope",iconBg:    "linear-gradient(135deg,#ea4335,#f97b6e)",accent:    "#f97b6e",tag:       "Productivity",url:       "https://mail.google.com" },
-
-
-  /* ── Media & social ──────────────────────────────────────────────── */
-
-  { name: "Facebook",  desc: "Connect with friends, family, and communities through posts, groups, reels, and messaging on the world's largest social network.",  icon: "fa-brands fa-facebook",  iconBg: "linear-gradient(135deg,#1877f2,#0a5dc2)", accent: "#1877f2", tag: "Social", url: "https://facebook.com"        },
-  { name: "Instagram", desc: "Share photos, reels, and stories with your followers and explore visual content from creators around the world.",                   icon: "fa-brands fa-instagram", iconBg: "linear-gradient(135deg,#f58529,#dd2a7b,#8134af)", accent: "#dd2a7b", tag: "Social", url: "https://instagram.com"      },
-  { name: "X",         desc: "Real-time microblogging platform for news, hot takes, tech discussions, and following people who actually matter to you.",          icon: "fa-brands fa-x-twitter", iconBg: "linear-gradient(135deg,#000000,#333333)", accent: "#888888", tag: "Social", url: "https://x.com"               },
-  { name: "Discord",   desc: "Voice, video, and text platform built for communities — from gaming servers to study groups and developer hangouts.",              icon: "fa-brands fa-discord",   iconBg: "linear-gradient(135deg,#5865f2,#404eed)", accent: "#5865f2", tag: "Social", url: "https://discord.com"         },
-  { name: "Spotify",   desc: "Stream millions of songs, podcasts, and audiobooks — create playlists and discover new music tailored to your taste.",             icon: "fa-brands fa-spotify",   iconBg: "linear-gradient(135deg,#1db954,#158a3e)", accent: "#1db954", tag: "Media",  url: "https://spotify.com"         },
-  { name: "YouTube",   desc: "Watch, upload and discover videos across every topic on the world's largest video platform.",                                      icon: "fa-brands fa-youtube",   iconBg: "linear-gradient(135deg,#cc0000,#ff4e4e)", accent: "#ff5c5c", tag: "Media",  url: "https://youtube.com"         },
-  
-
-
-
-
-
-
-
+  /* ── Media ─────────────────────────────────────────────── */
+  { name: "YouTube", desc: "Watch, upload, and discover videos across every topic on the world's largest video platform.",                                                                icon: "fa-brands fa-youtube", iconBg: "linear-gradient(135deg,#cc0000,#ff4e4e)", accent: "#ff5c5c", tag: "Media", url: "https://youtube.com"  },
+  { name: "Spotify", desc: "Stream millions of songs, podcasts, and audiobooks — create playlists and discover new music tailored to your taste.",                                        icon: "fa-brands fa-spotify", iconBg: "linear-gradient(135deg,#1db954,#158a3e)", accent: "#1db954", tag: "Media", url: "https://spotify.com"  },
 
   /*
-  ┌─────────────────────────────────────────────────┐
-  │  ADD A NEW TOOL → copy the block below, fill in │
-  └─────────────────────────────────────────────────┘
-  {
-    name:      "Tool Name",
-    desc:      "One or two sentence description here.",
-    icon:      "fa-solid fa-star",
-    iconBg:    "linear-gradient(135deg,#ff6b6b,#ee5a24)",
-    accent:    "#ff6b6b",
-    tag:       "Category",
-    url:       "https://example.com"
-  },
+  ┌──────────────────────────────────────────────────────┐
+  │  ADD A NEW TOOL → copy this line and fill it in:     │
+  │  { name: "", desc: "", icon: "", iconBg: "",         │
+  │    accent: "", tag: "", url: "" },                   │
+  └──────────────────────────────────────────────────────┘
   */
 
-]; // ← end of list, don't delete this line
+]; // ← do not delete
 </script>
+<!-- ══════════════════════════════════════════════════════ -->
 
 
-<!-- ════════════════════════════════════════════════════════
-     PAGE  (no need to edit below this line)
-════════════════════════════════════════════════════════ -->
-
+<!-- Background blobs -->
 <div class="blobs" aria-hidden="true">
   <div class="b1"></div><div class="b2"></div><div class="b3"></div>
 </div>
 
-<div class="page">
-   
-  <!-- ── Back to Home button ── -->
-  <header>
-  <div style="text-align:left;">
-    <a href="index.html" aria-label="Back to Home"
-       style="display:inline-flex;align-items:center;gap:12px;background:rgba(255,255,255,.55);border:1.5px solid rgba(126,200,232,.5);border-radius:14px;padding:10px 18px 10px 12px;text-decoration:none;backdrop-filter:blur(16px);box-shadow:0 2px 16px rgba(80,155,205,.12),inset 0 1px 0 rgba(255,255,255,.7);margin-bottom:32px;animation:fadeDown .5s ease both;">
-      <span style="width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#5bb8e8,#2e8fc7);display:flex;align-items:center;justify-content:center;color:#fff;font-size:.85rem;box-shadow:0 2px 8px rgba(46,143,199,.35);flex-shrink:0;">
-        <i class="fa-solid fa-arrow-left"></i>
-      </span>
-      <span style="font-family:'Sora',sans-serif;font-size:.88rem;font-weight:700;color:#1a2535;line-height:1;">Home</span>
-    </a>
-  </div>
+<!-- Navbar -->
+<nav class="navbar" id="navbar">
+  <div class="nav-logo">Munan<span>.hub</span></div>
+  <a href="index.html" class="back-btn">
+    <span class="back-icon"><i class="fa-solid fa-arrow-left"></i></span>
+    <span class="back-label">Home</span>
+  </a>
+</nav>
 
-  <div class="badge"><i class="fa-solid fa-bolt"></i> Productivity Dashboard</div>
-  <h1>My <span>Tools &amp; Extensions</span></h1>
-  <p class="sub">My favourite apps and browser extensions, all in one clean place.</p>
-  <div class="search-wrap">
-    <div class="search-box">
-      <i class="fa-solid fa-magnifying-glass"></i>
-      <input id="q" type="text" placeholder="Search tools…" autocomplete="off" />
-      <span id="cnt"></span>
+<!-- Page -->
+<div class="page">
+
+  <header>
+    <div class="badge"><i class="fa-solid fa-toolbox"></i> All-in-one Dashboard</div>
+    <h1>My <span>Tools &amp; Extensions</span></h1>
+    <p class="sub">My favourite apps, AI tools, and browser extensions.</p>
+    <div class="search-wrap">
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input id="q" type="text" placeholder="Search tools…" autocomplete="off" />
+        <span id="cnt"></span>
+      </div>
     </div>
-  </div>
   </header>
 
-
-<div class="filters" id="filters"></div>
-
+  <div class="filters" id="filters"></div>
   <div class="grid" id="grid"></div>
 
   <footer>
-    <p style="font-family:'Sora',sans-serif;font-size:.8rem;color:#7a8fa8;letter-spacing:.08em;text-transform:uppercase;">
-      <i class="fa-solid fa-hands-praying" style="margin-right:7px;opacity:.6;"></i>Built with focus & faith
+    <p>
+      <i class="fa-solid fa-hands-praying" style="margin-right:7px;opacity:.6;"></i>
+      Tawakkul &amp; grind
     </p>
   </footer>
 
@@ -162,24 +133,22 @@ const MY_TOOLS = [
 
 
 <style>
-/* ────────────────────────────────────────────
-   DESIGN TOKENS  (tweak colours here)
-──────────────────────────────────────────── */
+/* ── TOKENS ──────────────────────────────────────── */
 :root {
-  --bg-from : #b5dff5;
-  --bg-to   : #eef2f6;
-  --card-bg : rgba(255,255,255,.72);
-  --card-bdr: rgba(195,228,248,.72);
+  --bg-from  : #b5dff5;
+  --bg-to    : #eef2f6;
+  --card-bg  : rgba(255,255,255,.72);
+  --card-bdr : rgba(195,228,248,.72);
   --text     : #1a2535;
   --text-mid : #4a5a72;
   --text-soft: #7a8fa8;
+  --accent   : #2e8fc7;
+  --nav-bg   : rgba(14,165,233,.88);
   --radius   : 18px;
   --trans    : .3s cubic-bezier(.4,0,.2,1);
 }
 
-/* ────────────────────────────────────────────
-   BASE
-──────────────────────────────────────────── */
+/* ── RESET ───────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
@@ -190,37 +159,78 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ────────────────────────────────────────────
-   BACKGROUND ATMOSPHERE
-──────────────────────────────────────────── */
+/* ── BLOBS ───────────────────────────────────────── */
 .blobs { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
 .blobs div { position: absolute; border-radius: 50%; filter: blur(90px); opacity: .32; }
 .b1 { width: 540px; height: 540px; background: #8ecef4; top: -130px; left: -110px; }
 .b2 { width: 420px; height: 420px; background: #aaddf8; top: 35%;    right: -90px;  }
-.b3 { width: 360px; height: 360px; background: #caedfb; bottom: -80px; left: 32%; }
+.b3 { width: 360px; height: 360px; background: #caedfb; bottom: -80px; left: 32%;   }
 
-/* ────────────────────────────────────────────
-   PAGE WRAPPER
-──────────────────────────────────────────── */
+/* ── NAVBAR ──────────────────────────────────────── */
+.navbar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0 8%; height: 52px;
+  background: var(--nav-bg); backdrop-filter: blur(12px);
+  position: fixed; width: 100%; top: 0; z-index: 1000;
+  border-bottom: 1px solid rgba(175,215,242,.4);
+  transition: top .3s ease;
+}
+.navbar-hidden { top: -60px; }
+
+.nav-logo {
+  font-family: 'Sora', sans-serif; font-size: 1.1rem; font-weight: 700;
+  letter-spacing: 1px; color: #0f172a;
+}
+.nav-logo span { color: #fff; }
+
+.back-btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: rgba(255,255,255,.55); border: 1.5px solid rgba(255,255,255,.6);
+  border-radius: 12px; padding: 7px 16px 7px 10px;
+  text-decoration: none;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 12px rgba(80,155,205,.1);
+  transition: var(--trans);
+}
+.back-btn:hover {
+  background: rgba(255,255,255,.82);
+  border-color: #7ec8e8;
+  transform: translateX(-2px);
+}
+.back-icon {
+  width: 28px; height: 28px; border-radius: 7px;
+  background: linear-gradient(135deg,#5bb8e8,#2e8fc7);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: .78rem;
+  box-shadow: 0 2px 6px rgba(46,143,199,.35);
+  flex-shrink: 0; transition: var(--trans);
+}
+.back-btn:hover .back-icon { transform: translateX(-2px); }
+.back-label {
+  font-family: 'Sora', sans-serif; font-size: .82rem;
+  font-weight: 700; color: #1a2535;
+}
+
+/* ── PAGE WRAPPER ────────────────────────────────── */
 .page {
   position: relative; z-index: 1;
   max-width: 1100px; margin: 0 auto;
-  padding: 58px 22px 80px;
+  padding: 80px 22px 80px;
 }
 
-/* ────────────────────────────────────────────
-   HEADER
-──────────────────────────────────────────── */
-header { text-align: center; margin-bottom: 50px; animation: fadeDown .65s ease both; }
+/* ── HEADER ──────────────────────────────────────── */
+header {
+  text-align: center; margin-bottom: 40px;
+  animation: fadeDown .65s ease both;
+}
 
 .badge {
   display: inline-flex; align-items: center; gap: 7px;
-  background: rgba(255,255,255,.65);
-  border: 1px solid rgba(255,255,255,.8);
+  background: rgba(255,255,255,.65); border: 1px solid rgba(255,255,255,.8);
   border-radius: 50px; padding: 5px 16px;
-  font-family: 'Sora', sans-serif; font-size: .74rem; font-weight: 700;
+  font-family: 'Sora', sans-serif; font-size: .72rem; font-weight: 700;
   letter-spacing: .07em; text-transform: uppercase; color: #4c8eb5;
-  backdrop-filter: blur(8px); margin-bottom: 18px;
+  backdrop-filter: blur(8px); margin-bottom: 16px;
 }
 
 h1 {
@@ -231,92 +241,72 @@ h1 {
 }
 h1 span {
   background: linear-gradient(120deg,#2e8fc7,#4fb3e8,#87cce8);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
 
 .sub {
   color: var(--text-mid); font-size: 1rem; font-weight: 300;
-  max-width: 400px; margin: 0 auto 32px; line-height: 1.6;
+  max-width: 440px; margin: 0 auto 28px; line-height: 1.6;
 }
 
-/* ────────────────────────────────────────────
-   SEARCH BAR
-──────────────────────────────────────────── */
+/* ── SEARCH ──────────────────────────────────────── */
 .search-wrap { display: flex; justify-content: center; }
 
 .search-box {
   display: flex; align-items: center; gap: 11px;
-  background: rgba(255,255,255,.82);
-  border: 1.5px solid rgba(175,215,242,.7);
+  background: rgba(255,255,255,.82); border: 1.5px solid rgba(175,215,242,.7);
   border-radius: 50px; padding: 12px 20px;
   width: 100%; max-width: 430px;
   box-shadow: 0 4px 24px rgba(100,155,205,.14);
-  backdrop-filter: blur(12px);
-  transition: var(--trans);
+  backdrop-filter: blur(12px); transition: var(--trans);
 }
 .search-box:focus-within {
   border-color: #7ec8e8;
   box-shadow: 0 4px 28px rgba(80,155,205,.2), 0 0 0 4px rgba(126,200,232,.14);
 }
-.search-box i     { color: var(--text-soft); font-size: .9rem; }
-.search-box input {
+.search-box i      { color: var(--text-soft); font-size: .9rem; }
+.search-box input  {
   flex: 1; border: none; background: transparent; outline: none;
   font-family: 'DM Sans', sans-serif; font-size: .96rem; color: var(--text);
 }
 .search-box input::placeholder { color: var(--text-soft); }
 #cnt {
-  font-family: 'Sora', sans-serif; font-size: .75rem; font-weight: 700;
+  font-family: 'Sora', sans-serif; font-size: .73rem; font-weight: 700;
   background: rgba(175,218,242,.4); border-radius: 20px; padding: 2px 10px;
   color: var(--text-mid); white-space: nowrap;
 }
 
-/* ────────────────────────────────────────────
-   FILTER CHIPS
-──────────────────────────────────────────── */
+/* ── FILTER CHIPS ────────────────────────────────── */
 .filters {
   display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
-  margin: 28px 0 38px;
-  animation: fadeDown .8s .2s ease both;
+  margin: 24px 0 36px;
 }
 .chip {
-  background: rgba(255,255,255,.58);
-  border: 1.5px solid rgba(175,215,242,.55);
+  display: inline-flex; align-items: center; gap: 0;
+  background: rgba(255,255,255,.58); border: 1.5px solid rgba(175,215,242,.55);
   border-radius: 50px; padding: 7px 18px;
-  font-family: 'Sora', sans-serif; font-size: .78rem; font-weight: 600;
+  font-family: 'Sora', sans-serif; font-size: .76rem; font-weight: 600;
   color: var(--text-mid); cursor: pointer;
-  backdrop-filter: blur(6px);
-  transition: var(--trans); user-select: none;
+  backdrop-filter: blur(6px); transition: var(--trans); user-select: none;
+  animation: fadeDown .6s ease both;
 }
-.chip:hover {
-  background: #fff; border-color: #7ec8e8;
-  color: #2e8fc7; box-shadow: 0 4px 14px rgba(80,155,205,.16);
-}
-.chip.active {
-  background: linear-gradient(130deg,#e0f4fd,#f5fbff);
-  border-color: #7ec8e8; color: #2e8fc7;
-  box-shadow: 0 4px 14px rgba(80,155,205,.18);
-}
-
-/* ────────────────────────────────────────────
-   CARD GRID
-──────────────────────────────────────────── */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(265px, 1fr));
-  gap: 20px;
+.chip:hover { background: #fff; border-color: #7ec8e8; color: #2e8fc7; box-shadow: 0 4px 14px rgba(80,155,205,.16); }
+.chip.active { background: linear-gradient(130deg,#e0f4fd,#f5fbff); border-color: #7ec8e8; color: #2e8fc7; box-shadow: 0 4px 14px rgba(80,155,205,.18); }
+.chip-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: rgba(126,200,232,.25); color: #2e8fc7;
+  font-size: .66rem; font-weight: 700; border-radius: 20px;
+  padding: 1px 7px; margin-left: 6px;
 }
 
-/* ────────────────────────────────────────────
-   CARD
-──────────────────────────────────────────── */
+/* ── CARD GRID ───────────────────────────────────── */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(265px, 1fr)); gap: 20px; }
+
+/* ── CARD ────────────────────────────────────────── */
 .card {
   position: relative; overflow: hidden;
-  background: var(--card-bg);
-  border: 1.5px solid var(--card-bdr);
-  border-radius: var(--radius);
-  padding: 24px 22px 20px;
+  background: var(--card-bg); border: 1.5px solid var(--card-bdr);
+  border-radius: var(--radius); padding: 24px 22px 20px;
   display: flex; flex-direction: column; gap: 12px;
   box-shadow: 0 2px 12px rgba(95,140,180,.10);
   backdrop-filter: blur(14px);
@@ -328,8 +318,6 @@ h1 span {
   box-shadow: 0 20px 55px rgba(60,100,150,.2);
   border-color: rgba(130,205,238,.75);
 }
-
-/* shimmer line on hover */
 .card::after {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
   border-radius: var(--radius) var(--radius) 0 0;
@@ -338,32 +326,25 @@ h1 span {
 }
 .card:hover::after { opacity: 1; }
 
-.card-top {
-  display: flex; align-items: flex-start; justify-content: space-between;
-}
+.card-top { display: flex; align-items: flex-start; justify-content: space-between; }
 
 .icon {
   width: 48px; height: 48px; border-radius: 13px;
   display: flex; align-items: center; justify-content: center;
   font-size: 1.35rem; color: #fff;
   box-shadow: 0 4px 14px rgba(0,0,0,.1);
-  transition: transform var(--trans);
-  flex-shrink: 0;
+  transition: transform var(--trans); flex-shrink: 0;
 }
 .card:hover .icon { transform: scale(1.12) rotate(-4deg); }
 
 .tag {
-  font-family: 'Sora', sans-serif; font-size: .68rem; font-weight: 700;
+  font-family: 'Sora', sans-serif; font-size: .66rem; font-weight: 700;
   letter-spacing: .05em; text-transform: uppercase;
   background: rgba(175,218,242,.35); color: var(--text-soft);
   padding: 3px 10px; border-radius: 20px;
 }
 
-.name {
-  font-family: 'Sora', sans-serif; font-size: 1.05rem;
-  font-weight: 700; letter-spacing: -.01em; color: var(--text);
-}
-
+.name { font-family: 'Sora', sans-serif; font-size: 1.05rem; font-weight: 700; letter-spacing: -.01em; }
 .desc { font-size: .875rem; color: var(--text-mid); line-height: 1.55; font-weight: 300; flex: 1; }
 
 .btn {
@@ -372,61 +353,55 @@ h1 span {
   font-family: 'Sora', sans-serif; font-size: .78rem; font-weight: 600;
   text-decoration: none; color: #2e8fc7;
   background: #fff; border: 1.5px solid rgba(130,205,240,.5);
-  box-shadow: 0 2px 10px rgba(80,155,205,.1);
-  transition: var(--trans);
+  box-shadow: 0 2px 10px rgba(80,155,205,.1); transition: var(--trans);
 }
-.btn:hover {
-  background: linear-gradient(120deg,#daf0fb,#eaf8ff);
-  border-color: #7ec8e8; transform: translateX(2px);
-}
+.btn:hover { background: linear-gradient(120deg,#daf0fb,#eaf8ff); border-color: #7ec8e8; transform: translateX(2px); }
 
-/* no-results */
+/* ── EMPTY STATE ─────────────────────────────────── */
 .empty { grid-column: 1/-1; text-align: center; padding: 60px 20px; display: none; }
 .empty.show { display: block; }
 .empty i { font-size: 2.4rem; color: var(--text-soft); margin-bottom: 12px; display: block; }
-.empty p  { color: var(--text-mid); }
+.empty p { color: var(--text-mid); }
 
-/* ────────────────────────────────────────────
-   FOOTER
-──────────────────────────────────────────── */
+/* ── FOOTER ──────────────────────────────────────── */
 footer {
   text-align: center; margin-top: 60px;
-  font-size: .8rem; color: var(--text-soft);
-  font-family: 'Sora', sans-serif;
+  font-family: 'Sora', sans-serif; font-size: .78rem;
+  color: var(--text-soft); letter-spacing: .08em; text-transform: uppercase;
 }
-footer a { color: #4c8eb5; text-decoration: none; }
 
-/* ────────────────────────────────────────────
-   ANIMATIONS
-──────────────────────────────────────────── */
+/* ── ANIMATIONS ──────────────────────────────────── */
 @keyframes fadeDown { from { opacity:0; transform:translateY(-16px); } to { opacity:1; transform:none; } }
 @keyframes cardIn   { from { opacity:0; transform:translateY(22px) scale(.97); } to { opacity:1; transform:none; } }
 
-/* ────────────────────────────────────────────
-   RESPONSIVE
-──────────────────────────────────────────── */
+/* ── RESPONSIVE ──────────────────────────────────── */
 @media (max-width: 580px) {
-  .page { padding: 36px 14px 56px; }
+  .page { padding: 72px 14px 56px; }
   .grid { grid-template-columns: 1fr; }
 }
 </style>
 
 
 <script>
-/* Renders cards from MY_TOOLS — no need to touch this */
-const grid    = document.getElementById('grid');
-const input   = document.getElementById('q');
-const cnt     = document.getElementById('cnt');
+/* ── RENDER ENGINE — no need to edit ─────────────── */
+const grid      = document.getElementById('grid');
+const input     = document.getElementById('q');
+const cnt       = document.getElementById('cnt');
 const filtersEl = document.getElementById('filters');
-
 let activeFilter = 'all';
 
-/* Build filter chips automatically from unique tags in MY_TOOLS */
-const tags = ['All', ...new Set(MY_TOOLS.map(t => t.tag))];
-tags.forEach(tag => {
+/* Count per tag */
+const tagCounts = MY_TOOLS.reduce((acc, t) => {
+  acc[t.tag] = (acc[t.tag] || 0) + 1; return acc;
+}, {});
+
+/* Build filter chips with counts + stagger animation */
+['All', ...new Set(MY_TOOLS.map(t => t.tag))].forEach((tag, i) => {
   const chip = document.createElement('span');
   chip.className = 'chip' + (tag === 'All' ? ' active' : '');
-  chip.textContent = tag;
+  chip.style.animationDelay = (i * 0.07) + 's';
+  const count = tag === 'All' ? MY_TOOLS.length : (tagCounts[tag] || 0);
+  chip.innerHTML = tag + `<span class="chip-count">${count}</span>`;
   chip.addEventListener('click', () => {
     document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
     chip.classList.add('active');
@@ -437,7 +412,7 @@ tags.forEach(tag => {
 });
 
 function render(q) {
-  q = (q || '').toLowerCase();
+  q = (q || '').toLowerCase().trim();
   const list = MY_TOOLS.filter(t => {
     const matchTag = activeFilter === 'all' || t.tag === activeFilter;
     const matchQ   = !q || t.name.toLowerCase().includes(q) || t.desc.toLowerCase().includes(q) || t.tag.toLowerCase().includes(q);
@@ -449,8 +424,8 @@ function render(q) {
 
   if (!list.length) {
     grid.innerHTML = `<div class="empty show">
-      <i class="fa-solid fa-face-frown-open"></i>
-      <p>No tools match "<b>${q || activeFilter}</b>" — try another keyword.</p>
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <p>No tools found for "<b>${q || activeFilter}</b>" — try a different keyword.</p>
     </div>`;
     return;
   }
@@ -466,7 +441,7 @@ function render(q) {
       </div>
       <div class="name">${t.name}</div>
       <div class="desc">${t.desc}</div>
-      <a class="btn" href="${t.url}" target="_blank" rel="noopener">
+      <a class="btn" href="${t.url}" target="_blank" rel="noopener" title="Visit ${t.name}">
         Open <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:.7rem"></i>
       </a>
     `;
@@ -476,6 +451,15 @@ function render(q) {
 
 input.addEventListener('input', e => render(e.target.value));
 render();
+
+/* Hide navbar on scroll */
+let lastScroll = window.scrollY;
+window.addEventListener('scroll', () => {
+  const nav = document.getElementById('navbar');
+  if (window.scrollY > lastScroll && window.scrollY > 70) nav.classList.add('navbar-hidden');
+  else nav.classList.remove('navbar-hidden');
+  lastScroll = window.scrollY;
+});
 </script>
 
 </body>
