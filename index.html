@@ -3,277 +3,429 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Abdullah All Munan — Developer, student, and builder from Bangladesh.">
+    <meta name="theme-color" content="#0ea5e9">
     <title>Munan | Link Hub 2026</title>
     <link rel="icon" type="image/png" href="icon.png">
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600&family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
     <style>
-        a {
-            text-decoration: none; transition: 0.3s;
-        }
-
-                                            /* --- PROFILE PHOTO --- */
-        /* .profile-photo-wrap {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-        .profile-photo {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            border: 3px solid var(--accent);
-            box-shadow: 0 0 25px rgba(0, 212, 255, 0.4), 0 0 60px rgba(0, 212, 255, 0.15);
-            object-fit: cover;
-            display: block;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .profile-photo:hover {
-            transform: scale(1.06);
-            box-shadow: 0 0 40px rgba(0, 212, 255, 0.65), 0 0 80px rgba(0, 212, 255, 0.2);
-        } */
-
-        /* --- DYNAMIC THEME VARIABLES --- */
+        /* ── TOKENS ──────────────────────────────── */
         :root {
-            /* DEFAULT: LIGHT MODE — Ocean Blue to White */
-            --main-bg: linear-gradient(180deg, #0ea5e9 0%, #bae6fd 50%, #ffffff 100%);
-            --card-bg: rgba(255, 255, 255, 0.5);
-            --card-border: rgba(14, 165, 233, 0.25);
-            --text-main: #0f172a;
+            --main-bg:    linear-gradient(180deg, #0ea5e9 0%, #bae6fd 50%, #ffffff 100%);
+            --card-bg:    rgba(255,255,255,0.55);
+            --card-border:rgba(14,165,233,0.25);
+            --text-main:  #0f172a;
             --text-muted: #334155;
-            --accent: #0284c7;
-            --nav-bg: rgba(14, 165, 233, 0.85);
+            --text-soft:  #64748b;
+            --accent:     #0284c7;
+            --nav-bg:     rgba(14,165,233,0.88);
+            --trans:      0.3s cubic-bezier(.4,0,.2,1);
         }
-
         [data-theme="dark"] {
-            /* DARK MODE: Black to Deep Blue */
-            --main-bg: linear-gradient(180deg, #020617 0%, #030816 40%, #0c1a33 100%);
-            --card-bg: rgba(255, 255, 255, 0.03);
-            --card-border: rgba(0, 212, 255, 0.15);
-            --text-main: #ffffff;
+            --main-bg:    linear-gradient(180deg, #020617 0%, #030816 40%, #0c1a33 100%);
+            --card-bg:    rgba(255,255,255,0.04);
+            --card-border:rgba(0,212,255,0.15);
+            --text-main:  #ffffff;
             --text-muted: #94a3b8;
-            --accent: #00d4ff;
-            --nav-bg: rgba(2, 6, 23, 0.85);
+            --text-soft:  #64748b;
+            --accent:     #00d4ff;
+            --nav-bg:     rgba(2,6,23,0.88);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        /* ── RESET ───────────────────────────────── */
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        a { text-decoration: none; transition: var(--trans); }
 
         body {
             background: var(--main-bg);
             background-attachment: fixed;
             color: var(--text-main);
             font-family: 'Poppins', 'Hind Siliguri', sans-serif;
-            transition: background 0.5s ease;
-            line-height: 1.6;
-            font-size: 14px;
+            transition: background .5s ease, color .3s ease;
+            line-height: 1.6; font-size: 14px;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* --- SMART NAVBAR --- */
+        /* ── BLOBS ───────────────────────────────── */
+        .blobs { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+        .blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: .32; animation: drift 9s ease-in-out infinite alternate; }
+        .blob-1 { width: 560px; height: 560px; background: #7dd3fc; top: -160px; left: -120px; animation-delay: 0s; }
+        .blob-2 { width: 440px; height: 440px; background: #bae6fd; top: 35%; right: -100px; animation-delay: -3s; }
+        .blob-3 { width: 360px; height: 360px; background: #e0f2fe; bottom: -80px; left: 30%; animation-delay: -6s; }
+        [data-theme="dark"] .blob-1 { background: #0c1a33; }
+        [data-theme="dark"] .blob-2 { background: #030816; }
+        [data-theme="dark"] .blob-3 { background: #0f2847; }
+        @keyframes drift {
+            from { transform: translate(0,0) scale(1); }
+            to   { transform: translate(25px,18px) scale(1.07); }
+        }
+
+        /* ── BUBBLES ─────────────────────────────── */
+        .bubble {
+            position: fixed; border-radius: 50%; pointer-events: none; z-index: 0;
+            /* Real balloon-like: transparent center, bright rim */
+            background: radial-gradient(
+                circle at 35% 35%,
+                rgba(255,255,255,0.55) 0%,
+                rgba(255,255,255,0.08) 40%,
+                rgba(255,255,255,0.0) 70%
+            );
+            border: 1.5px solid rgba(255,255,255,0.45);
+            box-shadow:
+                inset 0 0 20px rgba(255,255,255,0.15),
+                0 4px 20px rgba(2,132,199,0.08);
+            animation: bubbleRise linear infinite;
+        }
+        /* highlight dot — real bubble feel */
+        .bubble::after {
+            content: '';
+            position: absolute;
+            top: 14%; left: 18%;
+            width: 28%; height: 18%;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.55);
+            filter: blur(3px);
+        }
+        [data-theme="dark"] .bubble {
+            background: radial-gradient(
+                circle at 35% 35%,
+                rgba(0,212,255,0.18) 0%,
+                rgba(0,212,255,0.04) 40%,
+                transparent 70%
+            );
+            border-color: rgba(0,212,255,0.25);
+            box-shadow: inset 0 0 20px rgba(0,212,255,0.08), 0 4px 20px rgba(0,212,255,0.05);
+        }
+        @keyframes bubbleRise {
+            0%   { transform: translateY(105vh) scale(0.4) translateX(0px);  opacity: 0; }
+            8%   { opacity: 0.9; }
+            50%  { transform: translateY(50vh)  scale(1)   translateX(18px); opacity: 0.85; }
+            92%  { opacity: 0.7; }
+            100% { transform: translateY(-12vh) scale(1.05) translateX(-10px); opacity: 0; }
+        }
+
+        /* ── PARTICLES ───────────────────────────── */
+        .particles { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+        .particle {
+            position: absolute; border-radius: 50%;
+            background: rgba(2,132,199,.15);
+            animation: floatUp linear infinite;
+        }
+        [data-theme="dark"] .particle { background: rgba(0,212,255,.12); }
+        @keyframes floatUp {
+            0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+            10%  { opacity: 1; }
+            90%  { opacity: 1; }
+            100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+        }
+
+        /* ── NAVBAR ──────────────────────────────── */
         .navbar {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 0 8%; height: 50px; background: var(--nav-bg);
-            backdrop-filter: blur(10px); position: fixed; width: 100%; top: 0;
+            padding: 0 8%; height: 52px; background: var(--nav-bg);
+            backdrop-filter: blur(12px); position: fixed; width: 100%; top: 0;
             z-index: 1000; border-bottom: 1px solid var(--card-border);
-            transition: top 0.1s ease;
+            transition: top .3s ease;
         }
-        .navbar-hidden { top: -80px; }
-        .logo { font-size: 1.2rem; font-weight: 700; letter-spacing: 1px; }
-        .logo span { color: var(--accent); }
-
+        .navbar-hidden { top: -60px; }
+        .nav-logo { font-size: 1.2rem; font-weight: 700; letter-spacing: 1px; color: var(--text-main); }
+        .nav-logo span { color: #fff; }
         .theme-toggle {
-            cursor: pointer; width: 35px; height: 35px; display: flex;
-            align-items: center; justify-content: center; background: var(--card-bg);
-            border: 1px solid var(--card-border); border-radius: 50%; color: var(--text-main);
+            cursor: pointer; width: 36px; height: 36px;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,.55); border: 1.5px solid rgba(255,255,255,.6);
+            border-radius: 50%; color: var(--text-main);
+            backdrop-filter: blur(8px); transition: var(--trans);
+        }
+        .theme-toggle:hover { background: rgba(255,255,255,.85); transform: rotate(20deg); }
+
+        /* ── HERO ────────────────────────────────── */
+        .hero { position: relative; z-index: 1; padding: 110px 20px 50px; text-align: center; }
+
+        .profile-wrap { display: flex; justify-content: center; margin-bottom: 22px; animation: fadeDown .7s ease both; }
+        .profile-photo {
+            width: 110px; height: 110px; border-radius: 50%;
+            border: 3px solid var(--accent);
+            box-shadow: 0 0 28px rgba(2,132,199,.35), 0 0 0 6px rgba(2,132,199,.1);
+            object-fit: cover; transition: var(--trans);
+        }
+        .profile-photo:hover {
+            transform: scale(1.06);
+            box-shadow: 0 0 44px rgba(2,132,199,.5), 0 0 0 8px rgba(2,132,199,.14);
         }
 
-        /* --- HERO & INTRO --- */
-        .hero { padding: 140px 20px 40px; text-align: center; }
-        .hero h1 { font-size: 2.4rem; margin-bottom: 10px; font-weight: 700; }
-        .hero p { font-size: 1rem; color: var(--text-muted); margin-bottom: 25px; }
+        .hero-title {
+            font-size: clamp(1.9rem, 5vw, 2.8rem); font-weight: 800;
+            letter-spacing: -.03em; line-height: 1.1; margin-bottom: 12px;
+            animation: fadeDown .7s .1s ease both;
+        }
+        .hero-title span { color: var(--accent); }
+
+        .hero-tagline {
+            font-size: 1rem; color: var(--text-muted);
+            margin-bottom: 28px; height: 28px;
+            animation: fadeDown .7s .2s ease both;
+        }
+        .typed-text { color: var(--accent); font-weight: 600; }
+        .cursor {
+            display: inline-block; width: 2px; height: 1em;
+            background: var(--accent); margin-left: 2px;
+            vertical-align: middle; animation: blink .75s infinite;
+        }
+        @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0; } }
 
         .intro-box {
-            max-width: 650px; margin: 0 auto 40px; padding: 20px;
+            max-width: 600px; margin: 0 auto 16px; padding: 20px 26px;
             background: var(--card-bg); border: 1px solid var(--card-border);
-            border-radius: 15px; backdrop-filter: blur(8px); font-size: 0.9rem;
+            border-radius: 18px; backdrop-filter: blur(10px);
+            font-size: .92rem; color: var(--text-muted);
+            box-shadow: 0 4px 20px rgba(2,132,199,.08);
+            animation: fadeDown .7s .3s ease both;
         }
 
-        /* --- SEARCH --- */
-        .search-wrap { display: flex; justify-content: center; margin-bottom: 40px; }
-        #search {
-            width: 300px; padding: 10px 20px; border-radius: 25px;
-            border: 1px solid var(--card-border); background: var(--card-bg);
-            color: var(--text-main); outline: none; transition: 0.3s;
+        /* ── SECTION LABEL ───────────────────────── */
+        .section-label { position: relative; z-index: 1; text-align: center; margin-bottom: 10px; }
+        .section-label span {
+            display: inline-flex; align-items: center; gap: 7px;
+            font-size: .7rem; font-weight: 700; letter-spacing: .1em;
+            text-transform: uppercase; color: var(--text-soft);
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-radius: 20px; padding: 5px 16px; backdrop-filter: blur(6px);
         }
-        #search:focus { border-color: var(--accent); width: 350px; }
 
-        /* --- GRID --- */
-        .container { max-width: 1200px; margin: 0 auto; padding-bottom: 60px; }
+        /* ── GRID ────────────────────────────────── */
+        .container { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding-bottom: 60px; }
         .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 15px; padding: 0 5%;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+            gap: 18px; padding: 0 5%;
         }
 
+        /* ── CARD ────────────────────────────────── */
         .card {
             background: var(--card-bg); border: 1px solid var(--card-border);
-            border-radius: 12px; padding: 20px; transition: all 0.3s ease;
-            display: flex; flex-direction: column; align-items: flex-start;
+            border-radius: 16px; padding: 22px 20px 18px;
+            transition: all var(--trans); display: flex; flex-direction: column;
+            align-items: flex-start; backdrop-filter: blur(10px);
+            box-shadow: 0 2px 12px rgba(2,132,199,.06);
+            position: relative; overflow: hidden;
+            animation: cardIn .5s ease both;
+        }
+        .card::after {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0; transition: opacity var(--trans);
         }
         .card:hover {
-            transform: translateY(-5px); border-color: var(--accent);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-            background: rgba(255, 255, 255, 0.8);
+            transform: translateY(-6px) scale(1.015); border-color: var(--accent);
+            box-shadow: 0 16px 40px rgba(2,132,199,.18);
+            background: rgba(255,255,255,.82);
         }
-        [data-theme="dark"] .card:hover { background: rgba(255, 255, 255, 0.05); }
+        [data-theme="dark"] .card:hover { background: rgba(255,255,255,.07); }
+        .card:hover::after { opacity: 1; }
+        @keyframes cardIn { from { opacity:0; transform:translateY(18px) scale(.97); } to { opacity:1; transform:none; } }
 
-        .card i { font-size: 1.5rem; color: var(--accent); margin-bottom: 12px; }
-        .card h3 { font-size: 1.05rem; margin-bottom: 8px; font-weight: 600; }
-        .card p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px; flex-grow: 1; }
+        .card-icon {
+            width: 46px; height: 46px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem; color: #fff; margin-bottom: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,.12); transition: transform var(--trans);
+        }
+        .card:hover .card-icon { transform: scale(1.1) rotate(-5deg); }
+
+        .card h3 { font-size: 1rem; margin-bottom: 7px; font-weight: 700; }
+        .card p  { font-size: .83rem; color: var(--text-muted); margin-bottom: 16px; flex-grow: 1; line-height: 1.55; }
 
         .btn {
-            width: 100%; text-align: center; padding: 8px;
-            background: var(--card-bg); border: 1px solid var(--card-border);
-            border-radius: 6px; color: var(--text-main); font-size: 0.8rem;
-            font-weight: 600; transition: 0.3s;
+            width: 100%; text-align: center; padding: 9px;
+            background: rgba(255,255,255,.7); border: 1.5px solid var(--card-border);
+            border-radius: 8px; color: var(--accent); font-size: .78rem;
+            font-weight: 700; transition: var(--trans);
         }
-        .btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+        [data-theme="dark"] .btn { background: rgba(255,255,255,.05); }
+        .btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); transform: translateX(2px); }
 
-        /* --- FOOTER --- */
-        footer { margin-top: 50px; padding: 60px 0; text-align: center; }
+        /* ── FOOTER ──────────────────────────────── */
+        footer { position: relative; z-index: 1; margin-top: 50px; padding: 50px 0; text-align: center; }
         .footer-card {
             background: var(--card-bg); border: 1px solid var(--card-border);
-            display: inline-block; padding: 20px 20px; border-radius: 25px;
-            backdrop-filter: blur(15px); transition: 0.3s;
+            display: inline-block; padding: 28px 40px; border-radius: 24px;
+            backdrop-filter: blur(15px); transition: var(--trans);
         }
-        .footer-card:hover { border-color: var(--accent); box-shadow: 0 0 30px var(--card-border); }
-        .footer-card h2 { font-size: 1.8rem; margin-bottom: 8px; }
-        .footer-card h2 span { color: var(--accent); }
-        
-        .socials { display: flex; gap: 12px; justify-content: center; margin: 15px 0; }
-        .socials a {
-            width: 30px; height: 30px; background: var(--card-border);
-            display: flex; align-items: center; justify-content: center;
-            border-radius: 50%; transition: 0.3s; color: var(--text-main);
-        }
-        .socials a:hover { background: var(--accent); color: white; transform: rotate(360deg); }
+        .footer-card:hover { border-color: var(--accent); box-shadow: 0 0 30px rgba(2,132,199,.12); }
+        .footer-dev  { font-size: .68rem; text-transform: uppercase; letter-spacing: 3px; opacity: .6; margin-bottom: 6px; }
+        .footer-name { font-size: 1.6rem; font-weight: 800; margin-bottom: 14px; }
+        .footer-name span { color: var(--accent); }
 
+        .socials { display: flex; gap: 10px; justify-content: center; margin: 12px 0; }
+        .socials a {
+            width: 36px; height: 36px;
+            background: rgba(2,132,199,.1); border: 1px solid var(--card-border);
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%; transition: var(--trans); color: var(--accent); font-size: .9rem;
+        }
+        .socials a:hover { background: var(--accent); color: #fff; transform: rotate(360deg) scale(1.1); }
+
+        .footer-bottom { font-size: .75rem; margin-top: 14px; opacity: .6; letter-spacing: .05em; text-transform: uppercase; }
+
+        /* ── ANIMATIONS ──────────────────────────── */
+        @keyframes fadeDown { from { opacity:0; transform:translateY(-14px); } to { opacity:1; transform:none; } }
+
+        /* ── RESPONSIVE ──────────────────────────── */
         @media (max-width: 768px) {
-            .hero h1 { font-size: 1.8rem; }
-            .grid { grid-template-columns: 1fr; }
+            .hero-title { font-size: 1.8rem; }
+            .grid { grid-template-columns: 1fr; padding: 0 4%; }
+            .footer-card { padding: 22px 24px; }
         }
     </style>
 </head>
 <body>
 
+    <div class="blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+    <div class="particles" id="particles"></div>
+
     <nav class="navbar" id="navbar">
-        <div class="logo">Munan<span>.hub</span></div>
-        <div class="theme-toggle" id="themeBtn">
-            <i class="fas fa-moon"></i>
-        </div>
+        <div class="nav-logo">Munan<span>.hub</span></div>
+        <div class="theme-toggle" id="themeBtn"><i class="fas fa-moon"></i></div>
     </nav>
 
     <header class="hero">
-        <!-- <div class="profile-photo-wrap">
-            <img src="Image.jpeg" alt="Munan's Profile Photo" class="profile-photo">
-        </div> -->
+        <div class="profile-wrap">
+            <img src="Image.jpeg" alt="Munan" class="profile-photo">
+        </div>
 
-        <h1>Knowledge & Creation Zone</h1>
-        <p>Exploring the boundaries of Tech</p>
-        
+        <h1 class="hero-title">Knowledge &amp; <span>Creation</span> Zone</h1>
+
+        <div class="hero-tagline">
+            I'm a <span class="typed-text" id="typed"></span><span class="cursor"></span>
+        </div>
+
         <div class="intro-box">
-            <p>
-                Hi, I'm <strong>Munan</strong>. I'm a developer and thinker from Bangladesh. 
-                I love solving problems through code and learning something new every day.
-            </p>
+            <p>Hi, I'm <strong>Munan</strong> — a developer and thinker from Bangladesh. I love solving problems through code and learning something new every day.</p>
         </div>
     </header>
 
-    <div class="search-wrap">
-        <input type="text" id="search" placeholder="Search my links...">
-    </div>
-
     <section class="container">
+        <div class="section-label">
+            <span><i class="fas fa-grip"></i>&nbsp; Quick Links</span>
+        </div>
+
         <div class="grid" id="linkGrid">
 
-            <div class="card">
-                <i class="fas fa-user"></i>
+            <div class="card" style="animation-delay:.05s">
+                <div class="card-icon" style="background:linear-gradient(135deg,#0284c7,#0ea5e9)"><i class="fas fa-user"></i></div>
                 <h3>About Me</h3>
-                <p>Who I am, what I build, and what drives me.</p>
+                <p>Who I am, what I build, and what drives me every day.</p>
                 <a href="about.html" class="btn">Read More</a>
             </div>
 
-            <div class="card">
-                <i class="fas fa-tools"></i>
+            <div class="card" style="animation-delay:.10s">
+                <div class="card-icon" style="background:linear-gradient(135deg,#0f766e,#14b8a6)"><i class="fas fa-tools"></i></div>
                 <h3>My Toolbox</h3>
-                <p>A list of software, extensions, and hardware I use every day.</p>
+                <p>Software, extensions, and AI tools I use every day.</p>
                 <a href="tools.html" class="btn">Check Tools</a>
             </div>
 
-
-
-            <div class="card">
-                <i class="fas fa-keyboard"></i>
+            <div class="card" style="animation-delay:.15s">
+                <div class="card-icon" style="background:linear-gradient(135deg,#7c3aed,#a855f7)"><i class="fas fa-keyboard"></i></div>
                 <h3>TypeMaster</h3>
-                <p>Level up your productivity with TypeMaster by Abdullah All Munan. 
-                    It tracks your WPM, accuracy in real-time
-                    and session history, you'll see your progress instantly.</p>
+                <p>Track your WPM and accuracy in real-time — see your progress instantly.</p>
                 <a href="TypeMaster.html" class="btn">Be Master</a>
             </div>
 
-            <div class="card">
-                <i class="fas fa-globe"></i>
+            <div class="card" style="animation-delay:.20s">
+                <div class="card-icon" style="background:linear-gradient(135deg,#1a73e8,#34a8f5)"><i class="fas fa-folder-open"></i></div>
                 <h3>Files</h3>
-                <p>My personal files.</p>
+                <p>My personal files and resources.</p>
                 <a href="part1.html" class="btn">View</a>
             </div>
 
-            <div class="card">
-                <i class="fas fa-envelope"></i>
+            <div class="card" style="animation-delay:.25s">
+                <div class="card-icon" style="background:linear-gradient(135deg,#ea4335,#f97b6e)"><i class="fas fa-envelope"></i></div>
                 <h3>Get in Touch</h3>
-                <p>Have a question or want to connect? Send a message and I'll reply soon!</p>
+                <p>Have a question or want to connect? I'll reply soon!</p>
                 <a href="contact.html" class="btn">Message</a>
             </div>
 
-
-            <div class="card">
-                <i class="fab fa-github"></i>
+            <div class="card" style="animation-delay:.30s">
+                <div class="card-icon" style="background:linear-gradient(135deg,#1a1e2a,#3a3f52)"><i class="fab fa-github"></i></div>
                 <h3>GitHub Profile</h3>
                 <p>Explore my open-source contributions and active repositories.</p>
-                <a href="https://github.com/abamunan" class="btn">Follow GitHub</a>
+                <a href="https://github.com/abamunan" class="btn" target="_blank" rel="noopener">Follow GitHub</a>
             </div>
-
-
-
-        
 
         </div>
     </section>
 
     <footer>
         <div class="footer-card">
-            <p style="text-transform: uppercase; letter-spacing: 2px; font-size: 0.7rem; opacity: 0.7;">Developed By</p>
-            <h2>Abdullah All <span>Munan</span></h2>
-            
+            <div class="footer-dev">Developed By</div>
+            <div class="footer-name">Abdullah All <span>Munan</span></div>
             <div class="socials">
-                <a href="mailto:allmunanabdullah@gmail.com"><i class="fas fa-envelope"></i></a>
-                <a href="contact.html"><i class="fas fa-link"></i></a>
-                <a href="https://www.facebook.com/share/18E4oCwqfT/"><i class="fab fa-facebook"></i></a>
-                <a href="https://www.linkedin.com/in/abdullah-all-munan-b447133b2?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app"><i class="fab fa-linkedin"></i></a>
+                <a href="mailto:allmunanabdullah@gmail.com" title="Email"><i class="fas fa-envelope"></i></a>
+                <a href="contact.html" title="Contact"><i class="fas fa-paper-plane"></i></a>
+                <a href="https://www.facebook.com/share/18E4oCwqfT/" target="_blank" rel="noopener" title="Facebook"><i class="fab fa-facebook"></i></a>
+                <a href="https://www.linkedin.com/in/abdullah-all-munan-b447133b2" target="_blank" rel="noopener" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                <a href="https://github.com/abamunan" target="_blank" rel="noopener" title="GitHub"><i class="fab fa-github"></i></a>
             </div>
-
-            <div style="font-size: 0.8rem; margin-top: 20px; opacity: 0.6;">
-                <p>Location: Bangladesh</p>
-                <p>© 2026 Interactive Portal</p>
+            <div class="footer-bottom">
+                <i class="fas fa-hands-praying" style="margin-right:5px;opacity:.6;"></i>
+                Tawakkul &amp; grind &nbsp;·&nbsp; © 2026 Munan
             </div>
         </div>
     </footer>
 
     <script>
-        // 1. Theme Toggle — default: light, click → dark
+        /* Particles */
+        const pContainer = document.getElementById('particles');
+        for (let i = 0; i < 16; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            const size = Math.random() * 9 + 3;
+            p.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;animation-duration:${Math.random()*14+8}s;animation-delay:${Math.random()*12}s;`;
+            pContainer.appendChild(p);
+        }
+
+        /* Bubbles — real balloon sizes (40px–120px), slow drift */
+        for (let i = 0; i < 18; i++) {
+            const b = document.createElement('div');
+            b.className = 'bubble';
+            const size = Math.random() * 80 + 40; // 40px – 120px
+            const wobble = (Math.random() - 0.5) * 60; // left/right drift
+            b.style.cssText = `
+                width:${size}px;
+                height:${size}px;
+                left:${Math.random() * 95}%;
+                animation-duration:${Math.random() * 20 + 14}s;
+                animation-delay:${Math.random() * 18}s;
+            `;
+            document.body.appendChild(b);
+        }
+
+        /* Typing effect */
+        const words = ['Developer', 'Student', 'Builder', 'Learner', 'Creator'];
+        let wi = 0, ci = 0, deleting = false;
+        const typedEl = document.getElementById('typed');
+        function type() {
+            const word = words[wi];
+            if (!deleting) {
+                typedEl.textContent = word.slice(0, ++ci);
+                if (ci === word.length) { deleting = true; setTimeout(type, 1800); return; }
+            } else {
+                typedEl.textContent = word.slice(0, --ci);
+                if (ci === 0) { deleting = false; wi = (wi + 1) % words.length; }
+            }
+            setTimeout(type, deleting ? 60 : 100);
+        }
+        setTimeout(type, 600);
+
+        /* Theme toggle */
         const themeBtn = document.getElementById('themeBtn');
         const icon = themeBtn.querySelector('i');
-
         themeBtn.onclick = () => {
             if (document.body.getAttribute('data-theme') === 'dark') {
                 document.body.removeAttribute('data-theme');
@@ -284,24 +436,20 @@
             }
         };
 
-        // 2. Hide Navbar on Scroll
+        /* Navbar hide on scroll */
         let lastScroll = window.scrollY;
         window.onscroll = () => {
             const nav = document.getElementById('navbar');
-            if (window.scrollY > lastScroll && window.scrollY > 70) {
-                nav.classList.add('navbar-hidden');
-            } else {
-                nav.classList.remove('navbar-hidden');
-            }
+            if (window.scrollY > lastScroll && window.scrollY > 70) nav.classList.add('navbar-hidden');
+            else nav.classList.remove('navbar-hidden');
             lastScroll = window.scrollY;
         };
 
-        // 3. Search Filter
+        /* Search */
         document.getElementById('search').onkeyup = function() {
-            let val = this.value.toLowerCase();
+            const val = this.value.toLowerCase();
             document.querySelectorAll('.card').forEach(card => {
-                let text = card.innerText.toLowerCase();
-                card.style.display = text.includes(val) ? "flex" : "none";
+                card.style.display = card.innerText.toLowerCase().includes(val) ? 'flex' : 'none';
             });
         };
     </script>
