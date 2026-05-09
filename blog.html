@@ -10,7 +10,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* ── TOKENS ──────────────────────────────── */
         :root {
             --bg:          linear-gradient(180deg, #0ea5e9 0%, #bae6fd 50%, #ffffff 100%);
             --card-bg:     rgba(255,255,255,0.60);
@@ -22,429 +21,147 @@
             --nav-bg:      rgba(14,165,233,0.88);
             --trans:       0.3s cubic-bezier(.4,0,.2,1);
             --radius:      18px;
-
-            /* Modal overlay */
             --overlay:     rgba(15,23,42,0.45);
         }
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+        a { text-decoration:none; transition:var(--trans); }
+        body { background:var(--bg); background-attachment:fixed; color:var(--text); font-family:'Poppins',sans-serif; line-height:1.6; font-size:14px; min-height:100vh; -webkit-font-smoothing:antialiased; }
 
-        /* ── RESET ───────────────────────────────── */
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        a { text-decoration: none; transition: var(--trans); }
-
-        body {
-            background: var(--bg);
-            background-attachment: fixed;
-            color: var(--text);
-            font-family: 'Poppins', sans-serif;
-            line-height: 1.6; font-size: 14px;
-            min-height: 100vh;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        /* ── BLOBS ───────────────────────────────── */
-        .blobs { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
-        .blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: .30; animation: drift 9s ease-in-out infinite alternate; }
-        .blob-1 { width: 560px; height: 560px; background: #7dd3fc; top: -160px; left: -120px; }
-        .blob-2 { width: 440px; height: 440px; background: #bae6fd; top: 35%; right: -100px; animation-delay: -3s; }
-        .blob-3 { width: 360px; height: 360px; background: #e0f2fe; bottom: -80px; left: 30%; animation-delay: -6s; }
+        .blobs { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+        .blob { position:absolute; border-radius:50%; filter:blur(90px); opacity:.30; animation:drift 9s ease-in-out infinite alternate; }
+        .blob-1 { width:560px; height:560px; background:#7dd3fc; top:-160px; left:-120px; }
+        .blob-2 { width:440px; height:440px; background:#bae6fd; top:35%; right:-100px; animation-delay:-3s; }
+        .blob-3 { width:360px; height:360px; background:#e0f2fe; bottom:-80px; left:30%; animation-delay:-6s; }
         @keyframes drift { from { transform:translate(0,0) scale(1); } to { transform:translate(25px,18px) scale(1.07); } }
 
-        /* ── NAVBAR ──────────────────────────────── */
-        .navbar {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 0 8%; height: 52px; background: var(--nav-bg);
-            backdrop-filter: blur(12px); position: fixed; width: 100%; top: 0;
-            z-index: 1000; border-bottom: 1px solid var(--card-border);
-            transition: top .3s ease;
-        }
-        .navbar-hidden { top: -60px; }
-        .nav-logo { font-size: 1.2rem; font-weight: 700; letter-spacing: 1px; color: #0f172a; }
-        .nav-logo span { color: #fff; }
-        .back-btn {
-            display: inline-flex; align-items: center; gap: 8px;
-            background: rgba(255,255,255,.55); border: 1.5px solid rgba(255,255,255,.6);
-            border-radius: 20px; padding: 6px 16px;
-            font-size: .8rem; font-weight: 600; color: #0f172a;
-            backdrop-filter: blur(8px); transition: var(--trans);
-        }
-        .back-btn:hover { background: rgba(255,255,255,.85); transform: translateX(-2px); }
-        .back-btn i { font-size: .78rem; }
+        .navbar { display:flex; justify-content:space-between; align-items:center; padding:0 8%; height:52px; background:var(--nav-bg); backdrop-filter:blur(12px); position:fixed; width:100%; top:0; z-index:1000; border-bottom:1px solid var(--card-border); transition:top .3s ease; }
+        .navbar-hidden { top:-60px; }
+        .nav-logo { font-size:1.2rem; font-weight:700; letter-spacing:1px; color:#0f172a; }
+        .nav-logo span { color:#fff; }
+        .back-btn { display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,.55); border:1.5px solid rgba(255,255,255,.6); border-radius:20px; padding:6px 16px; font-size:.8rem; font-weight:600; color:#0f172a; backdrop-filter:blur(8px); transition:var(--trans); }
+        .back-btn:hover { background:rgba(255,255,255,.85); transform:translateX(-2px); }
 
-        /* ── PAGE WRAPPER ────────────────────────── */
-        .page {
-            position: relative; z-index: 1;
-            max-width: 1000px; margin: 0 auto;
-            padding: 88px 22px 80px;
-        }
+        .page { position:relative; z-index:1; max-width:1000px; margin:0 auto; padding:88px 22px 80px; }
 
-        /* ── HERO HEADER ─────────────────────────── */
-        .blog-hero {
-            text-align: center;
-            margin-bottom: 48px;
-            animation: fadeUp .65s ease both;
-        }
-        .badge-pill {
-            display: inline-flex; align-items: center; gap: 7px;
-            background: rgba(255,255,255,.6); border: 1px solid var(--card-border);
-            border-radius: 50px; padding: 5px 18px;
-            font-size: .72rem; font-weight: 700; letter-spacing: .08em;
-            text-transform: uppercase; color: var(--accent);
-            backdrop-filter: blur(8px); margin-bottom: 16px;
-        }
-        .blog-hero h1 {
-            font-size: clamp(2rem, 5vw, 3rem); font-weight: 800;
-            letter-spacing: -.03em; line-height: 1.1; margin-bottom: 12px;
-        }
-        .blog-hero h1 span { color: var(--accent); }
-        .blog-hero p {
-            font-size: .95rem; color: var(--text-soft);
-            max-width: 480px; margin: 0 auto 28px; font-weight: 300; line-height: 1.7;
-        }
+        .blog-hero { text-align:center; margin-bottom:48px; animation:fadeUp .65s ease both; }
+        .badge-pill { display:inline-flex; align-items:center; gap:7px; background:rgba(255,255,255,.6); border:1px solid var(--card-border); border-radius:50px; padding:5px 18px; font-size:.72rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); backdrop-filter:blur(8px); margin-bottom:16px; }
+        .blog-hero h1 { font-size:clamp(2rem,5vw,3rem); font-weight:800; letter-spacing:-.03em; line-height:1.1; margin-bottom:12px; }
+        .blog-hero h1 span { color:var(--accent); }
+        .blog-hero p { font-size:.95rem; color:var(--text-soft); max-width:480px; margin:0 auto 28px; font-weight:300; line-height:1.7; }
 
-        /* ── FILTER CHIPS ────────────────────────── */
-        .filter-row {
-            display: flex; justify-content: center; gap: 8px;
-            flex-wrap: wrap; margin-bottom: 40px;
-            animation: fadeUp .65s .1s ease both;
-        }
-        .chip {
-            display: inline-flex; align-items: center; gap: 6px;
-            background: rgba(255,255,255,.58); border: 1.5px solid var(--card-border);
-            border-radius: 50px; padding: 6px 16px;
-            font-size: .74rem; font-weight: 600; color: var(--text-soft);
-            cursor: pointer; backdrop-filter: blur(6px);
-            transition: var(--trans); user-select: none;
-        }
-        .chip:hover { background: #fff; border-color: var(--accent); color: var(--accent); }
-        .chip.active {
-            background: rgba(2,132,199,.1); border-color: rgba(2,132,199,.45);
-            color: var(--accent); box-shadow: 0 4px 14px rgba(2,132,199,.12);
-        }
-        .chip-count {
-            background: rgba(2,132,199,.15); color: var(--accent);
-            font-size: .62rem; font-weight: 700; border-radius: 20px;
-            padding: 1px 7px;
-        }
+        .filter-row { display:flex; justify-content:center; gap:8px; flex-wrap:wrap; margin-bottom:40px; animation:fadeUp .65s .1s ease both; }
+        .chip { display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,.58); border:1.5px solid var(--card-border); border-radius:50px; padding:6px 16px; font-size:.74rem; font-weight:600; color:var(--text-soft); cursor:pointer; backdrop-filter:blur(6px); transition:var(--trans); user-select:none; }
+        .chip:hover { background:#fff; border-color:var(--accent); color:var(--accent); }
+        .chip.active { background:rgba(2,132,199,.1); border-color:rgba(2,132,199,.45); color:var(--accent); box-shadow:0 4px 14px rgba(2,132,199,.12); }
+        .chip-count { background:rgba(2,132,199,.15); color:var(--accent); font-size:.62rem; font-weight:700; border-radius:20px; padding:1px 7px; }
 
-        /* ── SEARCH ──────────────────────────────── */
-        .search-wrap { display: flex; justify-content: center; margin-bottom: 36px; animation: fadeUp .65s .05s ease both; }
-        .search-box {
-            display: flex; align-items: center; gap: 10px;
-            background: rgba(255,255,255,.82); border: 1.5px solid var(--card-border);
-            border-radius: 50px; padding: 11px 20px;
-            width: 100%; max-width: 400px;
-            backdrop-filter: blur(12px);
-            box-shadow: 0 4px 20px rgba(2,132,199,.08);
-            transition: var(--trans);
-        }
-        .search-box:focus-within { border-color: var(--accent); box-shadow: 0 4px 24px rgba(2,132,199,.18), 0 0 0 4px rgba(2,132,199,.08); }
-        .search-box i { color: var(--text-soft); font-size: .88rem; }
-        .search-box input {
-            flex: 1; border: none; background: transparent; outline: none;
-            font-family: 'Poppins', sans-serif; font-size: .92rem; color: var(--text);
-        }
-        .search-box input::placeholder { color: #94a3b8; }
+        .search-wrap { display:flex; justify-content:center; margin-bottom:36px; animation:fadeUp .65s .05s ease both; }
+        .search-box { display:flex; align-items:center; gap:10px; background:rgba(255,255,255,.82); border:1.5px solid var(--card-border); border-radius:50px; padding:11px 20px; width:100%; max-width:400px; backdrop-filter:blur(12px); box-shadow:0 4px 20px rgba(2,132,199,.08); transition:var(--trans); }
+        .search-box:focus-within { border-color:var(--accent); box-shadow:0 4px 24px rgba(2,132,199,.18),0 0 0 4px rgba(2,132,199,.08); }
+        .search-box i { color:var(--text-soft); font-size:.88rem; }
+        .search-box input { flex:1; border:none; background:transparent; outline:none; font-family:'Poppins',sans-serif; font-size:.92rem; color:var(--text); }
+        .search-box input::placeholder { color:#94a3b8; }
 
-        /* ── BLOG GRID ───────────────────────────── */
-        .blog-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-            gap: 22px;
-        }
+        .blog-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:22px; }
 
-        /* ── BLOG CARD ───────────────────────────── */
-        .blog-card {
-            background: var(--card-bg); border: 1px solid var(--card-border);
-            border-radius: var(--radius); overflow: hidden;
-            backdrop-filter: blur(12px);
-            box-shadow: 0 2px 16px rgba(2,132,199,.06);
-            transition: all var(--trans);
-            display: flex; flex-direction: column;
-            animation: cardIn .5s ease both;
-            cursor: pointer;
-        }
-        .blog-card:hover {
-            transform: translateY(-7px) scale(1.014);
-            border-color: var(--accent);
-            box-shadow: 0 20px 50px rgba(2,132,199,.18);
-            background: rgba(255,255,255,.9);
-        }
+        .blog-card { background:var(--card-bg); border:1px solid var(--card-border); border-radius:var(--radius); overflow:hidden; backdrop-filter:blur(12px); box-shadow:0 2px 16px rgba(2,132,199,.06); transition:all var(--trans); display:flex; flex-direction:column; animation:cardIn .5s ease both; cursor:pointer; }
+        .blog-card:hover { transform:translateY(-7px) scale(1.014); border-color:var(--accent); box-shadow:0 20px 50px rgba(2,132,199,.18); background:rgba(255,255,255,.9); }
+        .blog-card-strip { height:5px; background:linear-gradient(90deg,var(--strip-a,#0284c7),var(--strip-b,#0ea5e9)); transition:height var(--trans); }
+        .blog-card:hover .blog-card-strip { height:7px; }
+        .blog-card-body { padding:22px 22px 18px; flex:1; display:flex; flex-direction:column; }
+        .blog-meta { display:flex; align-items:center; gap:10px; margin-bottom:13px; flex-wrap:wrap; }
+        .blog-tag { display:inline-flex; align-items:center; gap:5px; background:rgba(2,132,199,.1); border:1px solid rgba(2,132,199,.2); border-radius:20px; padding:3px 10px; font-size:.64rem; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--accent); }
+        .blog-date { font-size:.7rem; color:var(--text-soft); display:flex; align-items:center; gap:4px; }
+        .blog-card-title { font-size:1rem; font-weight:700; line-height:1.35; color:var(--text); margin-bottom:10px; letter-spacing:-.01em; }
+        .blog-card-excerpt { font-size:.81rem; color:var(--text-muted); line-height:1.65; flex:1; margin-bottom:18px; font-weight:300; }
+        .blog-card-footer { display:flex; align-items:center; justify-content:space-between; padding-top:12px; border-top:1px solid var(--card-border); }
+        .blog-read-time { font-size:.68rem; color:var(--text-soft); display:flex; align-items:center; gap:5px; }
+        .blog-read-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(2,132,199,.1); border:1px solid rgba(2,132,199,.25); border-radius:20px; padding:5px 14px; font-size:.72rem; font-weight:700; color:var(--accent); transition:var(--trans); }
+        .blog-read-btn:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
 
-        .blog-card-strip {
-            height: 5px;
-            background: linear-gradient(90deg, var(--strip-a, #0284c7), var(--strip-b, #0ea5e9));
-            transition: height var(--trans);
-        }
-        .blog-card:hover .blog-card-strip { height: 7px; }
+        .empty-state { grid-column:1/-1; background:var(--card-bg); border:1.5px dashed var(--card-border); border-radius:var(--radius); padding:56px 24px; text-align:center; backdrop-filter:blur(10px); animation:fadeUp .5s ease both; }
+        .empty-state i { font-size:2.4rem; color:var(--text-soft); margin-bottom:14px; display:block; }
+        .empty-state h3 { font-size:1.1rem; font-weight:700; margin-bottom:8px; }
+        .empty-state p { font-size:.85rem; color:var(--text-muted); line-height:1.7; }
 
-        .blog-card-body { padding: 22px 22px 18px; flex: 1; display: flex; flex-direction: column; }
+        .post-count { text-align:center; margin-bottom:20px; font-size:.72rem; color:var(--text-soft); font-weight:600; letter-spacing:.06em; text-transform:uppercase; }
 
-        .blog-meta {
-            display: flex; align-items: center; gap: 10px;
-            margin-bottom: 13px; flex-wrap: wrap;
-        }
-        .blog-tag {
-            display: inline-flex; align-items: center; gap: 5px;
-            background: rgba(2,132,199,.1); border: 1px solid rgba(2,132,199,.2);
-            border-radius: 20px; padding: 3px 10px;
-            font-size: .64rem; font-weight: 700; letter-spacing: .07em;
-            text-transform: uppercase; color: var(--accent);
-        }
-        .blog-date {
-            font-size: .7rem; color: var(--text-soft);
-            display: flex; align-items: center; gap: 4px;
-        }
+        /* ── MODAL ───────────────────────────────── */
+        .modal-overlay { position:fixed; inset:0; z-index:2000; background:var(--overlay); backdrop-filter:blur(14px); display:none; align-items:flex-start; justify-content:center; padding:60px 20px 40px; overflow-y:auto; }
+        .modal-overlay.open { display:flex; }
+        .modal { background:rgba(255,255,255,.97); border:1.5px solid var(--card-border); border-radius:24px; width:100%; max-width:720px; box-shadow:0 30px 80px rgba(2,132,199,.18); animation:popUp .45s cubic-bezier(.34,1.56,.64,1) both; overflow:hidden; }
+        @keyframes popUp { from { opacity:0; transform:scale(.93) translateY(20px); } to { opacity:1; transform:scale(1) translateY(0); } }
+        .modal-strip { height:6px; background:linear-gradient(90deg,var(--modal-strip-a,#0284c7),var(--modal-strip-b,#0ea5e9)); }
+        .modal-header { padding:28px 32px 0; display:flex; justify-content:space-between; align-items:flex-start; gap:16px; }
+        .modal-close { width:34px; height:34px; flex-shrink:0; background:rgba(2,132,199,.08); border:1px solid var(--card-border); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-soft); font-size:.85rem; transition:var(--trans); margin-top:4px; }
+        .modal-close:hover { background:#ef4444; color:#fff; border-color:#ef4444; transform:rotate(90deg); }
+        .modal-meta { display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
+        .modal-title { font-size:1.6rem; font-weight:800; letter-spacing:-.03em; line-height:1.2; color:var(--text); margin-bottom:6px; }
+        .modal-byline { display:flex; align-items:center; gap:14px; font-size:.74rem; color:var(--text-soft); padding-bottom:20px; border-bottom:1px solid var(--card-border); flex-wrap:wrap; }
+        .modal-byline span { display:flex; align-items:center; gap:5px; }
+        .modal-body { padding:24px 32px 32px; font-family:'Lora',Georgia,serif; font-size:1rem; color:var(--text-muted); line-height:1.85; }
+        .modal-body h2 { font-family:'Poppins',sans-serif; font-size:1.2rem; font-weight:700; color:var(--text); margin:28px 0 12px; letter-spacing:-.01em; }
+        .modal-body h3 { font-family:'Poppins',sans-serif; font-size:1rem; font-weight:700; color:var(--text); margin:22px 0 8px; }
+        .modal-body p { margin-bottom:18px; }
+        .modal-body strong { color:var(--text); font-weight:600; font-family:'Poppins',sans-serif; }
+        .modal-body em { color:var(--accent); font-style:italic; }
+        .modal-body a { color:var(--accent); text-decoration:underline; text-underline-offset:3px; }
+        .modal-body a:hover { opacity:.75; }
+        .modal-body ul, .modal-body ol { padding-left:22px; margin-bottom:18px; }
+        .modal-body li { margin-bottom:6px; }
+        .modal-body blockquote { border-left:3px solid var(--accent); padding:10px 20px; margin:22px 0; background:rgba(2,132,199,.06); border-radius:0 10px 10px 0; font-style:italic; color:var(--text-muted); }
+        .modal-body code { background:rgba(2,132,199,.08); border:1px solid rgba(2,132,199,.18); border-radius:5px; padding:2px 7px; font-size:.88em; font-family:'Courier New',monospace; color:var(--accent); }
+        .modal-body pre { background:#0f172a; color:#e2e8f0; border-radius:12px; padding:18px 20px; overflow-x:auto; font-family:'Courier New',monospace; font-size:.85rem; line-height:1.7; margin-bottom:18px; }
+        .modal-body pre code { background:none; border:none; padding:0; color:#7dd3fc; font-size:inherit; }
+        .modal-body hr { border:none; border-top:1px solid var(--card-border); margin:28px 0; }
+        .modal-footer { display:flex; justify-content:space-between; align-items:center; padding:16px 32px 28px; flex-wrap:wrap; gap:12px; }
+        .modal-share { display:flex; gap:8px; align-items:center; }
+        .modal-share span { font-size:.72rem; color:var(--text-soft); font-weight:600; text-transform:uppercase; letter-spacing:.06em; }
+        .share-btn { width:32px; height:32px; border-radius:50%; background:rgba(2,132,199,.1); border:1px solid var(--card-border); display:flex; align-items:center; justify-content:center; color:var(--accent); font-size:.8rem; cursor:pointer; transition:var(--trans); }
+        .share-btn:hover { background:var(--accent); color:#fff; }
+        .modal-close-bottom { display:inline-flex; align-items:center; gap:7px; background:rgba(2,132,199,.1); border:1px solid rgba(2,132,199,.25); border-radius:20px; padding:7px 18px; font-size:.78rem; font-weight:700; color:var(--accent); cursor:pointer; transition:var(--trans); }
+        .modal-close-bottom:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
 
-        .blog-card-title {
-            font-size: 1rem; font-weight: 700; line-height: 1.35;
-            color: var(--text); margin-bottom: 10px; letter-spacing: -.01em;
-        }
-        .blog-card-excerpt {
-            font-size: .81rem; color: var(--text-muted); line-height: 1.65;
-            flex: 1; margin-bottom: 18px; font-weight: 300;
-        }
+        footer { text-align:center; padding:50px 0; position:relative; z-index:1; }
+        .footer-card { background:var(--card-bg); border:1px solid var(--card-border); display:inline-block; padding:28px 40px; border-radius:24px; backdrop-filter:blur(15px); transition:var(--trans); }
+        .footer-card:hover { border-color:var(--accent); box-shadow:0 0 30px rgba(2,132,199,.12); }
+        .footer-dev { font-size:.68rem; text-transform:uppercase; letter-spacing:3px; opacity:.6; margin-bottom:6px; }
+        .footer-name { font-size:1.6rem; font-weight:800; margin-bottom:14px; }
+        .footer-name span { color:var(--accent); }
+        .socials { display:flex; gap:10px; justify-content:center; margin:12px 0; }
+        .socials a { width:36px; height:36px; background:rgba(2,132,199,.1); border:1px solid var(--card-border); display:flex; align-items:center; justify-content:center; border-radius:50%; transition:var(--trans); color:var(--accent); font-size:.9rem; }
+        .socials a:hover { background:var(--accent); color:#fff; transform:rotate(360deg) scale(1.1); }
+        .footer-bottom { font-size:.75rem; margin-top:14px; opacity:.6; letter-spacing:.05em; text-transform:uppercase; }
 
-        .blog-card-footer {
-            display: flex; align-items: center; justify-content: space-between;
-            padding-top: 12px; border-top: 1px solid var(--card-border);
-        }
-        .blog-read-time {
-            font-size: .68rem; color: var(--text-soft);
-            display: flex; align-items: center; gap: 5px;
-        }
-        .blog-read-btn {
-            display: inline-flex; align-items: center; gap: 6px;
-            background: rgba(2,132,199,.1); border: 1px solid rgba(2,132,199,.25);
-            border-radius: 20px; padding: 5px 14px;
-            font-size: .72rem; font-weight: 700; color: var(--accent);
-            transition: var(--trans);
-        }
-        .blog-read-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+        @keyframes fadeUp  { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:none; } }
+        @keyframes cardIn  { from { opacity:0; transform:translateY(18px) scale(.97); } to { opacity:1; transform:none; } }
 
-        /* ── EMPTY STATE ─────────────────────────── */
-        .empty-state {
-            grid-column: 1 / -1;
-            background: var(--card-bg); border: 1.5px dashed var(--card-border);
-            border-radius: var(--radius); padding: 56px 24px;
-            text-align: center; backdrop-filter: blur(10px);
-            animation: fadeUp .5s ease both;
-        }
-        .empty-state i { font-size: 2.4rem; color: var(--text-soft); margin-bottom: 14px; display: block; }
-        .empty-state h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
-        .empty-state p { font-size: .85rem; color: var(--text-muted); line-height: 1.7; }
-
-        /* ── POST COUNT ──────────────────────────── */
-        .post-count {
-            text-align: center; margin-bottom: 20px;
-            font-size: .72rem; color: var(--text-soft);
-            font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
-        }
-
-        /* ═══════════════════════════════════════════
-           FULL POST MODAL
-           ═══════════════════════════════════════════ */
-        .modal-overlay {
-            position: fixed; inset: 0; z-index: 2000;
-            background: var(--overlay);
-            backdrop-filter: blur(14px);
-            display: none; align-items: flex-start; justify-content: center;
-            padding: 60px 20px 40px;
-            overflow-y: auto;
-        }
-        .modal-overlay.open { display: flex; }
-
-        .modal {
-            background: rgba(255,255,255,.97);
-            border: 1.5px solid var(--card-border);
-            border-radius: 24px;
-            width: 100%; max-width: 720px;
-            box-shadow: 0 30px 80px rgba(2,132,199,.18);
-            animation: popUp .45s cubic-bezier(.34,1.56,.64,1) both;
-            overflow: hidden;
-        }
-
-        @keyframes popUp {
-            from { opacity:0; transform:scale(.93) translateY(20px); }
-            to   { opacity:1; transform:scale(1) translateY(0); }
-        }
-
-        .modal-strip {
-            height: 6px;
-            background: linear-gradient(90deg, var(--modal-strip-a, #0284c7), var(--modal-strip-b, #0ea5e9));
-        }
-
-        .modal-header {
-            padding: 28px 32px 0;
-            display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;
-        }
-
-        .modal-close {
-            width: 34px; height: 34px; flex-shrink: 0;
-            background: rgba(2,132,199,.08); border: 1px solid var(--card-border);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; color: var(--text-soft); font-size: .85rem;
-            transition: var(--trans); margin-top: 4px;
-        }
-        .modal-close:hover { background: #ef4444; color: #fff; border-color: #ef4444; transform: rotate(90deg); }
-
-        .modal-meta {
-            display: flex; align-items: center; gap: 10px;
-            margin-bottom: 14px; flex-wrap: wrap;
-        }
-
-        .modal-title {
-            font-size: 1.6rem; font-weight: 800;
-            letter-spacing: -.03em; line-height: 1.2;
-            color: var(--text); margin-bottom: 6px;
-        }
-
-        .modal-byline {
-            display: flex; align-items: center; gap: 14px;
-            font-size: .74rem; color: var(--text-soft);
-            padding-bottom: 20px; border-bottom: 1px solid var(--card-border);
-            flex-wrap: wrap;
-        }
-        .modal-byline span { display: flex; align-items: center; gap: 5px; }
-
-        .modal-body {
-            padding: 24px 32px 32px;
-            font-family: 'Lora', Georgia, serif;
-            font-size: 1rem; color: var(--text-muted);
-            line-height: 1.85;
-        }
-
-        /* Rich content styles inside post body */
-        .modal-body h2 {
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.2rem; font-weight: 700;
-            color: var(--text); margin: 28px 0 12px;
-            letter-spacing: -.01em;
-        }
-        .modal-body h3 {
-            font-family: 'Poppins', sans-serif;
-            font-size: 1rem; font-weight: 700;
-            color: var(--text); margin: 22px 0 8px;
-        }
-        .modal-body p { margin-bottom: 18px; }
-        .modal-body strong { color: var(--text); font-weight: 600; font-family: 'Poppins', sans-serif; }
-        .modal-body em { color: var(--accent); font-style: italic; }
-        .modal-body a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
-        .modal-body a:hover { opacity: .75; }
-        .modal-body ul, .modal-body ol { padding-left: 22px; margin-bottom: 18px; }
-        .modal-body li { margin-bottom: 6px; }
-        .modal-body blockquote {
-            border-left: 3px solid var(--accent);
-            padding: 10px 20px; margin: 22px 0;
-            background: rgba(2,132,199,.06); border-radius: 0 10px 10px 0;
-            font-style: italic; color: var(--text-muted);
-        }
-        .modal-body code {
-            background: rgba(2,132,199,.08); border: 1px solid rgba(2,132,199,.18);
-            border-radius: 5px; padding: 2px 7px; font-size: .88em;
-            font-family: 'DM Mono', 'Courier New', monospace; color: var(--accent);
-        }
-        .modal-body pre {
-            background: #0f172a; color: #e2e8f0;
-            border-radius: 12px; padding: 18px 20px; overflow-x: auto;
-            font-family: 'DM Mono', 'Courier New', monospace;
-            font-size: .85rem; line-height: 1.7; margin-bottom: 18px;
-        }
-        .modal-body pre code { background: none; border: none; padding: 0; color: #7dd3fc; font-size: inherit; }
-        .modal-body hr { border: none; border-top: 1px solid var(--card-border); margin: 28px 0; }
-
-        .modal-footer {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 16px 32px 28px; flex-wrap: wrap; gap: 12px;
-        }
-        .modal-share {
-            display: flex; gap: 8px; align-items: center;
-        }
-        .modal-share span { font-size: .72rem; color: var(--text-soft); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
-        .share-btn {
-            width: 32px; height: 32px; border-radius: 50%;
-            background: rgba(2,132,199,.1); border: 1px solid var(--card-border);
-            display: flex; align-items: center; justify-content: center;
-            color: var(--accent); font-size: .8rem; cursor: pointer;
-            transition: var(--trans);
-        }
-        .share-btn:hover { background: var(--accent); color: #fff; }
-        .modal-close-bottom {
-            display: inline-flex; align-items: center; gap: 7px;
-            background: rgba(2,132,199,.1); border: 1px solid rgba(2,132,199,.25);
-            border-radius: 20px; padding: 7px 18px;
-            font-size: .78rem; font-weight: 700; color: var(--accent);
-            cursor: pointer; transition: var(--trans);
-        }
-        .modal-close-bottom:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
-
-        /* ── FOOTER ──────────────────────────────── */
-        footer {
-            text-align: center; padding: 50px 0;
-            position: relative; z-index: 1;
-        }
-        .footer-card {
-            background: var(--card-bg); border: 1px solid var(--card-border);
-            display: inline-block; padding: 28px 40px; border-radius: 24px;
-            backdrop-filter: blur(15px); transition: var(--trans);
-        }
-        .footer-card:hover { border-color: var(--accent); box-shadow: 0 0 30px rgba(2,132,199,.12); }
-        .footer-dev  { font-size: .68rem; text-transform: uppercase; letter-spacing: 3px; opacity: .6; margin-bottom: 6px; }
-        .footer-name { font-size: 1.6rem; font-weight: 800; margin-bottom: 14px; }
-        .footer-name span { color: var(--accent); }
-        .socials { display: flex; gap: 10px; justify-content: center; margin: 12px 0; }
-        .socials a {
-            width: 36px; height: 36px;
-            background: rgba(2,132,199,.1); border: 1px solid var(--card-border);
-            display: flex; align-items: center; justify-content: center;
-            border-radius: 50%; transition: var(--trans); color: var(--accent); font-size: .9rem;
-        }
-        .socials a:hover { background: var(--accent); color: #fff; transform: rotate(360deg) scale(1.1); }
-        .footer-bottom { font-size: .75rem; margin-top: 14px; opacity: .6; letter-spacing: .05em; text-transform: uppercase; }
-
-        /* ── ANIMATIONS ──────────────────────────── */
-        @keyframes fadeUp   { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:none; } }
-        @keyframes cardIn   { from { opacity:0; transform:translateY(18px) scale(.97); } to { opacity:1; transform:none; } }
-
-        /* ── RESPONSIVE ──────────────────────────── */
-        @media (max-width: 640px) {
-            .blog-grid { grid-template-columns: 1fr; }
-            .modal-header { padding: 22px 20px 0; }
-            .modal-body   { padding: 20px 20px 24px; font-size: .94rem; }
-            .modal-footer { padding: 14px 20px 22px; }
-            .modal-title  { font-size: 1.3rem; }
-            .modal-overlay { padding: 52px 10px 30px; }
+        @media (max-width:640px) {
+            .blog-grid { grid-template-columns:1fr; }
+            .modal-header { padding:22px 20px 0; }
+            .modal-body { padding:20px 20px 24px; font-size:.94rem; }
+            .modal-footer { padding:14px 20px 22px; }
+            .modal-title { font-size:1.3rem; }
+            .modal-overlay { padding:52px 10px 30px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Background -->
-    <div class="blobs">
-        <div class="blob blob-1"></div>
-        <div class="blob blob-2"></div>
-        <div class="blob blob-3"></div>
-    </div>
+    <div class="blobs"><div class="blob blob-1"></div><div class="blob blob-2"></div><div class="blob blob-3"></div></div>
 
-    <!-- Navbar -->
     <nav class="navbar" id="navbar">
         <div class="nav-logo">Munan<span>.hub</span></div>
-        <a href="index.html" class="back-btn">
-            <i class="fas fa-arrow-left"></i> Home
-        </a>
+        <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> Home</a>
     </nav>
 
-
-<!-- Page -->
     <div class="page">
-
-        <!-- Hero -->
         <div class="blog-hero">
             <div class="badge-pill"><i class="fas fa-pen-nib"></i> Writing &amp; Thoughts</div>
             <h1>The <span>Blog</span></h1>
             <p>Ideas, learnings, and stories from my journey in code, science, and life.</p>
         </div>
 
-        <!-- Search -->
         <div class="search-wrap">
             <div class="search-box">
                 <i class="fas fa-magnifying-glass"></i>
@@ -452,33 +169,23 @@
             </div>
         </div>
 
-        <!-- Filter chips -->
         <div class="filter-row" id="filterRow"></div>
-
-        <!-- Post count -->
         <div class="post-count" id="postCount"></div>
-
-        <!-- Grid -->
         <div class="blog-grid" id="blogGrid"></div>
-
     </div>
 
-    <!-- Footer -->
     <footer>
         <div class="footer-card">
             <div class="footer-dev">Written By</div>
             <div class="footer-name">Abdullah All <span>Munan</span></div>
             <div class="socials">
-                <a href="mailto:allmunanabdullah@gmail.com" title="Email"><i class="fas fa-envelope"></i></a>
-                <a href="contact.html" title="Contact"><i class="fas fa-paper-plane"></i></a>
-                <a href="https://www.facebook.com/share/18E4oCwqfT/" target="_blank" rel="noopener noreferrer" title="Facebook"><i class="fab fa-facebook"></i></a>
-                <a href="https://www.linkedin.com/in/abdullah-all-munan-b447133b2" target="_blank" rel="noopener noreferrer" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
-                <a href="https://github.com/abamunan" target="_blank" rel="noopener noreferrer" title="GitHub"><i class="fab fa-github"></i></a>
+                <a href="mailto:allmunanabdullah@gmail.com"><i class="fas fa-envelope"></i></a>
+                <a href="contact.html"><i class="fas fa-paper-plane"></i></a>
+                <a href="https://www.facebook.com/share/18E4oCwqfT/" target="_blank" rel="noopener noreferrer"><i class="fab fa-facebook"></i></a>
+                <a href="https://www.linkedin.com/in/abdullah-all-munan-b447133b2" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin"></i></a>
+                <a href="https://github.com/abamunan" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i></a>
             </div>
-            <div class="footer-bottom">
-                <i class="fas fa-hands-praying" style="margin-right:5px;opacity:.6;"></i>
-                Tawakkul &amp; grind &nbsp;·&nbsp; © 2026 Munan
-            </div>
+            <div class="footer-bottom"><i class="fas fa-hands-praying" style="margin-right:5px;opacity:.6;"></i>Tawakkul &amp; grind &nbsp;·&nbsp; © 2026 Munan</div>
         </div>
     </footer>
 
@@ -492,150 +199,26 @@
                     <div class="modal-title" id="modalTitle"></div>
                     <div class="modal-byline" id="modalByline"></div>
                 </div>
-                <div class="modal-close" onclick="closeModal()" title="Close">
-                    <i class="fas fa-xmark"></i>
-                </div>
+                <div class="modal-close" onclick="closeModal()"><i class="fas fa-xmark"></i></div>
             </div>
             <div class="modal-body" id="modalBody"></div>
             <div class="modal-footer">
                 <div class="modal-share">
                     <span>Share</span>
                     <div class="share-btn" title="Copy link" onclick="copyLink()"><i class="fas fa-link"></i></div>
-                    <a class="share-btn" id="shareFb" href="#" target="_blank" rel="noopener noreferrer" title="Facebook"><i class="fab fa-facebook"></i></a>
-                    <a class="share-btn" id="shareX"  href="#" target="_blank" rel="noopener noreferrer" title="X / Twitter"><i class="fab fa-x-twitter"></i></a>
+                    <a class="share-btn" id="shareFb" href="#" target="_blank" rel="noopener noreferrer"><i class="fab fa-facebook"></i></a>
+                    <a class="share-btn" id="shareX"  href="#" target="_blank" rel="noopener noreferrer"><i class="fab fa-x-twitter"></i></a>
                 </div>
-                <div class="modal-close-bottom" onclick="closeModal()">
-                    <i class="fas fa-arrow-left"></i> Back to Blog
-                </div>
+                <div class="modal-close-bottom" onclick="closeModal()"><i class="fas fa-arrow-left"></i> Back to Blog</div>
             </div>
         </div>
     </div>
 
+    <!-- ✅ Load shared posts FIRST -->
+    <script src="posts.js"></script>
     <script>
-        /* ═══════════════════════════════════════════════════════════
-           ✏️  YOUR BLOG POSTS — EDIT THIS SECTION TO ADD POSTS
-           ═══════════════════════════════════════════════════════════
-
-           HOW TO ADD A POST:
-           1. Copy one { ... } block below
-           2. Paste it at the TOP of the array (newest first)
-           3. Fill in every field
-           4. For the `content` field, write HTML:
-              - Paragraphs   →  <p>Text</p>
-              - Headings     →  <h2>Heading</h2>
-              - Bold         →  <strong>word</strong>
-              - Italic/emph  →  <em>word</em>
-              - Quote        →  <blockquote>quote</blockquote>
-              - Code inline  →  <code>snippet</code>
-              - Code block   →  <pre><code>multi-line code</code></pre>
-              - List         →  <ul><li>item</li></ul>
-              - Divider      →  <hr>
-
-           STRIP COLORS (top bar of each card):
-           - Blue   → stripA:"#0284c7"  stripB:"#0ea5e9"
-           - Green  → stripA:"#059669"  stripB:"#10b981"
-           - Purple → stripA:"#7c3aed"  stripB:"#a855f7"
-           - Amber  → stripA:"#d97706"  stripB:"#f59e0b"
-           - Red    → stripA:"#dc2626"  stripB:"#f87171"
-           - Teal   → stripA:"#0f766e"  stripB:"#14b8a6"
-        ═══════════════════════════════════════════════════════════ */
-
-        const BLOG_POSTS = [
-
-    
-    {
-                id:       "01",
-                title:    "Hello World — Starting My Blog",
-                excerpt:  "Every developer writes a Hello World at some point. This is mine — just in blog form.",
-                date:     "May 7, 2026",
-                tag:      "Meta",
-                readTime: "2 min read",
-                stripA:   "#0284c7",
-                stripB:   "#0ea5e9",
-                content: `
-                    <p>I've been meaning to start writing for a long time. Code is great, but sometimes you need <em>words</em> to explain the thinking behind it.</p>
-
-                    <p>This blog will be a mix of:</p>
-                    <ul>
-                        <li>Things I'm learning (web dev, Python, CS concepts)</li>
-                        <li>Life as a Botany student who codes</li>
-                        <li>Tools and workflows I find useful</li>
-                        <li>Occasional random thoughts</li>
-                    </ul>
-
-                    <p>No strict schedule. Just writing when I have something worth saying.</p>
-
-                    <blockquote>Tawakkul &amp; grind.</blockquote>
-                `
-            },
-    
-    
-    
-    
-    
-    
-            /* ── PASTE YOUR POSTS HERE — NEWEST FIRST ──
-            {
-                id:       "02",
-                title:    "Why I Study Botany and Code at the Same Time",
-                excerpt:  "Two very different worlds — one rooted in nature, one in logic. Here's why I think they're more alike than they seem.",
-                date:     "May 9, 2026",
-                tag:      "Life",
-                readTime: "4 min read",
-                stripA:   "#059669",
-                stripB:   "#10b981",
-                content: `
-                    <p>People always ask me: <strong>"You study Botany — why are you learning to code?"</strong> Fair question. On the surface, cell biology and JavaScript don't exactly overlap.</p>
-
-                    <h2>More Alike Than You'd Think</h2>
-                    <p>Both require you to think in <em>systems</em>. A plant isn't just a leaf — it's a network of signals, feedback loops, and responses to its environment. A web app is the same thing.</p>
-
-                    <blockquote>
-                        "Nature is the original programmer. Everything is an algorithm."
-                    </blockquote>
-
-                    <h2>The Practical Side</h2>
-                    <p>In Bangladesh, tech skills open doors that a pure science degree alone might not. I'm not abandoning Botany — I'm <strong>stacking</strong> it with something that multiplies its value.</p>
-
-                    <p>More on this soon. For now — keep building.</p>
-                `
-            },
-            {
-                id:       "01",
-                title:    "Hello World — Starting My Blog",
-                excerpt:  "Every developer writes a Hello World at some point. This is mine — just in blog form.",
-                date:     "May 7, 2026",
-                tag:      "Meta",
-                readTime: "2 min read",
-                stripA:   "#0284c7",
-                stripB:   "#0ea5e9",
-                content: `
-                    <p>I've been meaning to start writing for a long time. Code is great, but sometimes you need <em>words</em> to explain the thinking behind it.</p>
-
-                    <p>This blog will be a mix of:</p>
-                    <ul>
-                        <li>Things I'm learning (web dev, Python, CS concepts)</li>
-                        <li>Life as a Botany student who codes</li>
-                        <li>Tools and workflows I find useful</li>
-                        <li>Occasional random thoughts</li>
-                    </ul>
-
-                    <p>No strict schedule. Just writing when I have something worth saying.</p>
-
-                    <blockquote>Tawakkul &amp; grind.</blockquote>
-                `
-            },
-            ── END OF EXAMPLE POSTS — DELETE THE EXAMPLES AND ADD YOUR OWN ──*/
-
-        ]; // ← do not delete this line
-
-        /* ═══════════════════════════════════════════
-           RENDER ENGINE — no need to edit below here
-           ═══════════════════════════════════════════ */
-
         let activeFilter = 'All';
 
-        /* Build filter chips */
         function buildFilters() {
             const row = document.getElementById('filterRow');
             const tags = ['All', ...new Set(BLOG_POSTS.map(p => p.tag))];
@@ -651,36 +234,22 @@
             });
         }
 
-        /* Render cards */
         function render(q) {
             q = (q || '').toLowerCase().trim();
             const grid = document.getElementById('blogGrid');
             const countEl = document.getElementById('postCount');
-
             const filtered = BLOG_POSTS.filter(p => {
                 const matchTag = activeFilter === 'All' || p.tag === activeFilter;
                 const matchQ   = !q || p.title.toLowerCase().includes(q) || p.excerpt.toLowerCase().includes(q) || p.tag.toLowerCase().includes(q);
                 return matchTag && matchQ;
             });
-
-            countEl.textContent = filtered.length
-                ? `${filtered.length} post${filtered.length !== 1 ? 's' : ''}`
-                : '';
-
+            countEl.textContent = filtered.length ? `${filtered.length} post${filtered.length !== 1 ? 's' : ''}` : '';
             if (!filtered.length) {
-                grid.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-feather-pointed"></i>
-                        <h3>${BLOG_POSTS.length === 0 ? 'No posts yet' : 'Nothing found'}</h3>
-                        <p>${BLOG_POSTS.length === 0
-                            ? 'The first post is coming soon.<br>Check back shortly!'
-                            : `No posts match "<strong>${q || activeFilter}</strong>" — try a different keyword.`}</p>
-                    </div>`;
+                grid.innerHTML = `<div class="empty-state"><i class="fas fa-feather-pointed"></i><h3>${BLOG_POSTS.length === 0 ? 'No posts yet' : 'Nothing found'}</h3><p>${BLOG_POSTS.length === 0 ? 'The first post is coming soon.<br>Check back shortly!' : `No posts match "<strong>${q || activeFilter}</strong>"`}</p></div>`;
                 return;
             }
-
             grid.innerHTML = filtered.map((p, i) => `
-                <div class="blog-card" style="animation-delay:${i*0.07}s" onclick="openPost('${p.id}')">
+                <div class="blog-card" id="post-${p.id}" style="animation-delay:${i*0.07}s" onclick="openPost('${p.id}')">
                     <div class="blog-card-strip" style="--strip-a:${p.stripA};--strip-b:${p.stripB}"></div>
                     <div class="blog-card-body">
                         <div class="blog-meta">
@@ -697,38 +266,20 @@
                 </div>`).join('');
         }
 
-        /* Open post modal */
         function openPost(id) {
             const p = BLOG_POSTS.find(x => x.id === id);
             if (!p) return;
-
-            document.getElementById('modalStrip').style.background =
-                `linear-gradient(90deg, ${p.stripA}, ${p.stripB})`;
-            document.getElementById('modal').style.setProperty('--modal-strip-a', p.stripA);
-            document.getElementById('modal').style.setProperty('--modal-strip-b', p.stripB);
-
-            document.getElementById('modalMeta').innerHTML =
-                `<span class="blog-tag">${p.tag}</span>
-                 <span class="blog-date"><i class="fas fa-calendar-alt"></i> ${p.date}</span>`;
-
+            document.getElementById('modalStrip').style.background = `linear-gradient(90deg,${p.stripA},${p.stripB})`;
+            document.getElementById('modalMeta').innerHTML = `<span class="blog-tag">${p.tag}</span><span class="blog-date"><i class="fas fa-calendar-alt"></i> ${p.date}</span>`;
             document.getElementById('modalTitle').textContent = p.title;
-
-            document.getElementById('modalByline').innerHTML =
-                `<span><i class="fas fa-user"></i> Abdullah All Munan</span>
-                 <span><i class="fas fa-clock"></i> ${p.readTime}</span>`;
-
+            document.getElementById('modalByline').innerHTML = `<span><i class="fas fa-user"></i> Abdullah All Munan</span><span><i class="fas fa-clock"></i> ${p.readTime}</span>`;
             document.getElementById('modalBody').innerHTML = p.content || '<p>Content coming soon.</p>';
-
-            // Share links
-            const url = encodeURIComponent(window.location.href + '#post-' + p.id);
+            const url = encodeURIComponent(window.location.href.split('#')[0] + '#post-' + p.id);
             const title = encodeURIComponent(p.title);
             document.getElementById('shareFb').href = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
             document.getElementById('shareX').href  = `https://x.com/intent/tweet?text=${title}&url=${url}`;
-
             document.getElementById('modalOverlay').classList.add('open');
             document.body.style.overflow = 'hidden';
-
-            // Update URL hash
             history.pushState(null, '', `#post-${id}`);
         }
 
@@ -738,44 +289,26 @@
             history.pushState(null, '', window.location.pathname);
         }
 
-        function handleOverlayClick(e) {
-            if (e.target === document.getElementById('modalOverlay')) closeModal();
-        }
+        function handleOverlayClick(e) { if (e.target === document.getElementById('modalOverlay')) closeModal(); }
 
         function copyLink() {
             navigator.clipboard.writeText(window.location.href).then(() => {
                 const btn = document.querySelector('.share-btn[title="Copy link"]');
                 btn.innerHTML = '<i class="fas fa-check"></i>';
-                btn.style.background = '#16a34a';
-                btn.style.color = '#fff';
-                setTimeout(() => {
-                    btn.innerHTML = '<i class="fas fa-link"></i>';
-                    btn.style.background = '';
-                    btn.style.color = '';
-                }, 1800);
+                btn.style.cssText = 'background:#16a34a;color:#fff;';
+                setTimeout(() => { btn.innerHTML = '<i class="fas fa-link"></i>'; btn.style.cssText = ''; }, 1800);
             });
         }
 
-        // Close modal on Escape key
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') closeModal();
-        });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
-        // Open post from URL hash on load
         window.addEventListener('load', () => {
             const hash = window.location.hash;
-            if (hash.startsWith('#post-')) {
-                const id = hash.replace('#post-', '');
-                setTimeout(() => openPost(id), 400);
-            }
+            if (hash.startsWith('#post-')) setTimeout(() => openPost(hash.replace('#post-', '')), 400);
         });
 
-        /* Search */
-        document.getElementById('searchInput').addEventListener('input', e => {
-            render(e.target.value);
-        });
+        document.getElementById('searchInput').addEventListener('input', e => render(e.target.value));
 
-        /* Navbar hide on scroll */
         let lastScroll = window.scrollY;
         window.addEventListener('scroll', () => {
             const nav = document.getElementById('navbar');
@@ -784,7 +317,6 @@
             lastScroll = window.scrollY;
         });
 
-        /* Init */
         buildFilters();
         render();
     </script>
