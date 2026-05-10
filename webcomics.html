@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Webcomics — Abdullah All Munan. Stories told through comics.">
+    <meta name="theme-color" content="#0ea5e9">
+    <title>Webcomics — Munan</title>
+    <link rel="icon" type="image/png" href="icon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg:          linear-gradient(180deg, #0ea5e9 0%, #bae6fd 50%, #ffffff 100%);
+            --card-bg:     rgba(255,255,255,0.60);
+            --card-border: rgba(14,165,233,0.25);
+            --text:        #0f172a;
+            --text-muted:  #334155;
+            --text-soft:   #64748b;
+            --accent:      #0284c7;
+            --nav-bg:      rgba(14,165,233,0.88);
+            --trans:       0.3s cubic-bezier(.4,0,.2,1);
+            --radius:      18px;
+            --overlay:     rgba(15,23,42,0.45);
+        }
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+        a { text-decoration:none; transition:var(--trans); }
+        body { background:var(--bg); background-attachment:fixed; color:var(--text); font-family:'Poppins',sans-serif; line-height:1.6; font-size:14px; min-height:100vh; -webkit-font-smoothing:antialiased; }
+
+        .blobs { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+        .blob { position:absolute; border-radius:50%; filter:blur(90px); opacity:.30; animation:drift 9s ease-in-out infinite alternate; }
+        .blob-1 { width:560px; height:560px; background:#7dd3fc; top:-160px; left:-120px; }
+        .blob-2 { width:440px; height:440px; background:#bae6fd; top:35%; right:-100px; animation-delay:-3s; }
+        .blob-3 { width:360px; height:360px; background:#e0f2fe; bottom:-80px; left:30%; animation-delay:-6s; }
+        @keyframes drift { from { transform:translate(0,0) scale(1); } to { transform:translate(25px,18px) scale(1.07); } }
+
+        .navbar { display:flex; justify-content:space-between; align-items:center; padding:0 8%; height:52px; background:var(--nav-bg); backdrop-filter:blur(12px); position:fixed; width:100%; top:0; z-index:1000; border-bottom:1px solid var(--card-border); transition:top .3s ease; }
+        .navbar-hidden { top:-60px; }
+        .nav-logo { font-size:1.2rem; font-weight:700; letter-spacing:1px; color:#0f172a; }
+        .nav-logo span { color:#fff; }
+        .back-btn { display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,.55); border:1.5px solid rgba(255,255,255,.6); border-radius:20px; padding:6px 16px; font-size:.8rem; font-weight:600; color:#0f172a; backdrop-filter:blur(8px); transition:var(--trans); }
+        .back-btn:hover { background:rgba(255,255,255,.85); transform:translateX(-2px); }
+
+        .page { position:relative; z-index:1; max-width:1000px; margin:0 auto; padding:88px 22px 80px; }
+
+        .webcomic-hero { text-align:center; margin-bottom:48px; animation:fadeUp .65s ease both; }
+        .badge-pill { display:inline-flex; align-items:center; gap:7px; background:rgba(255,255,255,.6); border:1px solid var(--card-border); border-radius:50px; padding:5px 18px; font-size:.72rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); backdrop-filter:blur(8px); margin-bottom:16px; }
+        .webcomic-hero h1 { font-size:clamp(2rem,5vw,3rem); font-weight:800; letter-spacing:-.03em; line-height:1.1; margin-bottom:12px; }
+        .webcomic-hero h1 span { color:var(--accent); }
+        .webcomic-hero p { font-size:.95rem; color:var(--text-soft); max-width:480px; margin:0 auto 28px; font-weight:300; line-height:1.7; }
+
+        .series-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:22px; margin-bottom:60px; }
+
+        .comic-card { background:var(--card-bg); border:1px solid var(--card-border); border-radius:var(--radius); overflow:hidden; backdrop-filter:blur(12px); box-shadow:0 2px 16px rgba(2,132,199,.06); transition:all var(--trans); display:flex; flex-direction:column; animation:cardIn .5s ease both; cursor:pointer; }
+        .comic-card:hover { transform:translateY(-7px) scale(1.014); border-color:var(--accent); box-shadow:0 20px 50px rgba(2,132,199,.18); background:rgba(255,255,255,.9); }
+        .comic-card-strip { height:5px; background:linear-gradient(90deg,var(--strip-a,#0284c7),var(--strip-b,#0ea5e9)); transition:height var(--trans); }
+        .comic-card:hover .comic-card-strip { height:7px; }
+        .comic-card-body { padding:22px 22px 18px; flex:1; display:flex; flex-direction:column; }
+        .comic-meta { display:flex; align-items:center; gap:10px; margin-bottom:13px; flex-wrap:wrap; }
+        .comic-tag { display:inline-flex; align-items:center; gap:5px; background:rgba(2,132,199,.1); border:1px solid rgba(2,132,199,.2); border-radius:20px; padding:3px 10px; font-size:.64rem; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--accent); }
+        .comic-status { font-size:.7rem; color:var(--text-soft); display:flex; align-items:center; gap:4px; }
+        .comic-status.ongoing { color:#16a34a; }
+        .comic-title { font-size:1.05rem; font-weight:700; line-height:1.35; color:var(--text); margin-bottom:10px; letter-spacing:-.01em; }
+        .comic-desc { font-size:.82rem; color:var(--text-muted); line-height:1.65; flex:1; margin-bottom:16px; }
+        .comic-footer { display:flex; align-items:center; justify-content:space-between; padding-top:12px; border-top:1px solid var(--card-border); }
+        .episode-count { font-size:.7rem; color:var(--text-soft); display:flex; align-items:center; gap:5px; }
+        .comic-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(2,132,199,.1); border:1px solid rgba(2,132,199,.25); border-radius:20px; padding:5px 14px; font-size:.72rem; font-weight:700; color:var(--accent); transition:var(--trans); }
+        .comic-btn:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
+
+        /* ── MODAL / VIEWER ──────────────────────────── */
+        .modal-overlay { position:fixed; inset:0; z-index:2000; background:var(--overlay); backdrop-filter:blur(14px); display:none; align-items:flex-start; justify-content:center; padding:60px 20px 40px; overflow-y:auto; }
+        .modal-overlay.open { display:flex; }
+        .modal { background:rgba(255,255,255,.97); border:1.5px solid var(--card-border); border-radius:24px; width:100%; max-width:780px; box-shadow:0 30px 80px rgba(2,132,199,.18); animation:popUp .45s cubic-bezier(.34,1.56,.64,1) both; overflow:hidden; }
+        @keyframes popUp { from { opacity:0; transform:scale(.93) translateY(20px); } to { opacity:1; transform:scale(1) translateY(0); } }
+        .modal-strip { height:6px; background:linear-gradient(90deg,var(--modal-strip-a,#0284c7),var(--modal-strip-b,#0ea5e9)); }
+        .modal-header { padding:28px 32px 0; display:flex; justify-content:space-between; align-items:flex-start; gap:16px; }
+        .modal-close { width:34px; height:34px; flex-shrink:0; background:rgba(2,132,199,.08); border:1px solid var(--card-border); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-soft); font-size:.85rem; transition:var(--trans); margin-top:4px; }
+        .modal-close:hover { background:#ef4444; color:#fff; border-color:#ef4444; transform:rotate(90deg); }
+        .modal-title { font-size:1.4rem; font-weight:800; letter-spacing:-.02em; line-height:1.2; color:var(--text); margin-bottom:8px; }
+        .modal-comic-info { display:flex; align-items:center; gap:12px; font-size:.82rem; color:var(--text-soft); margin-bottom:18px; flex-wrap:wrap; padding-bottom:18px; border-bottom:1px solid var(--card-border); }
+        .modal-comic-info span { display:flex; align-items:center; gap:5px; }
+        .modal-body { padding:24px 32px 32px; }
+        .episode-viewer { display:flex; flex-direction:column; gap:20px; }
+        .episode-image { width:100%; border-radius:12px; background:#f0f9ff; border:1px solid var(--card-border); padding:20px; text-align:center; min-height:300px; display:flex; align-items:center; justify-content:center; color:var(--text-soft); font-size:.95rem; }
+        .episode-image img { max-width:100%; height:auto; border-radius:8px; }
+        .episode-content { font-size:.95rem; color:var(--text-muted); line-height:1.8; }
+        .episode-nav { display:flex; justify-content:space-between; align-items:center; gap:16px; padding-top:20px; border-top:1px solid var(--card-border); }
+        .ep-nav-btn { display:inline-flex; align-items:center; gap:8px; background:rgba(2,132,199,.1); border:1px solid rgba(2,132,199,.25); border-radius:20px; padding:8px 16px; font-size:.8rem; font-weight:700; color:var(--accent); cursor:pointer; transition:var(--trans); }
+        .ep-nav-btn:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
+        .ep-nav-btn:disabled { opacity:.5; cursor:not-allowed; }
+        .ep-counter { font-size:.82rem; color:var(--text-soft); font-weight:600; text-align:center; }
+
+        footer { position:relative; z-index:1; text-align:center; padding:50px 0; margin-top:60px; }
+        .footer-card { background:var(--card-bg); border:1px solid var(--card-border); display:inline-block; padding:28px 40px; border-radius:24px; backdrop-filter:blur(15px); transition:var(--trans); }
+        .footer-card:hover { border-color:var(--accent); box-shadow:0 0 30px rgba(2,132,199,.12); }
+        .footer-dev { font-size:.68rem; text-transform:uppercase; letter-spacing:3px; opacity:.6; margin-bottom:6px; }
+        .footer-name { font-size:1.6rem; font-weight:800; margin-bottom:14px; }
+        .footer-name span { color:var(--accent); }
+        .socials { display:flex; gap:10px; justify-content:center; margin:12px 0; }
+        .socials a { width:36px; height:36px; background:rgba(2,132,199,.1); border:1px solid var(--card-border); display:flex; align-items:center; justify-content:center; border-radius:50%; transition:var(--trans); color:var(--accent); font-size:.9rem; }
+        .socials a:hover { background:var(--accent); color:#fff; transform:rotate(360deg) scale(1.1); }
+
+        @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:none; } }
+        @keyframes cardIn { from { opacity:0; transform:translateY(18px) scale(.97); } to { opacity:1; transform:none; } }
+
+        .empty-state { text-align:center; padding:56px 24px; background:var(--card-bg); border:1.5px dashed var(--card-border); border-radius:var(--radius); backdrop-filter:blur(10px); }
+        .empty-state i { font-size:2.4rem; color:var(--text-soft); margin-bottom:14px; display:block; }
+        .empty-state h3 { font-size:1.1rem; font-weight:700; margin-bottom:8px; }
+        .empty-state p { font-size:.85rem; color:var(--text-muted); line-height:1.7; }
+
+        @media (max-width:640px) {
+            .series-grid { grid-template-columns:1fr; }
+            .modal-header { padding:22px 20px 0; }
+            .modal-body { padding:20px 20px 24px; }
+            .modal-title { font-size:1.2rem; }
+            .modal-overlay { padding:52px 10px 30px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="blobs"><div class="blob blob-1"></div><div class="blob blob-2"></div><div class="blob blob-3"></div></div>
+
+    <nav class="navbar" id="navbar">
+        <div class="nav-logo">Munan<span>.hub</span></div>
+        <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> Home</a>
+    </nav>
+
+    <div class="page">
+        <div class="webcomic-hero">
+            <div class="badge-pill"><i class="fas fa-book-open"></i> Visual Stories</div>
+            <h1>Web<span>Comics</span></h1>
+            <p>Humor, drama, and relatable moments told through illustrated stories.</p>
+        </div>
+
+        <div class="series-grid" id="seriesGrid"></div>
+    </div>
+
+    <footer>
+        <div class="footer-card">
+            <div class="footer-dev">Illustrated By</div>
+            <div class="footer-name">Abdullah All <span>Munan</span></div>
+            <div class="socials">
+                <a href="mailto:allmunanabdullah@gmail.com"><i class="fas fa-envelope"></i></a>
+                <a href="contact.html"><i class="fas fa-paper-plane"></i></a>
+                <a href="https://www.facebook.com/share/18E4oCwqfT/" target="_blank" rel="noopener noreferrer"><i class="fab fa-facebook"></i></a>
+                <a href="https://www.linkedin.com/in/abdullah-all-munan-b447133b2" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin"></i></a>
+                <a href="https://github.com/abamunan" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i></a>
+            </div>
+            <div style="font-size:.75rem; margin-top:14px; opacity:.6; letter-spacing:.05em; text-transform:uppercase;"><i class="fas fa-hands-praying" style="margin-right:5px;opacity:.6;"></i>Tawakkul &amp; grind &nbsp;·&nbsp; © 2026 Munan</div>
+        </div>
+    </footer>
+
+    <!-- Episode Viewer Modal -->
+    <div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
+        <div class="modal" id="modal">
+            <div class="modal-strip" id="modalStrip"></div>
+            <div class="modal-header">
+                <div style="flex:1">
+                    <div class="modal-title" id="modalTitle"></div>
+                    <div class="modal-comic-info" id="modalInfo"></div>
+                </div>
+                <div class="modal-close" onclick="closeViewer()"><i class="fas fa-xmark"></i></div>
+            </div>
+            <div class="modal-body">
+                <div class="episode-viewer" id="episodeViewer"></div>
+                <div class="episode-nav">
+                    <button class="ep-nav-btn" id="prevBtn" onclick="previousEpisode()"><i class="fas fa-arrow-left"></i> Previous</button>
+                    <div class="ep-counter"><span id="epCounter"></span></div>
+                    <button class="ep-nav-btn" id="nextBtn" onclick="nextEpisode()"><i class="fas fa-arrow-right"></i> Next</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load shared webcomics data -->
+    <script src="webcomics.js"></script>
+    <script>
+        let currentSeriesId = null;
+        let currentEpisodeNum = 1;
+
+        function renderSeriesGrid() {
+            const grid = document.getElementById('seriesGrid');
+            if (!WEBCOMICS.length) {
+                grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><i class="fas fa-pencil-alt"></i><h3>No comics yet</h3><p>Check back soon — first webcomic is coming!</p></div>`;
+                return;
+            }
+            grid.innerHTML = WEBCOMICS.map((comic, i) => `
+                <div class="comic-card" style="animation-delay:${i*0.08}s" onclick="viewSeries('${comic.id}')">
+                    <div class="comic-card-strip" style="--strip-a:${comic.stripA};--strip-b:${comic.stripB}"></div>
+                    <div class="comic-card-body">
+                        <div class="comic-meta">
+                            <span class="comic-tag">${comic.genre}</span>
+                            <span class="comic-status ${comic.status.toLowerCase()}">${comic.status}</span>
+                        </div>
+                        <div class="comic-title">${comic.title}</div>
+                        <div class="comic-desc">${comic.description}</div>
+                        <div class="comic-footer">
+                            <span class="episode-count"><i class="fas fa-images"></i> ${comic.episodes.length} episodes</span>
+                            <span class="comic-btn">Read <i class="fas fa-arrow-right" style="font-size:.6rem;"></i></span>
+                        </div>
+                    </div>
+                </div>`).join('');
+        }
+
+        function viewSeries(seriesId) {
+            const comic = WEBCOMICS.find(c => c.id === seriesId);
+            if (!comic) return;
+            currentSeriesId = seriesId;
+            currentEpisodeNum = 1;
+            openEpisode();
+        }
+
+        function openEpisode() {
+            const comic = WEBCOMICS.find(c => c.id === currentSeriesId);
+            const episode = comic.episodes[currentEpisodeNum - 1];
+            if (!episode) return;
+
+            document.getElementById('modalStrip').style.background = `linear-gradient(90deg,${comic.stripA},${comic.stripB})`;
+            document.getElementById('modalTitle').textContent = `${comic.title} — Episode ${episode.episodeNum}`;
+            document.getElementById('modalInfo').innerHTML = `
+                <span><i class="fas fa-heading"></i> ${episode.title}</span>
+                <span><i class="fas fa-calendar-alt"></i> ${episode.date}</span>
+            `;
+
+            const viewer = document.getElementById('episodeViewer');
+            viewer.innerHTML = `
+                <div class="episode-image">
+                    ${episode.imageUrl ? `<img src="${episode.imageUrl}" alt="Episode ${episode.episodeNum}">` : 'Comic image placeholder'}
+                </div>
+                <div class="episode-content">${episode.description}<br><br><em>${episode.content}</em></div>
+            `;
+
+            document.getElementById('prevBtn').disabled = currentEpisodeNum === 1;
+            document.getElementById('nextBtn').disabled = currentEpisodeNum === comic.episodes.length;
+            document.getElementById('epCounter').textContent = `${currentEpisodeNum} / ${comic.episodes.length}`;
+            document.getElementById('modalOverlay').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function previousEpisode() {
+            if (currentEpisodeNum > 1) {
+                currentEpisodeNum--;
+                openEpisode();
+            }
+        }
+
+        function nextEpisode() {
+            const comic = WEBCOMICS.find(c => c.id === currentSeriesId);
+            if (currentEpisodeNum < comic.episodes.length) {
+                currentEpisodeNum++;
+                openEpisode();
+            }
+        }
+
+        function closeViewer() {
+            document.getElementById('modalOverlay').classList.remove('open');
+            document.body.style.overflow = '';
+            currentSeriesId = null;
+        }
+
+        function handleOverlayClick(e) {
+            if (e.target === document.getElementById('modalOverlay')) closeViewer();
+        }
+
+        document.addEventListener('keydown', e => {
+            if (document.getElementById('modalOverlay').classList.contains('open')) {
+                if (e.key === 'Escape') closeViewer();
+                if (e.key === 'ArrowLeft') previousEpisode();
+                if (e.key === 'ArrowRight') nextEpisode();
+            }
+        });
+
+        let lastScroll = window.scrollY;
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if (window.scrollY > lastScroll && window.scrollY > 70) nav.classList.add('navbar-hidden');
+            else nav.classList.remove('navbar-hidden');
+            lastScroll = window.scrollY;
+        });
+
+        renderSeriesGrid();
+    </script>
+</body>
+</html>
