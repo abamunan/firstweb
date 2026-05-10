@@ -38,7 +38,7 @@ const WEBCOMICS = [
                 episodeNum: 1,
                 title:      "It Works on My Machine",
                 description: "The timeless classic: when your code works perfectly... until it goes to production.",
-                imageUrl:   "ep001.png",
+                imageUrl:   "image.jpeg",
                 date:       "May 1, 2026",
                 content:    "A developer confidently submitting code, only to panic when it breaks in production. Classic."
             },
