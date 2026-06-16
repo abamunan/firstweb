@@ -9,7 +9,7 @@ import { getAuth }         from "https://www.gstatic.com/firebasejs/10.12.0/fire
 import { getFirestore }    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
-    apiKey:            "AIzaSyDL0CqhjJ-X9SjwMriTWi_LW4ADsI8Gnq0",
+    apiKey:            "AIzaSyDl0Cqhjj-X9SjwMrrTWi_lW4ADsI8Gnq0",
     authDomain:        "login-system-309fc.firebaseapp.com",
     projectId:         "login-system-309fc",
     storageBucket:     "login-system-309fc.firebasestorage.app",
