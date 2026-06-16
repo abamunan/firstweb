@@ -32,7 +32,7 @@ onAuthStateChanged(auth, (user) => {
         localStorage.setItem('munan_auth', 'true');
         localStorage.setItem('isLoggedIn', 'true');
         if (window.location.pathname.includes("login.html")) {
-            window.location.href = "index.html";
+            window.location.href = "dashboard.html";
         }
     } else {
         localStorage.removeItem('munan_auth');
@@ -51,7 +51,7 @@ async function loginWithEmail(email, password) {
     }
     localStorage.setItem('munan_auth', 'true');
     localStorage.setItem('isLoggedIn', 'true');
-    window.location.href = "index.html";
+    window.location.href = "dashboard.html";
 }
 
 // ── SIGNUP WITH EMAIL & PASSWORD ─────────────────────────────
@@ -75,7 +75,7 @@ async function loginWithGoogle() {
     }, { merge: true });
     localStorage.setItem('munan_auth', 'true');
     localStorage.setItem('isLoggedIn', 'true');
-    window.location.href = "index.html";
+    window.location.href = "dashboard.html";
 }
 
 // ── LOGOUT ───────────────────────────────────────────────────
@@ -84,7 +84,7 @@ async function logout() {
     localStorage.removeItem('munan_auth');
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('loggedInUser');
-    window.location.href = "index.html";
+    window.location.href = "dashboard.html";
 }
 
 // ── RESEND VERIFICATION ──────────────────────────────────────

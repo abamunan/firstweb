@@ -336,16 +336,10 @@
         function updateAuthBtn() {
             const loggedIn = localStorage.getItem('munan_auth') === 'true';
             if (loggedIn) {
-                authBtn.href = '#';
-                authBtn.className = 'nav-logout-btn';
-                authBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Logout';
-                authBtn.onclick = (e) => {
-                    e.preventDefault();
-                    localStorage.removeItem('munan_auth');
-                    localStorage.removeItem('isLoggedIn');
-                    localStorage.removeItem('loggedInUser');
-                    updateAuthBtn();
-                };
+                authBtn.href = 'dashboard.html';
+                authBtn.className = 'nav-login-btn';
+                authBtn.innerHTML = '<i class="fas fa-gauge"></i> Dashboard';
+                authBtn.onclick = null;
             } else {
                 authBtn.href = 'login.html';
                 authBtn.className = 'nav-login-btn';
