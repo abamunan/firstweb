@@ -540,8 +540,52 @@ function isLeap(y){return (y%4===0&&y%100!==0)||y%400===0;}
 function daysInMonth(y,m){return m===1&&isLeap(y)?29:DAYS_IN_MONTH[m];}
 
 function storageKey(y,m,d){return `mt_${y}_${m+1}_${d}`;}
+
+// ── LOCAL (sync, used for summary/yearly calc) ───────────────
 function getDay(y,m,d){try{return JSON.parse(localStorage.getItem(storageKey(y,m,d)))||{};}catch{return {};}}
-function setDay(y,m,d,data){localStorage.setItem(storageKey(y,m,d),JSON.stringify(data));}
+function setDayLocal(y,m,d,data){localStorage.setItem(storageKey(y,m,d),JSON.stringify(data));}
+
+// ── FIRESTORE SAVE ───────────────────────────────────────────
+async function setDay(y,m,d,data){
+  setDayLocal(y,m,d,data);
+  if(!window._mtAuth||!window._mtDb) return;
+  const uid=window._mtAuth.currentUser?.uid;
+  if(!uid) return;
+  try {
+    const {doc,setDoc}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    await setDoc(doc(window._mtDb,"users",uid,"moneytracker",`${y}_${m+1}_${d}`),data);
+  } catch(e){console.error("Firestore save failed:",e);}
+}
+
+// ── FIRESTORE LOAD ONE DAY ───────────────────────────────────
+async function loadDayFromFirestore(y,m,d){
+  if(!window._mtAuth||!window._mtDb) return;
+  const uid=window._mtAuth.currentUser?.uid;
+  if(!uid) return;
+  try {
+    const {doc,getDoc}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const snap=await getDoc(doc(window._mtDb,"users",uid,"moneytracker",`${y}_${m+1}_${d}`));
+    if(snap.exists()) setDayLocal(y,m,d,snap.data());
+  } catch(e){console.error("Firestore load failed:",e);}
+}
+
+// ── FIRESTORE LOAD FULL MONTH ────────────────────────────────
+async function loadMonthFromFirestore(y,m){
+  if(!window._mtAuth||!window._mtDb) return;
+  const uid=window._mtAuth.currentUser?.uid;
+  if(!uid) return;
+  try {
+    const {collection,getDocs}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const col=collection(window._mtDb,"users",uid,"moneytracker");
+    const snap=await getDocs(col);
+    snap.forEach(d=>{
+      if(d.id.startsWith(`${y}_${m+1}_`)){
+        const day=parseInt(d.id.split('_')[2]);
+        setDayLocal(y,m,day,d.data());
+      }
+    });
+  } catch(e){console.error("Firestore month load failed:",e);}
+}
 
 // ─── INIT SELECTORS ──────────────────────────────────────────────────────────
 function initSelectors(){
@@ -558,13 +602,15 @@ function initSelectors(){
   });
 }
 
-function onMonthChange(){
+async function onMonthChange(){
   curYear=parseInt(document.getElementById('yearSel').value);
   curMonth=parseInt(document.getElementById('monthSel').value);
   const days=daysInMonth(curYear,curMonth);
   currentDay=Math.min(currentDay,days);
   navOffset=0;
-  selectDay(currentDay);
+  showToast('Loading…');
+  await loadMonthFromFirestore(curYear,curMonth);
+  await selectDay(currentDay);
   if(document.getElementById('summarySection').classList.contains('active')) renderSummary();
   if(document.getElementById('yearlySection').classList.contains('active')) renderYearly();
 }
@@ -597,19 +643,21 @@ function updateTotals(){
   document.getElementById('netCard').className='net-card '+(net>=0?'positive':'negative');
 }
 
-function saveDay(){
+async function saveDay(){
   const data={};
   ALL_FIELDS.forEach(f=>{data[f.id]=parseFloat(document.getElementById('f_'+f.id)?.value)||0;});
-  setDay(curYear,curMonth,currentDay,data);
+  showToast('Saving…');
+  await setDay(curYear,curMonth,currentDay,data);
   renderDayBtns();
   showToast('Saved ✓');
 }
 
-function selectDay(day){
+async function selectDay(day){
   currentDay=day;
   document.getElementById('dayTitle').textContent='Day '+day;
   const d=new Date(curYear,curMonth,day);
   document.getElementById('daySubtitle').textContent=d.toLocaleDateString('en-US',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  await loadDayFromFirestore(curYear,curMonth,day);
   loadDay(day);
   renderDayBtns();
 }
@@ -955,12 +1003,50 @@ ALL_FIELDS.forEach(f=>{
   if(el) el.addEventListener('input',updateTotals);
 });
 
-// Init
-initSelectors();
-const today=new Date();
-const startDay=curYear===today.getFullYear()&&curMonth===today.getMonth()?today.getDate():1;
-navOffset=Math.max(0,startDay-4);
-selectDay(Math.min(startDay,daysInMonth(curYear,curMonth)));
+// ── FIREBASE INIT + AUTH CHECK ──────────────────────────────
+async function initApp(){
+  try {
+    const {initializeApp}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+    const {getAuth,onAuthStateChanged}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+    const {getFirestore}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+
+    const app=initializeApp({
+      apiKey:"AIzaSyDl0Cqhjj-X9SjwMrrTWi_lW4ADsI8Gnq0",
+      authDomain:"login-system-309fc.firebaseapp.com",
+      projectId:"login-system-309fc",
+      storageBucket:"login-system-309fc.firebasestorage.app",
+      messagingSenderId:"509365590175",
+      appId:"1:509365590175:web:2a1de8ab7688a96853aaaa"
+    });
+    window._mtAuth=getAuth(app);
+    window._mtDb=getFirestore(app);
+
+    onAuthStateChanged(window._mtAuth, async (user)=>{
+      if(!user){
+        window.location.href="login.html";
+        return;
+      }
+      // Load current month from Firestore then init UI
+      showToast('Loading data…');
+      await loadMonthFromFirestore(curYear,curMonth);
+      initSelectors();
+      const today=new Date();
+      const startDay=curYear===today.getFullYear()&&curMonth===today.getMonth()?today.getDate():1;
+      navOffset=Math.max(0,startDay-4);
+      await selectDay(Math.min(startDay,daysInMonth(curYear,curMonth)));
+    });
+  } catch(e){
+    console.error("Firebase init failed:",e);
+    // Fallback: run without Firebase
+    initSelectors();
+    const today=new Date();
+    const startDay=curYear===today.getFullYear()&&curMonth===today.getMonth()?today.getDate():1;
+    navOffset=Math.max(0,startDay-4);
+    await selectDay(Math.min(startDay,daysInMonth(curYear,curMonth)));
+  }
+}
+
+initApp();
 </script>
 <script src="footer.js"></script>
 </body>
