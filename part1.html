@@ -7,57 +7,28 @@
     <link rel="icon" type="image/png" href="icon.png">
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
     <style>
-        :root {
-            --main-bg: linear-gradient(180deg, #0ea5e9 0%, #bae6fd 50%, #ffffff 100%);
-            --card-bg: rgba(255, 255, 255, 0.65);
-            --card-border: rgba(14, 165, 233, 0.25);
-            --text-main: #0f172a;
-            --text-muted: #334155;
-            --accent: #0284c7;
-            --nav-bg: rgba(14, 165, 233, 0.85);
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
+        /* ── BODY OVERRIDE ───────────────────────────── */
         body {
-            min-height: 100vh;
-            font-family: 'Poppins', sans-serif;
-            background: var(--main-bg);
-            background-attachment: fixed;
-            color: var(--text-main);
             display: flex;
             flex-direction: column;
+            align-items: stretch;
+            min-height: 100vh;
+            padding: 0;
+        }
+
+        /* ── MAIN WRAP (vertically centered card) ────── */
+        .main-wrap {
+            flex: 1;
+            display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 70px 20px 40px;
         }
 
-        a { text-decoration: none; transition: 0.3s; }
-
-        /* --- NAVBAR --- */
-        .navbar {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 0 8%; height: 50px; background: var(--nav-bg);
-            backdrop-filter: blur(10px); position: fixed; width: 100%; top: 0;
-            z-index: 1000; border-bottom: 1px solid var(--card-border);
-        }
-        .logo { font-size: 1.2rem; font-weight: 700; letter-spacing: 1px; color: var(--text-main); font-family: 'Sora', sans-serif; }
-        .logo span { color: #fff; }
-        .back-btn {
-            display: inline-flex; align-items: center; gap: 8px;
-            background: rgba(255,255,255,.55); border: 1px solid rgba(255,255,255,.6);
-            border-radius: 20px; padding: 6px 16px;
-            font-size: .8rem; font-weight: 600; color: var(--text-main);
-            backdrop-filter: blur(8px); transition: 0.3s;
-            font-family: 'Sora', sans-serif;
-        }
-        .back-btn:hover { background: rgba(255,255,255,.85); }
-        .back-btn i { font-size: .78rem; transition: transform .3s; }
-        .back-btn:hover i { transform: translateX(-3px); }
-
-        /* --- MAIN CARD --- */
-        .card {
+        /* ── MAIN CARD ───────────────────────────────── */
+        .drive-card {
             background: var(--card-bg);
             backdrop-filter: blur(16px);
             width: 100%;
@@ -69,12 +40,12 @@
             border: 1.5px solid var(--card-border);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        .card:hover {
+        .drive-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 16px 48px rgba(2,132,199,.18);
         }
 
-        .card-icon {
+        .drive-card-icon {
             width: 72px; height: 72px; border-radius: 18px;
             background: linear-gradient(135deg, #1a73e8, #34a853);
             display: flex; align-items: center; justify-content: center;
@@ -82,55 +53,57 @@
             margin: 0 auto 1.4rem;
             box-shadow: 0 6px 20px rgba(26,115,232,.3);
         }
-
-        .card h3 {
+        .drive-card h3 {
             font-family: 'Sora', sans-serif;
             font-size: 1.2rem; font-weight: 700;
             color: var(--text-main); margin-bottom: 8px;
         }
-        .card p { color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1.8rem; line-height: 1.6; }
+        .drive-card p {
+            color: var(--text-muted); font-size: 0.88rem;
+            margin-bottom: 1.8rem; line-height: 1.6;
+        }
 
-        .btn {
+        /* ── BUTTONS ─────────────────────────────────── */
+        .drive-btn {
             width: 100%; padding: 12px;
             border: none; border-radius: 12px;
             background: var(--accent); color: white;
             font-family: 'Sora', sans-serif;
             font-size: .85rem; font-weight: 600;
-            cursor: pointer; transition: 0.3s;
+            cursor: pointer; transition: var(--trans);
             display: flex; align-items: center;
             justify-content: center; gap: 8px;
             text-decoration: none;
             box-shadow: 0 4px 14px rgba(2,132,199,.3);
         }
-        .btn:hover {
+        .drive-btn:hover {
             background: #0369a1;
             box-shadow: 0 6px 20px rgba(2,132,199,.4);
             transform: translateY(-1px);
         }
-        .btn.cancel {
+        .drive-btn.cancel {
             background: rgba(255,255,255,.6);
             color: var(--text-muted);
             border: 1.5px solid var(--card-border);
             box-shadow: none;
         }
-        .btn.cancel:hover { background: rgba(255,255,255,.9); }
-        .btn.success {
+        .drive-btn.cancel:hover { background: rgba(255,255,255,.9); transform: none; }
+        .drive-btn.success {
             background: linear-gradient(135deg,#16a34a,#22c55e);
             box-shadow: 0 4px 14px rgba(22,163,74,.3);
         }
 
-        /* --- MODAL --- */
+        /* ── MODAL ───────────────────────────────────── */
         .modal-overlay {
             position: fixed; inset: 0;
-            background: rgba(0, 20, 50, 0.35);
+            background: rgba(0,20,50,0.35);
             backdrop-filter: blur(8px);
             display: none;
             align-items: center;
             justify-content: center;
-            z-index: 200;
+            z-index: 2000;
             padding: 20px;
         }
-
         .modal {
             background: rgba(255,255,255,.92);
             backdrop-filter: blur(20px);
@@ -143,14 +116,9 @@
             box-shadow: 0 20px 60px rgba(2,132,199,.18);
             animation: slideUp 0.3s cubic-bezier(.4,0,.2,1);
         }
-
         @keyframes slideUp {
             from { opacity: 0; transform: translateY(24px) scale(.97); }
             to   { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @keyframes fadeDown {
-            from { opacity: 0; transform: translateY(-16px); }
-            to   { opacity: 1; transform: none; }
         }
 
         .modal-icon {
@@ -161,7 +129,6 @@
             margin: 0 auto 1.2rem;
             box-shadow: 0 4px 14px rgba(46,143,199,.35);
         }
-
         .modal h3 {
             font-family: 'Sora', sans-serif;
             font-size: 1.1rem; font-weight: 700;
@@ -177,9 +144,12 @@
             font-family: 'Poppins', sans-serif;
             font-size: .9rem; color: var(--text-main);
             background: rgba(255,255,255,.8);
-            transition: 0.3s;
+            transition: var(--trans);
         }
-        input[type="password"]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(2,132,199,.12); }
+        input[type="password"]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(2,132,199,.12);
+        }
 
         .error {
             color: #dc2626; font-size: 0.78rem;
@@ -202,19 +172,21 @@
 <body>
 
     <nav class="navbar">
-        <div class="logo">Munan<span>.hub</span></div>
+        <div class="nav-logo">Munan<span>.hub</span></div>
         <a href="index.html" class="back-btn">
-            <i class="fas fa-arrow-left"></i> Home
+            <i class="fas fa-home"></i> Home
         </a>
     </nav>
 
-    <div class="card" id="mainCard">
-        <div class="card-icon"><i class="fab fa-google-drive"></i></div>
-        <h3>Private Drive</h3>
-        <p>This folder is password protected. Enter the correct password to unlock and access the documents.</p>
-        <button class="btn" id="unlockBtn" onclick="toggleModal(true)">
-            <i class="fas fa-lock"></i> Unlock Access
-        </button>
+    <div class="main-wrap">
+        <div class="drive-card" id="mainCard">
+            <div class="drive-card-icon"><i class="fab fa-google-drive"></i></div>
+            <h3>Private Drive</h3>
+            <p>This folder is password protected. Enter the correct password to unlock and access the documents.</p>
+            <button class="drive-btn" id="unlockBtn" onclick="toggleModal(true)">
+                <i class="fas fa-lock"></i> Unlock Access
+            </button>
+        </div>
     </div>
 
     <div class="modal-overlay" id="overlay" onclick="handleOverlayClick(event)">
@@ -228,15 +200,21 @@
                 <i class="fas fa-times-circle" style="margin-right:5px;"></i>Incorrect password. Try again.
             </div>
             <div class="btn-row">
-                <button class="btn cancel" onclick="toggleModal(false)">Cancel</button>
-                <button class="btn" onclick="verify()">
+                <button class="drive-btn cancel" onclick="toggleModal(false)">Cancel</button>
+                <button class="drive-btn" onclick="verify()">
                     <i class="fas fa-unlock"></i> Unlock
                 </button>
             </div>
         </div>
     </div>
 
+    <script src="footer.js"></script>
     <script>
+        /* ── THEME SYNC ───────────────────────────────── */
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+
         const CONFIG = {
             URL:  "https://drive.google.com/drive/folders/182xz2M84kai2ZUeAjYno2avEqTyOarg5",
             PASS: "MnDV##"
@@ -262,7 +240,7 @@
             if (el.input.value === CONFIG.PASS) {
                 toggleModal(false);
                 window.open(CONFIG.URL, '_blank');
-                el.btn.className = 'btn success';
+                el.btn.className = 'drive-btn success';
                 el.btn.innerHTML = '<i class="fas fa-external-link-alt"></i> Open Drive';
                 el.btn.onclick = () => window.open(CONFIG.URL, '_blank');
             } else {

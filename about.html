@@ -7,244 +7,78 @@
     <link rel="icon" type="image/png" href="icon.png">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Hind+Siliguri:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <!-- Early theme script: prevent flash of wrong theme -->
+    <script>(function(){if(localStorage.getItem('theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');}}());</script>
     <style>
-        :root {
-            --main-bg: linear-gradient(180deg, #0ea5e9 0%, #bae6fd 50%, #ffffff 100%);
-            --card-bg: rgba(255, 255, 255, 0.55);
-            --card-border: rgba(14, 165, 233, 0.25);
-            --text-main: #0f172a;
-            --text-muted: #334155;
-            --accent: #0284c7;
-            --nav-bg: rgba(14, 165, 233, 0.85);
-            --tag-bg: rgba(2, 132, 199, 0.1);
-            --tag-border: rgba(2, 132, 199, 0.3);
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
+        /* ── ABOUT PAGE SPECIFIC ─── */
         body {
-            background: var(--main-bg);
-            background-attachment: fixed;
-            color: var(--text-main);
-            font-family: 'Poppins', 'Hind Siliguri', sans-serif;
-            line-height: 1.6;
-            font-size: 14px;
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
         }
 
-        a { text-decoration: none; transition: 0.3s; }
-
-        /* --- NAVBAR --- */
-        .navbar {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 0 8%; height: 50px; background: var(--nav-bg);
-            backdrop-filter: blur(10px); position: fixed; width: 100%; top: 0;
-            z-index: 1000; border-bottom: 1px solid var(--card-border);
-            transition: top 0.3s ease;
-        }
-        .navbar-hidden { top: -60px; }
-        .logo { font-size: 1.2rem; font-weight: 700; letter-spacing: 1px; color: var(--text-main); }
-        .logo span { color: #fff; }
-        .back-btn {
-            display: inline-flex; align-items: center; gap: 8px;
-            background: rgba(255,255,255,.55); border: 1px solid rgba(255,255,255,.6);
-            border-radius: 20px; padding: 6px 16px;
-            font-size: .8rem; font-weight: 600; color: var(--text-main);
-            backdrop-filter: blur(8px); transition: 0.3s;
-        }
-        .back-btn:hover { background: rgba(255,255,255,.85); }
-
-        /* --- HERO --- */
         .hero { padding: 110px 20px 0; text-align: center; }
 
-        /* --- PROFILE --- */
-        .profile-wrap {
-            display: flex; flex-direction: column; align-items: center;
-            gap: 18px; margin-bottom: 32px;
-            animation: fadeUp .7s ease both;
-        }
-        .profile-img {
-            width: 130px; height: 130px; border-radius: 50%;
-            border: 3px solid var(--accent);
-            box-shadow: 0 0 30px rgba(2,132,199,.3), 0 0 0 6px rgba(2,132,199,.1);
-            object-fit: cover;
-            transition: transform .3s ease, box-shadow .3s ease;
-        }
-        .profile-img:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 45px rgba(2,132,199,.45), 0 0 0 8px rgba(2,132,199,.12);
-        }
-        .profile-name { font-size: 2rem; font-weight: 700; letter-spacing: -.02em; }
-        .profile-name span { color: var(--accent); }
-        .profile-tagline {
-            font-size: .85rem; color: var(--text-muted);
-            background: var(--card-bg); border: 1px solid var(--card-border);
-            padding: 5px 18px; border-radius: 20px;
-            backdrop-filter: blur(8px); letter-spacing: .03em;
-        }
+        .profile-wrap { display:flex; flex-direction:column; align-items:center; gap:18px; margin-bottom:32px; animation:fadeUp .7s ease both; }
+        .profile-img { width:130px; height:130px; border-radius:50%; border:3px solid var(--accent); box-shadow:0 0 30px rgba(2,132,199,.3),0 0 0 6px rgba(2,132,199,.1); object-fit:cover; transition:transform .3s ease,box-shadow .3s ease; }
+        .profile-img:hover { transform:scale(1.05); box-shadow:0 0 45px rgba(2,132,199,.45),0 0 0 8px rgba(2,132,199,.12); }
+        .profile-name { font-size:2rem; font-weight:700; letter-spacing:-.02em; }
+        .profile-name span { color:var(--accent); }
+        .profile-tagline { font-size:.85rem; color:var(--text-muted); background:var(--card-bg); border:1px solid var(--card-border); padding:5px 18px; border-radius:20px; backdrop-filter:blur(8px); letter-spacing:.03em; }
 
-        /* --- QUOTE --- */
-        .quote-wrap {
-            max-width: 520px; margin: 0 auto 48px;
-            animation: fadeUp .7s .1s ease both;
-        }
-        .quote-box {
-            background: var(--card-bg); border: 1px solid var(--card-border);
-            border-left: 3px solid var(--accent);
-            border-radius: 12px; padding: 18px 24px;
-            backdrop-filter: blur(10px);
-            font-style: italic; font-size: .95rem; color: var(--text-muted);
-        }
-        .quote-box span { color: var(--accent); font-weight: 600; font-style: normal; }
+        .quote-wrap { max-width:520px; margin:0 auto 48px; animation:fadeUp .7s .1s ease both; }
+        .quote-box { background:var(--card-bg); border:1px solid var(--card-border); border-left:3px solid var(--accent); border-radius:12px; padding:18px 24px; backdrop-filter:blur(10px); font-style:italic; font-size:.95rem; color:var(--text-muted); }
+        .quote-box span { color:var(--accent); font-weight:600; font-style:normal; }
 
-        /* --- CONTENT --- */
-        .content {
-            max-width: 900px; margin: 0 auto;
-            padding: 0 20px 80px;
-            display: flex; flex-direction: column; gap: 24px;
-        }
+        .content { max-width:900px; margin:0 auto; padding:0 20px 80px; display:flex; flex-direction:column; gap:24px; flex:1; }
 
-        .section-card {
-            background: var(--card-bg); border: 1px solid var(--card-border);
-            border-radius: 16px; padding: 28px 32px;
-            backdrop-filter: blur(10px);
-            transition: border-color .3s, box-shadow .3s;
-            animation: fadeUp .6s ease both;
-        }
-        .section-card:hover {
-            border-color: var(--accent);
-            box-shadow: 0 8px 30px rgba(2,132,199,.12);
-        }
+        .section-card { background:var(--card-bg); border:1px solid var(--card-border); border-radius:16px; padding:28px 32px; backdrop-filter:blur(10px); transition:border-color .3s,box-shadow .3s; animation:fadeUp .6s ease both; overflow:hidden; }
+        .section-card:hover { border-color:var(--accent); box-shadow:0 8px 30px rgba(2,132,199,.12); }
 
-        .section-label {
-            display: flex; align-items: center; gap: 10px;
-            font-size: .7rem; font-weight: 700; letter-spacing: .1em;
-            text-transform: uppercase; color: var(--accent); margin-bottom: 14px;
-        }
-        .section-label i { font-size: .85rem; }
+        .section-label { display:flex; align-items:center; gap:10px; font-size:.7rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); margin-bottom:14px; }
+        .section-label i { font-size:.85rem; }
 
-        .section-body {
-            font-size: .9rem; color: var(--text-muted); line-height: 1.8;
-        }
+        .section-body { font-size:.9rem; color:var(--text-muted); line-height:1.8; }
 
-        /* --- SKILLS --- */
-        .skills-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
-        .skill-tag {
-            display: inline-flex; align-items: center; gap: 7px;
-            background: var(--tag-bg); border: 1px solid var(--tag-border);
-            border-radius: 20px; padding: 6px 14px;
-            font-size: .8rem; font-weight: 600; color: var(--accent);
-            transition: .3s;
-        }
-        .skill-tag:hover {
-            background: var(--accent); color: #fff; border-color: var(--accent);
-            transform: translateY(-2px);
-        }
-        .skill-tag.learning {
-            background: rgba(251,146,60,.1); border-color: rgba(251,146,60,.3); color: #ea580c;
-        }
-        .skill-tag.learning:hover { background: #ea580c; color: #fff; border-color: #ea580c; }
-        .skill-badge {
-            font-size: .6rem; background: rgba(234,88,12,.15);
-            border-radius: 8px; padding: 1px 6px; font-style: italic; font-weight: 400;
-        }
+        /* Skills */
+        .skills-grid { display:flex; flex-wrap:wrap; gap:10px; margin-top:4px; }
+        .skill-tag { display:inline-flex; align-items:center; gap:7px; background:rgba(2,132,199,.1); border:1px solid rgba(2,132,199,.3); border-radius:20px; padding:6px 14px; font-size:.8rem; font-weight:600; color:var(--accent); transition:.3s; }
+        .skill-tag:hover { background:var(--accent); color:#fff; border-color:var(--accent); transform:translateY(-2px); }
+        .skill-tag.learning { background:rgba(251,146,60,.1); border-color:rgba(251,146,60,.3); color:#ea580c; }
+        .skill-tag.learning:hover { background:#ea580c; color:#fff; border-color:#ea580c; }
+        .skill-badge { font-size:.6rem; background:rgba(234,88,12,.15); border-radius:8px; padding:1px 6px; font-style:italic; font-weight:400; }
 
-        /* --- EDUCATION --- */
-        .edu-list { display: flex; flex-direction: column; gap: 18px; margin-top: 4px; }
-        .edu-item {
-            display: flex; gap: 16px; align-items: flex-start;
-            padding: 16px 20px;
-            background: rgba(255,255,255,.4); border: 1px solid var(--card-border);
-            border-radius: 12px; transition: .3s;
-        }
-        .edu-item:hover {
-            border-color: var(--accent);
-            background: rgba(255,255,255,.7);
-        }
-        .edu-icon {
-            width: 40px; height: 40px; border-radius: 10px;
-            background: var(--tag-bg); border: 1px solid var(--tag-border);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1rem; color: var(--accent); flex-shrink: 0;
-        }
-        .edu-degree { font-weight: 700; font-size: .95rem; margin-bottom: 4px; }
-        .edu-detail { font-size: .82rem; color: var(--text-muted); line-height: 1.7; }
-        .edu-detail strong { color: var(--accent); }
+        /* Education */
+        .edu-list { display:flex; flex-direction:column; gap:18px; margin-top:4px; }
+        .edu-item { display:flex; gap:16px; align-items:flex-start; padding:16px 20px; background:rgba(255,255,255,.4); border:1px solid var(--card-border); border-radius:12px; transition:.3s; }
+        [data-theme="dark"] .edu-item { background:rgba(255,255,255,.04); }
+        .edu-item:hover { border-color:var(--accent); background:rgba(255,255,255,.7); }
+        [data-theme="dark"] .edu-item:hover { background:rgba(255,255,255,.08); }
+        .edu-icon { width:40px; height:40px; border-radius:10px; background:rgba(2,132,199,.1); border:1px solid rgba(2,132,199,.3); display:flex; align-items:center; justify-content:center; font-size:1rem; color:var(--accent); flex-shrink:0; }
+        .edu-degree { font-weight:700; font-size:.95rem; margin-bottom:4px; }
+        .edu-detail { font-size:.82rem; color:var(--text-muted); line-height:1.7; }
+        .edu-detail strong { color:var(--accent); }
 
+        /* Hobbies — fixed: minmax min reduced, no overflow */
+        .hobbies-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:12px; margin-top:4px; }
+        .hobby-card { background:rgba(255,255,255,.4); border:1px solid var(--card-border); border-radius:12px; padding:14px 12px; display:flex; align-items:center; gap:10px; transition:.3s; min-width:0; }
+        [data-theme="dark"] .hobby-card { background:rgba(255,255,255,.04); }
+        .hobby-card:hover { border-color:var(--accent); background:rgba(255,255,255,.7); transform:translateY(-3px); }
+        [data-theme="dark"] .hobby-card:hover { background:rgba(255,255,255,.08); }
+        .hobby-icon { width:38px; height:38px; border-radius:10px; background:rgba(2,132,199,.1); border:1px solid rgba(2,132,199,.3); display:flex; align-items:center; justify-content:center; font-size:1rem; color:var(--accent); flex-shrink:0; }
+        .hobby-name { font-weight:600; font-size:.85rem; }
+        .hobby-desc { font-size:.7rem; color:var(--text-muted); margin-top:2px; }
 
-        /* --- QUALIFIED --- */
-        /* .qualified-list {
-            display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px;
-        }
-        .univ-tag {
-            display: inline-flex; align-items: center; gap: 7px;
-            background: rgba(34,197,94,.08); border: 1px solid rgba(34,197,94,.25);
-            border-radius: 20px; padding: 6px 14px;
-            font-size: .8rem; font-weight: 600; color: #16a34a;
-            transition: .3s;
-        }
-        .univ-tag:hover {
-            background: #16a34a; color: #fff; border-color: #16a34a;
-            transform: translateY(-2px);
-        }
-        .univ-tag i { font-size: .75rem; } */
+        /* Connect */
+        .contact-row { display:flex; flex-wrap:wrap; gap:10px; margin-top:4px; }
+        .contact-link { display:inline-flex; align-items:center; gap:8px; background:rgba(2,132,199,.1); border:1px solid rgba(2,132,199,.3); border-radius:20px; padding:8px 16px; font-size:.82rem; font-weight:600; color:var(--accent); transition:.3s; }
+        .contact-link:hover { background:var(--accent); color:#fff; border-color:var(--accent); transform:translateY(-2px); }
 
-
-
-
-        /* --- HOBBIES --- */
-        .hobbies-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 12px; margin-top: 4px;
-        }
-        .hobby-card {
-            background: rgba(255,255,255,.4); border: 1px solid var(--card-border);
-            border-radius: 12px; padding: 16px 18px;
-            display: flex; align-items: center; gap: 12px; transition: .3s;
-        }
-        .hobby-card:hover {
-            border-color: var(--accent);
-            background: rgba(255,255,255,.7);
-            transform: translateY(-3px);
-        }
-        .hobby-icon {
-            width: 40px; height: 40px; border-radius: 10px;
-            background: var(--tag-bg); border: 1px solid var(--tag-border);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.1rem; color: var(--accent); flex-shrink: 0;
-        }
-        .hobby-name { font-weight: 600; font-size: .88rem; }
-        .hobby-desc { font-size: .72rem; color: var(--text-muted); margin-top: 2px; }
-
-        /* --- CONNECT --- */
-        .contact-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
-        .contact-link {
-            display: inline-flex; align-items: center; gap: 8px;
-            background: var(--tag-bg); border: 1px solid var(--tag-border);
-            border-radius: 20px; padding: 8px 16px;
-            font-size: .82rem; font-weight: 600; color: var(--accent); transition: .3s;
-        }
-        .contact-link:hover {
-            background: var(--accent); color: #fff; border-color: var(--accent);
-            transform: translateY(-2px);
-        }
-
-        /* --- FOOTER --- */
-        footer {
-            text-align: center; padding: 30px 0 50px;
-            font-size: .75rem; color: var(--text-muted);
-            letter-spacing: .06em; text-transform: uppercase;
-        }
-
-        /* --- ANIMATIONS --- */
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(22px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
-        @media (max-width: 600px) {
-            .profile-name { font-size: 1.5rem; }
-            .section-card { padding: 20px 18px; }
+        @media (max-width:600px) {
+            .profile-name { font-size:1.5rem; }
+            .section-card { padding:20px 18px; }
             .hobbies-grid { grid-template-columns: 1fr 1fr; }
         }
     </style>
@@ -253,9 +87,7 @@
 
     <nav class="navbar" id="navbar">
         <div class="logo">Munan<span>.hub</span></div>
-        <a href="index.html" class="back-btn">
-            <i class="fas fa-arrow-left"></i> Home
-        </a>
+        <a href="index.html" class="back-btn"><i class="fas fa-home"></i> Home</a>
     </nav>
 
     <div class="hero">
@@ -264,23 +96,18 @@
             <div>
                 <div class="profile-name">Abdullah All <span>Munan</span></div>
                 <div style="margin-top:8px;">
-                    <span class="profile-tagline">
-                        <i class="fas fa-map-marker-alt" style="margin-right:5px;"></i>Bangladesh &nbsp;·&nbsp; Developer &amp; Student
-                    </span>
+                    <span class="profile-tagline"><i class="fas fa-map-marker-alt" style="margin-right:5px;"></i>Bangladesh &nbsp;·&nbsp; Developer &amp; Student</span>
                 </div>
             </div>
         </div>
 
         <div class="quote-wrap">
-            <div class="quote-box">
-                <span>"</span>Curious by nature. Builder by choice.<span>"</span>
-            </div>
+            <div class="quote-box"><span>"</span>Curious by nature. Builder by choice.<span>"</span></div>
         </div>
     </div>
 
     <div class="content">
 
-        <!-- About Me -->
         <div class="section-card" style="animation-delay:.1s;">
             <div class="section-label"><i class="fas fa-user"></i> About Me</div>
             <div class="section-body">
@@ -290,7 +117,6 @@
             </div>
         </div>
 
-        <!-- Skills -->
         <div class="section-card" style="animation-delay:.2s;">
             <div class="section-label"><i class="fas fa-code"></i> Skills</div>
             <div class="skills-grid">
@@ -302,140 +128,65 @@
             </div>
         </div>
 
-        <!-- Education -->
         <div class="section-card" style="animation-delay:.3s;">
             <div class="section-label"><i class="fas fa-graduation-cap"></i> Education</div>
             <div class="edu-list">
-
                 <div class="edu-item">
                     <div class="edu-icon"><i class="fas fa-university"></i></div>
                     <div>
                         <div class="edu-degree">Bachelor of Science</div>
-                        <div class="edu-detail">
-                            Department of Zoology<br>
-                            <strong>University of Dhaka</strong> &nbsp;·&nbsp; Session 2025–2026
-                        </div>
+                        <div class="edu-detail">Department of Zoology<br><strong>University of Dhaka</strong> &nbsp;·&nbsp; Session 2025–2026</div>
                     </div>
                 </div>
-
                 <div class="edu-item">
                     <div class="edu-icon"><i class="fas fa-school"></i></div>
                     <div>
                         <div class="edu-degree">Higher Secondary Certificate <span style="font-weight:400;font-size:.85rem;">(Science)</span></div>
-                        <div class="edu-detail">
-                            <strong>Govt. Suhrawardy College</strong> &nbsp;·&nbsp; Session 2023–2024<br>
-                            Result: <strong>GPA 5.00</strong>
-                        </div>
+                        <div class="edu-detail"><strong>Govt. Suhrawardy College</strong> &nbsp;·&nbsp; Session 2023–2024<br>Result: <strong>GPA 5.00</strong></div>
                     </div>
                 </div>
-
                 <div class="edu-item">
                     <div class="edu-icon"><i class="fas fa-book"></i></div>
                     <div>
                         <div class="edu-degree">Secondary School Certificate <span style="font-weight:400;font-size:.85rem;">(Science)</span></div>
-                        <div class="edu-detail">
-                            <strong>Dakshin Gabtala High School</strong> &nbsp;·&nbsp; Session 2021–2022<br>
-                            Result: <strong>GPA 5.00</strong>
-                        </div>
+                        <div class="edu-detail"><strong>Dakshin Gabtala High School</strong> &nbsp;·&nbsp; Session 2021–2022<br>Result: <strong>GPA 5.00</strong></div>
                     </div>
                 </div>
-
             </div>
         </div>
-        
-        <!-- Qualified Universities -->
 
-        <!-- <div class="section-card" style="animation-delay:.4s;">
-            <div class="section-label"><i class="fas fa-check-circle"></i> Qualified Admission Tests</div>
-            <div class="qualified-list">
-                <span class="univ-tag"><i class="fas fa-check"></i> University of Dhaka</span>
-                <span class="univ-tag"><i class="fas fa-check"></i> University of Rajshahi</span>
-                <span class="univ-tag"><i class="fas fa-check"></i> Jagannath University</span>
-                <span class="univ-tag"><i class="fas fa-check"></i> Jahangirnagar University</span>
-                <span class="univ-tag"><i class="fas fa-check"></i> RUET</span>
-                <span class="univ-tag"><i class="fas fa-check"></i> KUET</span>
-            </div>
-        </div>  -->
-
-        <!-- Hobbies -->
         <div class="section-card" style="animation-delay:.5s;">
             <div class="section-label"><i class="fas fa-heart"></i> Hobbies</div>
             <div class="hobbies-grid">
-                <div class="hobby-card">
-                    <div class="hobby-icon"><i class="fas fa-baseball-ball"></i></div>
-                    <div>
-                        <div class="hobby-name">Cricket</div>
-                        <div class="hobby-desc">The gentleman's game</div>
-                    </div>
-                </div>
-                <div class="hobby-card">
-                    <div class="hobby-icon"><i class="fas fa-chess"></i></div>
-                    <div>
-                        <div class="hobby-name">Chess</div>
-                        <div class="hobby-desc">Strategy & patience</div>
-                    </div>
-                </div>
-                <div class="hobby-card">
-                    <div class="hobby-icon"><i class="fas fa-laptop-code"></i></div>
-                    <div>
-                        <div class="hobby-name">Coding</div>
-                        <div class="hobby-desc">Building & experimenting</div>
-                    </div>
-                </div>
-                <div class="hobby-card">
-                    <div class="hobby-icon"><i class="fas fa-plane"></i></div>
-                    <div>
-                        <div class="hobby-name">Travelling</div>
-                        <div class="hobby-desc">Exploring new places</div>
-                    </div>
-                </div>
-                <div class="hobby-card">
-                    <div class="hobby-icon"><i class="fas fa-book-open"></i></div>
-                    <div>
-                        <div class="hobby-name">Reading</div>
-                        <div class="hobby-desc">Books & ideas</div>
-                    </div>
-                </div>
+                <div class="hobby-card"><div class="hobby-icon"><i class="fas fa-baseball-ball"></i></div><div><div class="hobby-name">Cricket</div><div class="hobby-desc">The gentleman's game</div></div></div>
+                <div class="hobby-card"><div class="hobby-icon"><i class="fas fa-chess"></i></div><div><div class="hobby-name">Chess</div><div class="hobby-desc">Strategy &amp; patience</div></div></div>
+                <div class="hobby-card"><div class="hobby-icon"><i class="fas fa-laptop-code"></i></div><div><div class="hobby-name">Coding</div><div class="hobby-desc">Building &amp; experimenting</div></div></div>
+                <div class="hobby-card"><div class="hobby-icon"><i class="fas fa-plane"></i></div><div><div class="hobby-name">Travelling</div><div class="hobby-desc">Exploring new places</div></div></div>
+                <div class="hobby-card"><div class="hobby-icon"><i class="fas fa-book-open"></i></div><div><div class="hobby-name">Reading</div><div class="hobby-desc">Books &amp; ideas</div></div></div>
             </div>
         </div>
 
-        <!-- Connect -->
         <div class="section-card" style="animation-delay:.6s;">
             <div class="section-label"><i class="fas fa-paper-plane"></i> Connect</div>
             <div class="contact-row">
-                <a href="mailto:allmunanabdullah@gmail.com" class="contact-link">
-                    <i class="fas fa-envelope"></i> Email
-                </a>
-                <a href="https://github.com/munan07" class="contact-link" target="_blank" rel="noopener">
-                    <i class="fab fa-github"></i> GitHub
-                </a>
-                <a href="https://www.facebook.com/share/18E4oCwqfT/" class="contact-link" target="_blank" rel="noopener">
-                    <i class="fab fa-facebook"></i> Facebook
-                </a>
-                <a href="https://www.linkedin.com/in/abdullah-all-munan-b447133b2" class="contact-link" target="_blank" rel="noopener">
-                    <i class="fab fa-linkedin"></i> LinkedIn
-                </a>
+                <a href="mailto:allmunanabdullah@gmail.com" class="contact-link"><i class="fas fa-envelope"></i> Email</a>
+                <a href="https://github.com/abamunan" class="contact-link" target="_blank" rel="noopener"><i class="fab fa-github"></i> GitHub</a>
+                <a href="https://www.facebook.com/share/18E4oCwqfT/" class="contact-link" target="_blank" rel="noopener"><i class="fab fa-facebook"></i> Facebook</a>
+                <a href="https://www.linkedin.com/in/abdullah-all-munan-b447133b2" class="contact-link" target="_blank" rel="noopener"><i class="fab fa-linkedin"></i> LinkedIn</a>
             </div>
         </div>
 
     </div>
 
-    <footer>
-        <i class="fas fa-hands-praying" style="margin-right:6px;opacity:.5;"></i>Tawakkul &amp; grind &nbsp;·&nbsp; © 2026 Munan
-    </footer>
-
+    <script src="footer.js"></script>
     <script>
         let lastScroll = window.scrollY;
         window.onscroll = () => {
             const nav = document.getElementById('navbar');
-            if (window.scrollY > lastScroll && window.scrollY > 70) {
-                nav.classList.add('navbar-hidden');
-            } else {
-                nav.classList.remove('navbar-hidden');
-            }
+            if (window.scrollY > lastScroll && window.scrollY > 70) { nav.classList.add('navbar-hidden'); }
+            else { nav.classList.remove('navbar-hidden'); }
             lastScroll = window.scrollY;
         };
     </script>
-
 </body>
 </html>
