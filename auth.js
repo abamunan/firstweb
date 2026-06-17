@@ -9,7 +9,7 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
          signInWithPopup, onAuthStateChanged, fetchSignInMethodsForEmail,
          sendPasswordResetEmail }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, serverTimestamp }
+import { getFirestore, doc, setDoc, getDoc, serverTimestamp, Timestamp }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // ── FIREBASE INIT ────────────────────────────────────────────
@@ -112,10 +112,87 @@ async function resendVerificationEmail() {
     if (user) await sendEmailVerification(user);
 }
 
-// ── RESET PASSWORD ────────────────────────────────────────────
+// ── RESET PASSWORD (with 5-min cross-device cooldown) ────────
+const RESET_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
+
+function emailToKey(email) {
+    // Firestore doc IDs can't contain certain chars; encode safely
+    return email.trim().toLowerCase().replace(/[^a-z0-9]/g, '_');
+}
+
+// Returns: { allowed: true } or { allowed: false, remainingMs: number }
+async function checkResetCooldown(email) {
+    const key = emailToKey(email);
+    try {
+        const ref  = doc(db, "passwordResetCooldowns", key);
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+            const lastSent = snap.data().lastSent;
+            const lastMs   = lastSent?.toMillis ? lastSent.toMillis() : 0;
+            const elapsed  = Date.now() - lastMs;
+            if (elapsed < RESET_COOLDOWN_MS) {
+                return { allowed: false, remainingMs: RESET_COOLDOWN_MS - elapsed };
+            }
+        }
+        return { allowed: true };
+    } catch (e) {
+        // If Firestore check fails for any reason, don't block the user
+        console.error("Cooldown check failed:", e);
+        return { allowed: true };
+    }
+}
+
 async function resetPassword(email) {
+    // First, check if this email is even registered
+    let methods = [];
+    try {
+        methods = await fetchSignInMethodsForEmail(auth, email);
+    } catch (e) {
+        // If the lookup itself fails, surface a generic error
+        const err = new Error("Could not verify this email right now. Please try again.");
+        err.code = "auth/lookup-failed";
+        throw err;
+    }
+
+    if (methods.length === 0) {
+        const err = new Error("No account found with this email.");
+        err.code = "auth/user-not-found";
+        throw err;
+    }
+
+    if (!methods.includes("password")) {
+        // Account exists but was created via Google — no password to reset
+        const err = new Error("This email is registered with Google. Please use the 'Continue with Google' button to log in.");
+        err.code = "auth/wrong-provider";
+        throw err;
+    }
+
+    const status = await checkResetCooldown(email);
+    if (!status.allowed) {
+        const err = new Error("COOLDOWN");
+        err.code = "auth/reset-cooldown";
+        err.remainingMs = status.remainingMs;
+        throw err;
+    }
+
     await sendPasswordResetEmail(auth, email);
+
+    // Record the timestamp so other devices also see the cooldown
+    try {
+        const key = emailToKey(email);
+        await setDoc(doc(db, "passwordResetCooldowns", key), {
+            lastSent: serverTimestamp(),
+        });
+    } catch (e) {
+        console.error("Failed to record cooldown:", e);
+    }
+}
+
+// Lets the UI show a live countdown without re-sending
+async function getResetCooldownRemaining(email) {
+    const status = await checkResetCooldown(email);
+    return status.allowed ? 0 : status.remainingMs;
 }
 
 // Expose globally
-window.MunanAuth = { loginWithEmail, signupWithEmail, loginWithGoogle, logout, resendVerificationEmail, resetPassword };
+window.MunanAuth = { loginWithEmail, signupWithEmail, loginWithGoogle, logout, resendVerificationEmail, resetPassword, getResetCooldownRemaining };

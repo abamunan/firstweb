@@ -181,7 +181,7 @@
         .msg-bar {
             display:none; align-items:center; gap:9px;
             padding:10px 14px; border-radius:10px;
-            font-size:.8rem; font-weight:600; margin-bottom:16px;
+            font-size:.8rem; font-weight:600; margin-top:14px;
             border:1px solid transparent;
             animation:fadeIn .3s ease;
         }
@@ -565,6 +565,7 @@
             'auth/popup-closed-by-user':  'Sign-in window closed before completing.',
             'auth/cancelled-popup-request':'Sign-in was cancelled.',
             'auth/user-disabled':         'This account has been disabled. Contact support.',
+            'auth/lookup-failed':         'Could not verify this email right now. Please try again.',
         };
         return map[err.code] || 'Something went wrong. Please try again.';
     }
