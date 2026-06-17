@@ -332,6 +332,9 @@
                                 <i class="fas fa-eye"></i>
                             </button>
                        </div>
+                       <div style="text-align:right;margin-top:6px;">
+                           <a href="#" onclick="openForgotPassword(event)" style="font-size:.78rem;color:var(--accent);text-decoration:none;font-weight:600;">Forgot password?</a>
+                       </div>
                     </div>
 
                     <button class="submit-btn" id="loginBtn" onclick="handleLogin()">
@@ -347,6 +350,31 @@
                     </button>
 
                 </div><!-- /formLogin -->
+
+                <!-- Forgot Password Modal -->
+                <div class="auth-form" id="formForgot" style="display:none;">
+                    <button type="button" onclick="closeForgotPassword()" style="background:none;border:none;color:var(--text-soft);font-size:.8rem;font-weight:600;cursor:pointer;margin-bottom:14px;display:flex;align-items:center;gap:6px;padding:0;">
+                        <i class="fas fa-arrow-left"></i> Back to Login
+                    </button>
+
+                    <p style="font-size:.84rem;color:var(--text-soft);margin-bottom:16px;line-height:1.5;">
+                        Enter your email address and we'll send you a link to reset your password.
+                    </p>
+
+                    <div id="forgotMsg" class="msg-bar"></div>
+
+                    <div class="field">
+                        <label for="forgotEmail">Email <span class="req">*</span></label>
+                        <div class="input-wrap">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" id="forgotEmail" placeholder="you@example.com" autocomplete="email">
+                        </div>
+                    </div>
+
+                    <button class="submit-btn" id="forgotBtn" onclick="handleForgotPassword()">
+                        <i class="fas fa-paper-plane" style="margin-right:7px;"></i>Send Reset Link
+                    </button>
+                </div><!-- /formForgot -->
 
                 <!-- ─────────────── SIGNUP FORM ─────────────── -->
                 <div class="auth-form" id="formSignup">
@@ -512,6 +540,53 @@
     function validEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
 
     // ── LOGIN HANDLER ────────────────────────────────────────
+    // ── FORGOT PASSWORD ───────────────────────────────────────
+    function openForgotPassword(e) {
+        e.preventDefault();
+        document.getElementById('formLogin').classList.remove('active');
+        document.getElementById('formForgot').style.display = 'block';
+        // Pre-fill with whatever email was typed in login
+        const loginEmail = document.getElementById('loginEmail').value.trim();
+        if (loginEmail) document.getElementById('forgotEmail').value = loginEmail;
+        clearMsg('forgotMsg');
+    }
+
+    function closeForgotPassword() {
+        document.getElementById('formForgot').style.display = 'none';
+        document.getElementById('formLogin').classList.add('active');
+        clearMsg('forgotMsg');
+    }
+
+    async function handleForgotPassword() {
+        clearMsg('forgotMsg');
+        const email = document.getElementById('forgotEmail').value.trim();
+
+        if (!email) {
+            showMsg('forgotMsg','error','fas fa-exclamation-circle','Please enter your email.'); return;
+        }
+        if (!validEmail(email)) {
+            showMsg('forgotMsg','error','fas fa-exclamation-circle','Enter a valid email address.'); return;
+        }
+
+        showMsg('forgotMsg','loading','fas fa-circle-notch','Sending reset link…');
+        document.getElementById('forgotBtn').disabled = true;
+
+        try {
+            await MunanAuth.resetPassword(email);
+            showMsg('forgotMsg','success','fas fa-check-circle','Reset link sent! Check your inbox (and spam folder).');
+        } catch(err) {
+            const map = {
+                'auth/user-not-found':    'No account found with this email.',
+                'auth/invalid-email':     'Enter a valid email address.',
+                'auth/too-many-requests': 'Too many attempts. Please wait a moment.',
+            };
+            const msg = map[err.code] || err.message || 'Something went wrong. Try again.';
+            showMsg('forgotMsg','error','fas fa-triangle-exclamation', msg);
+        } finally {
+            document.getElementById('forgotBtn').disabled = false;
+        }
+    }
+
     async function handleLogin() {
         clearMsg('loginMsg');
         const email = document.getElementById('loginEmail').value.trim();

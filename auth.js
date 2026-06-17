@@ -6,7 +6,8 @@
 import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
          signOut, sendEmailVerification, GoogleAuthProvider,
-         signInWithPopup, onAuthStateChanged }
+         signInWithPopup, onAuthStateChanged, fetchSignInMethodsForEmail,
+         sendPasswordResetEmail }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, serverTimestamp }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -42,16 +43,34 @@ onAuthStateChanged(auth, (user) => {
 
 // ── LOGIN WITH EMAIL & PASSWORD ──────────────────────────────
 async function loginWithEmail(email, password) {
-    const cred = await signInWithEmailAndPassword(auth, email, password);
-    if (!cred.user.emailVerified) {
-        await signOut(auth);
-        const err = new Error("Please verify your email before logging in.");
-        err.code = "auth/email-not-verified";
-        throw err;
+    try {
+        const cred = await signInWithEmailAndPassword(auth, email, password);
+        if (!cred.user.emailVerified) {
+            await signOut(auth);
+            const err = new Error("Please verify your email before logging in.");
+            err.code = "auth/email-not-verified";
+            throw err;
+        }
+        localStorage.setItem('munan_auth', 'true');
+        localStorage.setItem('isLoggedIn', 'true');
+        window.location.href = "dashboard.html";
+    } catch (error) {
+        if (error.code === "auth/invalid-credential" || error.code === "auth/user-not-found") {
+            // Check if this email was registered via Google instead
+            try {
+                const methods = await fetchSignInMethodsForEmail(auth, email);
+                if (methods.includes("google.com") && !methods.includes("password")) {
+                    const err = new Error("This email is registered with Google. Please use the 'Continue with Google' button to log in.");
+                    err.code = "auth/wrong-provider";
+                    throw err;
+                }
+            } catch (innerErr) {
+                if (innerErr.code === "auth/wrong-provider") throw innerErr;
+                // fetchSignInMethodsForEmail itself failed — fall through to original error
+            }
+        }
+        throw error;
     }
-    localStorage.setItem('munan_auth', 'true');
-    localStorage.setItem('isLoggedIn', 'true');
-    window.location.href = "dashboard.html";
 }
 
 // ── SIGNUP WITH EMAIL & PASSWORD ─────────────────────────────
@@ -84,7 +103,7 @@ async function logout() {
     localStorage.removeItem('munan_auth');
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('loggedInUser');
-    window.location.href = "dashboard.html";
+    window.location.href = "login.html";
 }
 
 // ── RESEND VERIFICATION ──────────────────────────────────────
@@ -93,5 +112,10 @@ async function resendVerificationEmail() {
     if (user) await sendEmailVerification(user);
 }
 
+// ── RESET PASSWORD ────────────────────────────────────────────
+async function resetPassword(email) {
+    await sendPasswordResetEmail(auth, email);
+}
+
 // Expose globally
-window.MunanAuth = { loginWithEmail, signupWithEmail, loginWithGoogle, logout, resendVerificationEmail };
+window.MunanAuth = { loginWithEmail, signupWithEmail, loginWithGoogle, logout, resendVerificationEmail, resetPassword };
