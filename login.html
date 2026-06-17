@@ -364,12 +364,15 @@
                         <i class="fas fa-arrow-left"></i> Back to Login
                     </button>
 
-                    <p style="font-size:.84rem;color:var(--text-soft);margin-bottom:8px;line-height:1.5;">
+                    <p style="font-size:.84rem;color:var(--text-soft);margin-bottom:10px;line-height:1.5;">
                         Enter your email address and we'll send you a link to reset your password.
                     </p>
-                    <p style="font-size:.74rem;color:var(--text-soft);margin-bottom:16px;line-height:1.5;opacity:.85;">
-                        <i class="fab fa-google" style="margin-right:4px;"></i>Signed up with Google? Use the "Continue with Google" button to log in instead — there's no password to reset.
-                    </p>
+                    <div style="display:flex;align-items:flex-start;gap:8px;background:rgba(2,132,199,.06);border:1px solid rgba(2,132,199,.18);border-radius:10px;padding:10px 12px;margin-bottom:16px;">
+                        <i class="fas fa-circle-info" style="color:var(--accent);font-size:.8rem;margin-top:2px;"></i>
+                        <p style="font-size:.74rem;color:var(--text-soft);line-height:1.5;margin:0;">
+                            Signed up with Google? Use <strong>Continue with Google</strong> to log in instead — there's no password to reset.
+                        </p>
+                    </div>
 
                     <div class="field">
                         <label for="forgotEmail">Email <span class="req">*</span></label>
@@ -397,11 +400,13 @@
                         <div class="verify-title">Check your inbox!</div>
                         <p class="verify-sub">
                             We sent a verification link to <strong id="verifyEmail"></strong>.
-                            Click it to activate your account.
+                            Click it to activate your account. If you don't see it, please check your spam folder too.
                         </p>
-                        <button class="resend-btn" onclick="handleResend()">
+                        <button class="resend-btn" id="resendBtn" onclick="handleResend()">
                             <i class="fas fa-redo" style="margin-right:4px;font-size:.7rem;"></i>Resend email
                         </button>
+                        <p id="resendTimer" style="display:none;text-align:center;font-size:.74rem;color:var(--text-soft);margin-top:8px;font-weight:600;"></p>
+                        <div id="resendMsg" class="msg-bar" style="margin-top:10px;"></div>
                     </div>
 
                     <!-- Signup fields (hidden after submit) -->
@@ -498,8 +503,12 @@
         document.getElementById('formSignup').classList.toggle('active', tab === 'signup');
         document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
         document.getElementById('tabSignup').classList.toggle('active', tab === 'signup');
+        // Always close the forgot-password panel when switching tabs
+        document.getElementById('formForgot').style.display = 'none';
+        clearInterval(forgotCountdownInterval);
         clearMsg('loginMsg');
         clearMsg('signupMsg');
+        clearMsg('forgotMsg');
     }
 
     // ── MESSAGE HELPERS ──────────────────────────────────────
@@ -738,12 +747,45 @@
     }
 
     // ── RESEND VERIFICATION ──────────────────────────────────
-    function handleResend() {
-        // TODO: implement resendVerificationEmail() in auth.js and call it here
-        const btn = document.querySelector('.resend-btn');
+    let resendCountdownInterval = null;
+    const RESEND_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
+
+    function startResendCountdown(remainingMs) {
+        const timerEl = document.getElementById('resendTimer');
+        const btn     = document.getElementById('resendBtn');
+        btn.disabled  = true;
+        timerEl.style.display = 'block';
+
+        let remaining = remainingMs;
+        clearInterval(resendCountdownInterval);
+
+        const tick = () => {
+            if (remaining <= 0) {
+                clearInterval(resendCountdownInterval);
+                timerEl.style.display = 'none';
+                btn.disabled = false;
+                return;
+            }
+            timerEl.textContent = `You can resend in ${formatRemaining(remaining)}`;
+            remaining -= 1000;
+        };
+        tick();
+        resendCountdownInterval = setInterval(tick, 1000);
+    }
+
+    async function handleResend() {
+        clearMsg('resendMsg');
+        const btn = document.getElementById('resendBtn');
         btn.disabled = true;
-        btn.textContent = 'Sent!';
-        setTimeout(() => { btn.disabled = false; btn.innerHTML = '<i class="fas fa-redo" style="margin-right:4px;font-size:.7rem;"></i>Resend email'; }, 30000);
+
+        try {
+            await MunanAuth.resendVerificationEmail();
+            showMsg('resendMsg','success','fas fa-check-circle','Verification email sent! Check your inbox (and spam folder).');
+            startResendCountdown(RESEND_COOLDOWN_MS);
+        } catch (err) {
+            showMsg('resendMsg','error','fas fa-triangle-exclamation', friendlyAuthError(err));
+            btn.disabled = false;
+        }
     }
 
     // ── PARTICLES ────────────────────────────────────────────
