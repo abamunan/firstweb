@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Privacy Policy for Munan.hub.">
+    <meta name="theme-color" content="#0ea5e9">
+    <title>Privacy Policy · Munan.hub</title>
+    <link rel="icon" type="image/png" href="icon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600&family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script>(function(){if(localStorage.getItem('theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');document.addEventListener('DOMContentLoaded',function(){document.body.setAttribute('data-theme','dark');});}}());</script>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        body { align-items: stretch; min-height: 100vh; }
+
+        .legal-wrap {
+            max-width: 720px; margin: 0 auto;
+            padding: 90px 22px 70px;
+        }
+        .legal-header { margin-bottom: 32px; }
+        .legal-title {
+            font-size: 1.7rem; font-weight: 800; color: var(--text-main);
+            letter-spacing: -.02em; margin-bottom: 8px;
+        }
+        .legal-updated {
+            font-size: .78rem; color: var(--text-soft); font-weight: 600;
+        }
+
+        .legal-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px; padding: 28px 26px;
+            backdrop-filter: blur(16px);
+        }
+
+        .legal-card h2 {
+            font-size: 1rem; font-weight: 700; color: var(--accent);
+            margin: 28px 0 10px; display: flex; align-items: center; gap: 8px;
+        }
+        .legal-card h2:first-child { margin-top: 0; }
+        .legal-card h2 i { font-size: .85rem; }
+
+        .legal-card p, .legal-card li {
+            font-size: .88rem; line-height: 1.7; color: var(--text-main);
+            opacity: .92;
+        }
+        .legal-card p { margin-bottom: 12px; }
+        .legal-card ul { margin: 10px 0 14px; padding-left: 22px; }
+        .legal-card li { margin-bottom: 7px; }
+        .legal-card strong { color: var(--text-main); font-weight: 700; }
+        .legal-card a { color: var(--accent); font-weight: 600; }
+        .legal-card a:hover { text-decoration: underline; }
+
+        .legal-divider {
+            height: 1px; background: var(--card-border); margin: 26px 0;
+        }
+
+        .back-link {
+            display: inline-flex; align-items: center; gap: 7px;
+            font-size: .82rem; font-weight: 700; color: var(--accent);
+            margin-bottom: 22px;
+        }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <a href="index.html" class="nav-logo">Munan<span style="color:var(--accent)">.</span>hub</a>
+    <div style="display:flex;gap:8px;align-items:center;">
+        <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+            <i class="fas fa-moon" id="themeIcon"></i>
+        </button>
+    </div>
+</nav>
+
+<div class="legal-wrap">
+
+    <a href="index.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Home</a>
+
+    <div class="legal-header">
+        <div class="legal-title">Privacy Policy</div>
+        <div class="legal-updated">Last updated: June 17, 2026</div>
+    </div>
+
+    <div class="legal-card">
+
+        <p>
+            Munan.hub is a personal, non-commercial website built and maintained by Abdullah Al Munan.
+            This Privacy Policy explains what information is collected when you use this site, how it is
+            used, and how you can control it. There are no advertisements, no data sales, and no third
+            parties profiting from your information here.
+        </p>
+
+        <h2><i class="fas fa-database"></i> Information We Collect</h2>
+        <p>When you create an account or use the tools on this site, the following information may be collected and stored:</p>
+        <ul>
+            <li><strong>Account info:</strong> your name, email address, and optionally a phone number, provided during sign-up.</li>
+            <li><strong>Authentication data:</strong> handled securely through Firebase Authentication (a Google service), including sign-in method (email/password or Google).</li>
+            <li><strong>App data:</strong> content you create while using tools on this site, such as Money Tracker entries or TypeMaster session results, tied to your account.</li>
+            <li><strong>Profile photo:</strong> if you sign in with Google, your Google account's profile picture may be displayed on your dashboard.</li>
+        </ul>
+
+        <h2><i class="fas fa-gears"></i> How We Use Your Information</h2>
+        <p>Your information is used solely to operate the features of this site. Specifically, it is used to:</p>
+        <ul>
+            <li>Create and secure your account.</li>
+            <li>Save and restore your data (such as Money Tracker entries) across sessions and devices.</li>
+            <li>Display your name, email, and photo on your personal dashboard.</li>
+            <li>Send you account-related emails, such as email verification and password reset links.</li>
+        </ul>
+        <p>Your data is never sold, rented, or shared with advertisers or unrelated third parties.</p>
+
+        <h2><i class="fas fa-server"></i> Where Your Data Is Stored</h2>
+        <p>
+            This site uses <strong>Firebase</strong> (a Google Cloud service) for authentication and data storage,
+            specifically Firebase Authentication and Firestore. Your data is stored on Google's secure infrastructure
+            and is subject to Google's own security practices. You can learn more about Google's data handling at
+            their <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Privacy Policy</a>.
+        </p>
+
+        <h2><i class="fas fa-shield-halved"></i> Data Security</h2>
+        <p>
+            Passwords are never stored or visible to us directly — they are managed entirely by Firebase Authentication
+            using industry-standard hashing and security practices. Access to your account data is restricted to your
+            authenticated session only.
+        </p>
+
+        <h2><i class="fas fa-user-check"></i> Your Rights & Choices</h2>
+        <p>You can, at any time:</p>
+        <ul>
+            <li>Request a copy of the data associated with your account.</li>
+            <li>Request correction of inaccurate information.</li>
+            <li>Request deletion of your account and associated data.</li>
+        </ul>
+        <p>To make any of these requests, simply contact us using the details below.</p>
+
+        <h2><i class="fas fa-cookie"></i> Cookies & Local Storage</h2>
+        <p>
+            This site uses your browser's local storage to remember your theme preference (light/dark) and login
+            session state. This is used purely for functionality and not for tracking or advertising purposes.
+        </p>
+
+        <h2><i class="fas fa-child"></i> Children's Privacy</h2>
+        <p>
+            This site is not specifically directed at children under 13, and we do not knowingly collect personal
+            information from children under 13.
+        </p>
+
+        <h2><i class="fas fa-rotate"></i> Changes to This Policy</h2>
+        <p>
+            This Privacy Policy may be updated occasionally to reflect changes to the site's features. Any changes
+            will be posted on this page with an updated revision date.
+        </p>
+
+        <div class="legal-divider"></div>
+
+        <h2><i class="fas fa-envelope"></i> Contact</h2>
+        <p>
+            If you have any questions about this Privacy Policy or your data, you can reach out directly at:
+            <br><a href="mailto:allmunanabdullah@gmail.com">allmunanabdullah@gmail.com</a>
+        </p>
+
+    </div>
+</div>
+
+<script>
+    window.toggleTheme = () => {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const next   = isDark ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        document.body.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+        document.getElementById('themeIcon').className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+    };
+    const t = localStorage.getItem('theme');
+    document.getElementById('themeIcon').className = t === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+</script>
+
+<script src="footer.js"></script>
+</body>
+</html>
