@@ -143,30 +143,6 @@ async function checkResetCooldown(email) {
 }
 
 async function resetPassword(email) {
-    // First, check if this email is even registered
-    let methods = [];
-    try {
-        methods = await fetchSignInMethodsForEmail(auth, email);
-    } catch (e) {
-        // If the lookup itself fails, surface a generic error
-        const err = new Error("Could not verify this email right now. Please try again.");
-        err.code = "auth/lookup-failed";
-        throw err;
-    }
-
-    if (methods.length === 0) {
-        const err = new Error("No account found with this email.");
-        err.code = "auth/user-not-found";
-        throw err;
-    }
-
-    if (!methods.includes("password")) {
-        // Account exists but was created via Google — no password to reset
-        const err = new Error("This email is registered with Google. Please use the 'Continue with Google' button to log in.");
-        err.code = "auth/wrong-provider";
-        throw err;
-    }
-
     const status = await checkResetCooldown(email);
     if (!status.allowed) {
         const err = new Error("COOLDOWN");
@@ -175,9 +151,25 @@ async function resetPassword(email) {
         throw err;
     }
 
-    await sendPasswordResetEmail(auth, email);
+    try {
+        await sendPasswordResetEmail(auth, email);
+    } catch (error) {
+        // With email enumeration protection ON, Firebase normally succeeds
+        // silently for unregistered emails. If it ever does throw
+        // user-not-found, we deliberately swallow it here and treat it the
+        // same as success — we never want to reveal whether an email exists.
+        if (error.code === "auth/user-not-found") {
+            // do nothing — fall through to recording cooldown + generic success
+        } else {
+            // Real errors (invalid email format, too-many-requests, network, etc.)
+            // are still surfaced normally.
+            throw error;
+        }
+    }
 
-    // Record the timestamp so other devices also see the cooldown
+    // Record the timestamp so other devices also see the cooldown.
+    // This happens regardless of whether an email was actually delivered,
+    // which also avoids leaking account-existence info via cooldown timing.
     try {
         const key = emailToKey(email);
         await setDoc(doc(db, "passwordResetCooldowns", key), {
