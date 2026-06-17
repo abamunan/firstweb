@@ -728,6 +728,9 @@
             document.getElementById('verifyEmail').textContent = email;
             document.getElementById('signupFields').style.display = 'none';
             document.getElementById('verifyState').classList.add('show');
+            // The first verification email was just sent during signup —
+            // start the cooldown timer right away so "Resend" can't be spammed immediately.
+            startResendCountdown(RESEND_COOLDOWN_MS);
         } catch(err) {
             showMsg('signupMsg','error','fas fa-triangle-exclamation', friendlyAuthError(err));
         } finally {
