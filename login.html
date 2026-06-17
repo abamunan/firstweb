@@ -12,6 +12,9 @@
     <link rel="stylesheet" href="style.css">
     <script>(function(){if(localStorage.getItem('theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');document.addEventListener('DOMContentLoaded',function(){document.body.setAttribute('data-theme','dark');});}}());</script>
     <style>
+        /* Safety reset in case style.css fails to load */
+        *, *::before, *::after { box-sizing: border-box; }
+
         /* ── PAGE-SPECIFIC TOKENS ────────────────────────────── */
         :root {
             --input-bg:     rgba(255,255,255,0.7);
@@ -143,7 +146,7 @@
             transition:color var(--trans);
         }
         .input-wrap input {
-            width:100%; padding:11px 40px 11px 38px;
+            width:100%; padding:11px 38px 11px 38px;
             background:var(--input-bg);
             border:1.5px solid var(--input-border);
             border-radius:10px;
@@ -164,10 +167,14 @@
 
         /* Password toggle eye */
         .eye-btn {
-            position:absolute; right:12px; top:50%; transform:translateY(-50%);
+            position:absolute; right:4px; top:50%; transform:translateY(-50%);
             background:none; border:none; cursor:pointer;
-            color:var(--text-soft); font-size:.85rem; transition:color var(--trans); padding:2px;
+            color:var(--text-soft); font-size:.85rem; transition:color var(--trans);
+            width:34px; height:34px; margin:0; padding:0; line-height:1; z-index:2;
+            display:flex; align-items:center; justify-content:center;
+            -webkit-tap-highlight-color: transparent;
         }
+        .eye-btn i { pointer-events:none; }
         .eye-btn:hover { color:var(--accent); }
 
         /* ── MESSAGE BAR ───────────────────────────────────── */
@@ -313,8 +320,6 @@
                 <!-- ─────────────── LOGIN FORM ──────────────── -->
                 <div class="auth-form active" id="formLogin">
 
-                    <div id="loginMsg" class="msg-bar"></div>
-
                     <div class="field">
                         <label for="loginEmail">Email <span class="req">*</span></label>
                         <div class="input-wrap">
@@ -328,7 +333,7 @@
                         <div class="input-wrap">
                             <i class="fas fa-lock"></i>
                             <input type="password" id="loginPassword" placeholder="Your password" autocomplete="current-password">
-                            <button class="eye-btn" type="button" onclick="toggleEye('loginPassword',this)" tabindex="-1">
+                            <button class="eye-btn" type="button" onclick="toggleEye('loginPassword',this,event)" tabindex="-1">
                                 <i class="fas fa-eye"></i>
                             </button>
                        </div>
@@ -340,6 +345,8 @@
                     <button class="submit-btn" id="loginBtn" onclick="handleLogin()">
                         <i class="fas fa-sign-in-alt" style="margin-right:7px;"></i>Login
                     </button>
+
+                    <div id="loginMsg" class="msg-bar"></div>
 
                     <div class="divider">or</div>
 
@@ -361,8 +368,6 @@
                         Enter your email address and we'll send you a link to reset your password.
                     </p>
 
-                    <div id="forgotMsg" class="msg-bar"></div>
-
                     <div class="field">
                         <label for="forgotEmail">Email <span class="req">*</span></label>
                         <div class="input-wrap">
@@ -374,6 +379,10 @@
                     <button class="submit-btn" id="forgotBtn" onclick="handleForgotPassword()">
                         <i class="fas fa-paper-plane" style="margin-right:7px;"></i>Send Reset Link
                     </button>
+
+                    <p id="forgotTimer" style="display:none;text-align:center;font-size:.76rem;color:var(--text-soft);margin-top:10px;font-weight:600;"></p>
+
+                    <div id="forgotMsg" class="msg-bar"></div>
                 </div><!-- /formForgot -->
 
                 <!-- ─────────────── SIGNUP FORM ─────────────── -->
@@ -394,8 +403,6 @@
 
                     <!-- Signup fields (hidden after submit) -->
                     <div id="signupFields">
-
-                        <div id="signupMsg" class="msg-bar"></div>
 
                         <div class="field">
                             <label for="signupName">Full Name <span class="req">*</span></label>
@@ -426,7 +433,7 @@
                             <div class="input-wrap">
                                 <i class="fas fa-lock"></i>
                                 <input type="password" id="signupPassword" placeholder="Min. 8 characters" autocomplete="new-password" oninput="checkStrength(this.value)">
-                                <button class="eye-btn" type="button" onclick="toggleEye('signupPassword',this)" tabindex="-1">
+                                <button class="eye-btn" type="button" onclick="toggleEye('signupPassword',this,event)" tabindex="-1">
                                     <i class="fas fa-eye"></i>
                                 </button>
                             </div>
@@ -447,7 +454,7 @@
                             <div class="input-wrap">
                                 <i class="fas fa-shield-alt"></i>
                                 <input type="password" id="signupConfirm" placeholder="Repeat password" autocomplete="new-password">
-                                <button class="eye-btn" type="button" onclick="toggleEye('signupConfirm',this)" tabindex="-1">
+                                <button class="eye-btn" type="button" onclick="toggleEye('signupConfirm',this,event)" tabindex="-1">
                                     <i class="fas fa-eye"></i>
                                 </button>
                             </div>
@@ -456,6 +463,8 @@
                         <button class="submit-btn" id="signupBtn" onclick="handleSignup()">
                             <i class="fas fa-user-plus" style="margin-right:7px;"></i>Create Account
                         </button>
+
+                        <div id="signupMsg" class="msg-bar"></div>
 
                         <div class="divider">or</div>
 
@@ -503,7 +512,8 @@
     }
 
     // ── PASSWORD EYE TOGGLE ──────────────────────────────────
-    function toggleEye(inputId, btn) {
+    function toggleEye(inputId, btn, e) {
+        if (e) e.preventDefault();
         const inp = document.getElementById(inputId);
         const icon = btn.querySelector('i');
         if (inp.type === 'password') {
@@ -539,9 +549,61 @@
     // ── VALIDATE EMAIL ───────────────────────────────────────
     function validEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
 
+    // ── FRIENDLY ERROR MAPPER (never mentions Firebase) ──────
+    function friendlyAuthError(err) {
+        const map = {
+            'auth/wrong-password':        'Incorrect password. Please try again.',
+            'auth/invalid-credential':    'Incorrect email or password. Please try again.',
+            'auth/user-not-found':        'No account found with this email.',
+            'auth/email-not-verified':    'Please verify your email before logging in.',
+            'auth/wrong-provider':        err.message || 'This email is linked to a different sign-in method.',
+            'auth/too-many-requests':     'Too many attempts. Please wait a moment and try again.',
+            'auth/invalid-email':         'Enter a valid email address.',
+            'auth/network-request-failed':'Network error. Check your connection and try again.',
+            'auth/email-already-in-use':  'This email is already registered.',
+            'auth/weak-password':         'Choose a stronger password.',
+            'auth/popup-closed-by-user':  'Sign-in window closed before completing.',
+            'auth/cancelled-popup-request':'Sign-in was cancelled.',
+            'auth/user-disabled':         'This account has been disabled. Contact support.',
+        };
+        return map[err.code] || 'Something went wrong. Please try again.';
+    }
+
     // ── LOGIN HANDLER ────────────────────────────────────────
     // ── FORGOT PASSWORD ───────────────────────────────────────
-    function openForgotPassword(e) {
+    let forgotCountdownInterval = null;
+
+    function formatRemaining(ms) {
+        const totalSec = Math.ceil(ms / 1000);
+        const m = Math.floor(totalSec / 60);
+        const s = totalSec % 60;
+        return `${m}:${s.toString().padStart(2,'0')}`;
+    }
+
+    function startForgotCountdown(remainingMs) {
+        const timerEl = document.getElementById('forgotTimer');
+        const btn     = document.getElementById('forgotBtn');
+        btn.disabled  = true;
+        timerEl.style.display = 'block';
+
+        let remaining = remainingMs;
+        clearInterval(forgotCountdownInterval);
+
+        const tick = () => {
+            if (remaining <= 0) {
+                clearInterval(forgotCountdownInterval);
+                timerEl.style.display = 'none';
+                btn.disabled = false;
+                return;
+            }
+            timerEl.textContent = `You can request another link in ${formatRemaining(remaining)}`;
+            remaining -= 1000;
+        };
+        tick();
+        forgotCountdownInterval = setInterval(tick, 1000);
+    }
+
+    async function openForgotPassword(e) {
         e.preventDefault();
         document.getElementById('formLogin').classList.remove('active');
         document.getElementById('formForgot').style.display = 'block';
@@ -549,12 +611,21 @@
         const loginEmail = document.getElementById('loginEmail').value.trim();
         if (loginEmail) document.getElementById('forgotEmail').value = loginEmail;
         clearMsg('forgotMsg');
+
+        // If this email already has an active cooldown (even from another device), show it
+        if (loginEmail && validEmail(loginEmail)) {
+            try {
+                const remaining = await MunanAuth.getResetCooldownRemaining(loginEmail);
+                if (remaining > 0) startForgotCountdown(remaining);
+            } catch {}
+        }
     }
 
     function closeForgotPassword() {
         document.getElementById('formForgot').style.display = 'none';
         document.getElementById('formLogin').classList.add('active');
         clearMsg('forgotMsg');
+        clearInterval(forgotCountdownInterval);
     }
 
     async function handleForgotPassword() {
@@ -574,15 +645,14 @@
         try {
             await MunanAuth.resetPassword(email);
             showMsg('forgotMsg','success','fas fa-check-circle','Reset link sent! Check your inbox (and spam folder).');
+            startForgotCountdown(5 * 60 * 1000);
         } catch(err) {
-            const map = {
-                'auth/user-not-found':    'No account found with this email.',
-                'auth/invalid-email':     'Enter a valid email address.',
-                'auth/too-many-requests': 'Too many attempts. Please wait a moment.',
-            };
-            const msg = map[err.code] || err.message || 'Something went wrong. Try again.';
-            showMsg('forgotMsg','error','fas fa-triangle-exclamation', msg);
-        } finally {
+            if (err.code === 'auth/reset-cooldown') {
+                showMsg('forgotMsg','error','fas fa-clock','A reset link was already sent recently. Please wait before requesting another.');
+                startForgotCountdown(err.remainingMs);
+                return;
+            }
+            showMsg('forgotMsg','error','fas fa-triangle-exclamation', friendlyAuthError(err));
             document.getElementById('forgotBtn').disabled = false;
         }
     }
@@ -607,14 +677,7 @@
             await MunanAuth.loginWithEmail(email, pass);
             showMsg('loginMsg','success','fas fa-check-circle','Logged in successfully! Redirecting…');
         } catch(err) {
-            const map = {
-                'auth/wrong-password':    'Incorrect password. Try again.',
-                'auth/user-not-found':    'No account found with this email.',
-                'auth/too-many-requests': 'Too many attempts. Please wait a moment.',
-                'auth/invalid-email':     'Enter a valid email address.',
-            };
-            const msg = map[err.code] || err.message || 'Something went wrong. Try again.';
-            showMsg('loginMsg','error','fas fa-triangle-exclamation', msg);
+            showMsg('loginMsg','error','fas fa-triangle-exclamation', friendlyAuthError(err));
         } finally {
             document.getElementById('loginBtn').disabled = false;
         }
@@ -653,13 +716,7 @@
             document.getElementById('signupFields').style.display = 'none';
             document.getElementById('verifyState').classList.add('show');
         } catch(err) {
-            const map = {
-                'auth/email-already-in-use': 'This email is already registered.',
-                'auth/invalid-email':        'Enter a valid email address.',
-                'auth/weak-password':        'Choose a stronger password.',
-            };
-            const msg = map[err.code] || err.message || 'Signup failed. Try again.';
-            showMsg('signupMsg','error','fas fa-triangle-exclamation', msg);
+            showMsg('signupMsg','error','fas fa-triangle-exclamation', friendlyAuthError(err));
         } finally {
             document.getElementById('signupBtn').disabled = false;
         }
@@ -672,7 +729,7 @@
         } catch(err) {
             const targetMsg = document.getElementById('formLogin').classList.contains('active')
                 ? 'loginMsg' : 'signupMsg';
-            showMsg(targetMsg,'error','fas fa-triangle-exclamation', err.message || 'Google sign-in failed.');
+            showMsg(targetMsg,'error','fas fa-triangle-exclamation', friendlyAuthError(err));
         }
     }
 
