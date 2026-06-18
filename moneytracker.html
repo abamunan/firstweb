@@ -398,6 +398,7 @@
   <div class="month-selector">
     <select id="yearSel" onchange="onMonthChange()"></select>
     <select id="monthSel" onchange="onMonthChange()"></select>
+    <a href="index.html" style="display:flex;align-items:center;gap:5px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:10px;padding:5px 11px;color:#fff;font-family:var(--font);font-size:0.76rem;font-weight:600;text-decoration:none;white-space:nowrap;transition:var(--trans);" onmouseover="this.style.background='rgba(255,255,255,0.22)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">🏠 Home</a>
   </div>
 </div>
 
@@ -669,7 +670,7 @@ function renderDayBtns(){
   const container=document.getElementById('dayBtns');
   container.innerHTML='';
   const total=daysInMonth(curYear,curMonth);
-  const visible=7;
+  const visible=window.innerWidth>=900?total:window.innerWidth>=600?14:7;
   const start=Math.max(1,Math.min(navOffset+1,total-visible+1));
   for(let d=start;d<=Math.min(start+visible-1,total);d++){
     const btn=document.createElement('button');
@@ -684,7 +685,8 @@ function renderDayBtns(){
 
 function shiftNav(delta){
   const total=daysInMonth(curYear,curMonth);
-  navOffset=Math.max(0,Math.min(navOffset+delta,total-7));
+  const visible=window.innerWidth>=900?total:window.innerWidth>=600?14:7;
+  navOffset=Math.max(0,Math.min(navOffset+delta,total-visible));
   renderDayBtns();
 }
 
