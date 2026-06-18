@@ -53,7 +53,7 @@
         .comic-btn:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
 
         /* ── MODAL / VIEWER ── */
-        .modal-overlay { position:fixed; inset:0; z-index:2000; background:rgba(15,23,42,0.45); backdrop-filter:blur(14px); display:none; align-items:flex-start; justify-content:center; padding:60px 20px 40px; overflow-y:auto; }
+        .modal-overlay { position:fixed; inset:0; z-index:2000; background:rgba(15,23,42,0.25); backdrop-filter:blur(6px); display:none; align-items:flex-start; justify-content:center; padding:60px 20px 40px; overflow-y:auto; }
         .modal-overlay.open { display:flex; }
         .modal { background:var(--card-bg); border:1.5px solid var(--card-border); border-radius:24px; width:100%; max-width:780px; box-shadow:0 30px 80px rgba(2,132,199,.18); animation:popUp .45s cubic-bezier(.34,1.56,.64,1) both; overflow:hidden; backdrop-filter:blur(20px); }
         @keyframes popUp { from { opacity:0; transform:scale(.93) translateY(20px); } to { opacity:1; transform:scale(1) translateY(0); } }
