@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <style>
-        /* ── BODY OVERRIDE ───────────────────────────── */
         body {
             display: flex;
             flex-direction: column;
@@ -17,8 +16,6 @@
             min-height: 100vh;
             padding: 0;
         }
-
-        /* ── MAIN WRAP (vertically centered card) ────── */
         .main-wrap {
             flex: 1;
             display: flex;
@@ -26,8 +23,6 @@
             justify-content: center;
             padding: 70px 20px 40px;
         }
-
-        /* ── MAIN CARD ───────────────────────────────── */
         .drive-card {
             background: var(--card-bg);
             backdrop-filter: blur(16px);
@@ -44,7 +39,6 @@
             transform: translateY(-5px);
             box-shadow: 0 16px 48px rgba(2,132,199,.18);
         }
-
         .drive-card-icon {
             width: 72px; height: 72px; border-radius: 18px;
             background: linear-gradient(135deg, #1a73e8, #34a853);
@@ -63,7 +57,24 @@
             margin-bottom: 1.8rem; line-height: 1.6;
         }
 
-        /* ── BUTTONS ─────────────────────────────────── */
+        /* Loading state */
+        .loading-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-muted);
+            font-size: 0.88rem;
+        }
+        .spinner {
+            width: 36px; height: 36px;
+            border: 3px solid rgba(2,132,199,.15);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
         .drive-btn {
             width: 100%; padding: 12px;
             border: none; border-radius: 12px;
@@ -93,7 +104,6 @@
             box-shadow: 0 4px 14px rgba(22,163,74,.3);
         }
 
-        /* ── MODAL ───────────────────────────────────── */
         .modal-overlay {
             position: fixed; inset: 0;
             background: rgba(0,20,50,0.35);
@@ -120,7 +130,6 @@
             from { opacity: 0; transform: translateY(24px) scale(.97); }
             to   { opacity: 1; transform: translateY(0) scale(1); }
         }
-
         .modal-icon {
             width: 54px; height: 54px; border-radius: 14px;
             background: linear-gradient(135deg,#5bb8e8,#2e8fc7);
@@ -145,12 +154,12 @@
             font-size: .9rem; color: var(--text-main);
             background: rgba(255,255,255,.8);
             transition: var(--trans);
+            box-sizing: border-box;
         }
         input[type="password"]:focus {
             border-color: var(--accent);
             box-shadow: 0 0 0 3px rgba(2,132,199,.12);
         }
-
         .error {
             color: #dc2626; font-size: 0.78rem;
             margin-bottom: 12px; display: none;
@@ -158,7 +167,6 @@
             border: 1px solid rgba(220,38,38,.2);
             border-radius: 8px; padding: 6px 12px;
         }
-
         .btn-row { display: flex; gap: 10px; }
 
         .shake { animation: shake 0.4s; }
@@ -180,15 +188,25 @@
 
     <div class="main-wrap">
         <div class="drive-card" id="mainCard">
-            <div class="drive-card-icon"><i class="fab fa-google-drive"></i></div>
-            <h3>Private Drive</h3>
-            <p>This folder is password protected. Enter the correct password to unlock and access the documents.</p>
-            <button class="drive-btn" id="unlockBtn" onclick="toggleModal(true)">
-                <i class="fas fa-lock"></i> Unlock Access
-            </button>
+            <!-- Auth checking state (default) -->
+            <div id="stateLoading" class="loading-state">
+                <div class="spinner"></div>
+                <span>Checking access…</span>
+            </div>
+
+            <!-- Authenticated: show unlock button -->
+            <div id="stateReady" style="display:none;">
+                <div class="drive-card-icon"><i class="fab fa-google-drive"></i></div>
+                <h3>Private Drive</h3>
+                <p>This folder is password protected. Enter the correct password to unlock and access the documents.</p>
+                <button class="drive-btn" id="unlockBtn" onclick="toggleModal(true)">
+                    <i class="fas fa-lock"></i> Unlock Access
+                </button>
+            </div>
         </div>
     </div>
 
+    <!-- Password Modal -->
     <div class="modal-overlay" id="overlay" onclick="handleOverlayClick(event)">
         <div class="modal">
             <div class="modal-icon"><i class="fas fa-shield-halved"></i></div>
@@ -209,17 +227,66 @@
     </div>
 
     <script src="footer.js"></script>
-    <script>
-        /* ── THEME SYNC ───────────────────────────────── */
+
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged }
+            from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc }
+            from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        // ── Same config as auth.js ──────────────────────────
+        const firebaseConfig = {
+            apiKey:            "AIzaSyDl0Cqhjj-X9SjwMrrTWi_lW4ADsI8Gnq0",
+            authDomain:        "login-system-309fc.firebaseapp.com",
+            projectId:         "login-system-309fc",
+            storageBucket:     "login-system-309fc.firebasestorage.app",
+            messagingSenderId: "509365590175",
+            appId:             "1:509365590175:web:2a1de8ab7688a96853aaaa"
+        };
+
+        const app  = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db   = getFirestore(app);
+
+        // Theme sync
         if (localStorage.getItem('theme') === 'dark') {
             document.documentElement.setAttribute('data-theme', 'dark');
         }
 
-        const CONFIG = {
-            URL:  "https://drive.google.com/drive/folders/182xz2M84kai2ZUeAjYno2avEqTyOarg5",
-            PASS: "MnDV##"
-        };
+        // ── Auth Guard + Firestore fetch ────────────────────
+        onAuthStateChanged(auth, async (user) => {
+            if (!user || !user.emailVerified) {
+                // Not logged in → redirect to login
+                window.location.href = "login.html";
+                return;
+            }
 
+            try {
+                // Fetch secret from Firestore (only authed users can read)
+                const snap = await getDoc(doc(db, "secrets", "privateDrive"));
+                if (!snap.exists()) {
+                    console.error("Secret doc not found in Firestore.");
+                    return;
+                }
+                const { url, pass } = snap.data();
+
+                // Store in memory only — never in DOM or global JS
+                window.__driveURL  = url;
+                window.__drivePass = pass;
+
+                // Show the unlock UI
+                document.getElementById('stateLoading').style.display = 'none';
+                document.getElementById('stateReady').style.display   = 'block';
+
+            } catch (e) {
+                console.error("Failed to load drive config:", e);
+            }
+        });
+    </script>
+
+    <script>
         const el = {
             overlay: document.getElementById('overlay'),
             input:   document.getElementById('passIn'),
@@ -237,12 +304,12 @@
         }
 
         function verify() {
-            if (el.input.value === CONFIG.PASS) {
+            if (el.input.value === window.__drivePass) {
                 toggleModal(false);
-                window.open(CONFIG.URL, '_blank');
+                window.open(window.__driveURL, '_blank');
                 el.btn.className = 'drive-btn success';
                 el.btn.innerHTML = '<i class="fas fa-external-link-alt"></i> Open Drive';
-                el.btn.onclick = () => window.open(CONFIG.URL, '_blank');
+                el.btn.onclick = () => window.open(window.__driveURL, '_blank');
             } else {
                 el.err.style.display = 'block';
                 el.input.classList.add('shake');
