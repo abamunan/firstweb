@@ -3,501 +3,321 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Batch resize photos to 300×300 px instantly.">
-    <meta name="theme-color" content="#0ea5e9">
     <title>Photo Resizer | Munan.hub</title>
     <link rel="icon" type="image/png" href="icon.png">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
-    <script>
-        (function(){
-            if(localStorage.getItem('theme')==='dark'){
-                document.documentElement.setAttribute('data-theme','dark');
-                document.addEventListener('DOMContentLoaded',function(){
-                    document.body.setAttribute('data-theme','dark');
-                });
-            }
-        })();
-    </script>
+    <script>(function(){if(localStorage.getItem('theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');document.addEventListener('DOMContentLoaded',function(){document.body.setAttribute('data-theme','dark');});}})()</script>
     <style>
-        .page-hero {
-            padding: 100px 20px 30px;
-            text-align: center;
-            position: relative;
-            z-index: 1;
-        }
-        .page-hero h1 {
-            font-size: clamp(1.8rem, 5vw, 2.6rem);
-            font-weight: 800;
-            letter-spacing: -.03em;
-            margin-bottom: 10px;
-        }
-        .page-hero h1 span { color: var(--accent); }
-        .page-hero p {
-            color: var(--text-muted);
-            font-size: .95rem;
-            margin-bottom: 0;
-        }
+        .page-hero{padding:100px 20px 28px;text-align:center;position:relative;z-index:1;}
+        .page-hero h1{font-size:clamp(1.8rem,5vw,2.6rem);font-weight:800;letter-spacing:-.03em;margin-bottom:10px;}
+        .page-hero h1 span{color:var(--accent);}
+        .page-hero p{color:var(--text-muted);font-size:.95rem;}
+        .resizer-wrap{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:20px 5% 60px;}
 
-        .resizer-wrap {
-            position: relative;
-            z-index: 1;
-            max-width: 960px;
-            margin: 0 auto;
-            padding: 20px 5% 60px;
-        }
+        /* Settings bar */
+        .settings-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+        .settings-label{font-size:.8rem;font-weight:700;color:var(--text-muted);display:flex;align-items:center;gap:7px;}
+        .settings-label i{color:var(--accent);}
+        .preset-group{display:flex;gap:6px;flex-wrap:wrap;}
+        .preset-btn{background:var(--card-bg);border:1.5px solid var(--card-border);border-radius:20px;padding:5px 14px;font-size:.75rem;font-weight:700;color:var(--text-muted);cursor:pointer;font-family:'Poppins',sans-serif;transition:all .2s;}
+        .preset-btn:hover,.preset-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(2,132,199,.08);}
+        .btn-gear{background:var(--card-bg);border:1.5px solid var(--card-border);border-radius:10px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);font-size:.9rem;transition:all .25s;margin-left:auto;flex-shrink:0;}
+        .btn-gear:hover{border-color:var(--accent);color:var(--accent);}
+        .btn-gear.open{transform:rotate(60deg);border-color:var(--accent);color:var(--accent);}
+
+        /* Custom panel */
+        .custom-panel{background:var(--card-bg);border:1.5px solid var(--accent);border-radius:16px;padding:18px 20px;margin-bottom:16px;display:none;backdrop-filter:blur(10px);}
+        .custom-panel.open{display:block;animation:fadeDown .22s ease both;}
+        @keyframes fadeDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+        .custom-panel-title{font-size:.82rem;font-weight:700;color:var(--accent);margin-bottom:14px;display:flex;align-items:center;gap:7px;}
+        .custom-row{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;}
+        .inp-grp{display:flex;flex-direction:column;gap:4px;}
+        .inp-grp label{font-size:.68rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;}
+        .inp-grp input{width:90px;background:var(--card-bg);border:1.5px solid var(--card-border);border-radius:8px;padding:8px 10px;font-size:.85rem;font-weight:600;color:var(--text-main);font-family:'Poppins',sans-serif;outline:none;transition:border-color .2s;}
+        .inp-grp input:focus{border-color:var(--accent);}
+        .cross{font-size:1.1rem;color:var(--text-muted);padding-bottom:8px;}
+        .btn-apply{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:.82rem;font-weight:700;font-family:'Poppins',sans-serif;cursor:pointer;transition:all .2s;}
+        .btn-apply:hover{background:#0284c7;transform:translateY(-1px);}
+        .size-note{font-size:.72rem;color:var(--text-muted);margin-top:12px;display:flex;align-items:center;gap:5px;}
+        .size-note i{color:var(--accent);font-size:.65rem;}
 
         /* Drop zone */
-        .drop-zone {
-            border: 2px dashed var(--card-border);
-            border-radius: 18px;
-            padding: 48px 24px;
-            text-align: center;
-            cursor: pointer;
-            transition: all .2s ease;
-            background: var(--card-bg);
-            backdrop-filter: blur(10px);
-            margin-bottom: 24px;
-            position: relative;
-        }
-        .drop-zone:hover, .drop-zone.dragging {
-            border-color: var(--accent);
-            box-shadow: 0 0 30px rgba(2,132,199,.15);
-        }
-        .drop-zone input[type="file"] {
-            position: absolute;
-            inset: 0;
-            opacity: 0;
-            cursor: pointer;
-            width: 100%;
-            height: 100%;
-        }
-        .drop-icon {
-            font-size: 2.2rem;
-            color: var(--accent);
-            margin-bottom: 14px;
-        }
-        .drop-title {
-            font-size: 1rem;
-            font-weight: 700;
-            margin-bottom: 6px;
-            color: var(--text-main);
-        }
-        .drop-sub {
-            font-size: .8rem;
-            color: var(--text-muted);
-        }
+        .drop-zone{border:2px dashed var(--card-border);border-radius:18px;padding:44px 24px;text-align:center;cursor:pointer;transition:all .2s;background:var(--card-bg);backdrop-filter:blur(10px);margin-bottom:20px;position:relative;}
+        .drop-zone:hover,.drop-zone.dragging{border-color:var(--accent);box-shadow:0 0 30px rgba(2,132,199,.15);}
+        .drop-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+        .drop-icon{font-size:2.2rem;color:var(--accent);margin-bottom:12px;}
+        .drop-title{font-size:1rem;font-weight:700;margin-bottom:5px;color:var(--text-main);}
+        .drop-sub{font-size:.78rem;color:var(--text-muted);}
+        .drop-pill{display:inline-flex;align-items:center;gap:6px;margin-top:12px;background:rgba(2,132,199,.1);border:1px solid rgba(2,132,199,.25);border-radius:20px;padding:4px 14px;font-size:.72rem;font-weight:700;color:var(--accent);}
 
-        /* Controls bar */
-        .controls-bar {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 20px;
-        }
-        .count-tag {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 20px;
-            padding: 7px 16px;
-            font-size: .8rem;
-            color: var(--text-muted);
-        }
-        .count-tag strong { color: var(--text-main); }
+        /* Controls */
+        .controls-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px;}
+        .count-tag{background:var(--card-bg);border:1px solid var(--card-border);border-radius:20px;padding:7px 16px;font-size:.8rem;color:var(--text-muted);}
+        .count-tag strong{color:var(--text-main);}
+        .btn-resize{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:10px 22px;font-size:.88rem;font-weight:700;font-family:'Poppins',sans-serif;cursor:pointer;transition:all .2s;}
+        .btn-resize:hover{background:#0284c7;transform:translateY(-1px);}
+        .btn-resize:disabled{background:var(--card-border);color:var(--text-muted);cursor:not-allowed;transform:none;}
+        .btn-dl-all{background:rgba(22,163,74,.1);border:1.5px solid rgba(22,163,74,.35);color:#16a34a;border-radius:10px;padding:10px 18px;font-size:.82rem;font-weight:700;font-family:'Poppins',sans-serif;cursor:pointer;transition:all .2s;margin-left:auto;}
+        .btn-dl-all:hover{background:rgba(22,163,74,.2);}
+        .btn-clear{background:transparent;border:1.5px solid var(--card-border);color:var(--text-muted);border-radius:10px;padding:10px 16px;font-size:.82rem;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;transition:all .2s;}
+        .btn-clear:hover{border-color:var(--text-muted);color:var(--text-main);}
 
-        .btn-resize {
-            background: var(--accent);
-            color: #fff;
-            border: none;
-            border-radius: 10px;
-            padding: 10px 22px;
-            font-size: .88rem;
-            font-weight: 700;
-            font-family: 'Poppins', sans-serif;
-            cursor: pointer;
-            transition: all .2s;
-        }
-        .btn-resize:hover { background: #0284c7; transform: translateY(-1px); }
-        .btn-resize:disabled {
-            background: var(--card-border);
-            color: var(--text-muted);
-            cursor: not-allowed;
-            transform: none;
-        }
+        /* Progress */
+        .progress-wrap{height:5px;background:var(--card-border);border-radius:5px;margin-bottom:20px;overflow:hidden;display:none;}
+        .progress-wrap.show{display:block;}
+        .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),#38bdf8);border-radius:5px;transition:width .3s ease;width:0%;}
 
-        .btn-dl-all {
-            background: rgba(22,163,74,.1);
-            border: 1.5px solid rgba(22,163,74,.35);
-            color: #16a34a;
-            border-radius: 10px;
-            padding: 10px 18px;
-            font-size: .82rem;
-            font-weight: 700;
-            font-family: 'Poppins', sans-serif;
-            cursor: pointer;
-            transition: all .2s;
-            margin-left: auto;
-        }
-        .btn-dl-all:hover { background: rgba(22,163,74,.2); }
+        /* Grid */
+        .photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;}
+        .photo-card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:14px;overflow:hidden;backdrop-filter:blur(10px);transition:all .2s;animation:cardIn .4s ease both;}
+        .photo-card.done{border-color:rgba(22,163,74,.4);}
+        .photo-card:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(2,132,199,.12);}
+        .photo-thumb{width:100%;aspect-ratio:1;overflow:hidden;background:var(--card-border);position:relative;}
+        .photo-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+        .done-overlay{position:absolute;inset:0;background:rgba(22,163,74,.18);display:flex;align-items:center;justify-content:center;font-size:1.5rem;opacity:0;transition:opacity .3s;}
+        .photo-card.done .done-overlay{opacity:1;}
+        .photo-info{padding:9px 10px 10px;}
+        .photo-name{font-size:.68rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:5px;}
+        .photo-status{display:flex;align-items:center;gap:5px;font-size:.68rem;color:var(--text-muted);}
+        .sdot{width:6px;height:6px;border-radius:50%;background:var(--card-border);flex-shrink:0;}
+        .sdot.done{background:#16a34a;} .sdot.error{background:#dc2626;}
+        .fsize{font-size:.62rem;margin-top:3px;display:flex;align-items:center;gap:4px;color:var(--text-muted);}
+        .fsize.ok{color:#16a34a;} .fsize.warn{color:#f59e0b;}
+        .btn-dl-one{display:flex;align-items:center;justify-content:center;gap:5px;background:rgba(22,163,74,.1);border:none;color:#16a34a;border-radius:8px;padding:5px 10px;font-size:.68rem;font-weight:700;cursor:pointer;margin-top:7px;width:100%;font-family:'Poppins',sans-serif;transition:all .2s;}
+        .btn-dl-one:hover{background:rgba(22,163,74,.2);}
+        .empty-hint{text-align:center;color:var(--text-muted);font-size:.85rem;padding:40px 0;opacity:.5;}
 
-        .btn-clear {
-            background: transparent;
-            border: 1.5px solid var(--card-border);
-            color: var(--text-muted);
-            border-radius: 10px;
-            padding: 10px 16px;
-            font-size: .82rem;
-            font-weight: 600;
-            font-family: 'Poppins', sans-serif;
-            cursor: pointer;
-            transition: all .2s;
-        }
-        .btn-clear:hover { border-color: var(--text-muted); color: var(--text-main); }
-
-        /* Progress bar */
-        .progress-wrap {
-            height: 5px;
-            background: var(--card-border);
-            border-radius: 5px;
-            margin-bottom: 22px;
-            overflow: hidden;
-            display: none;
-        }
-        .progress-wrap.show { display: block; }
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--accent), #38bdf8);
-            border-radius: 5px;
-            transition: width .3s ease;
-            width: 0%;
-        }
-
-        /* Photo grid */
-        .photo-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 14px;
-        }
-
-        .photo-card {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 14px;
-            overflow: hidden;
-            backdrop-filter: blur(10px);
-            transition: all .2s;
-            animation: cardIn .4s ease both;
-        }
-        .photo-card.done { border-color: rgba(22,163,74,.4); }
-        .photo-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(2,132,199,.12); }
-
-        .photo-thumb {
-            width: 100%;
-            aspect-ratio: 1;
-            overflow: hidden;
-            background: var(--card-border);
-            position: relative;
-        }
-        .photo-thumb img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-        .photo-thumb .done-overlay {
-            position: absolute;
-            inset: 0;
-            background: rgba(22,163,74,.18);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            opacity: 0;
-            transition: opacity .3s;
-        }
-        .photo-card.done .done-overlay { opacity: 1; }
-
-        .photo-info {
-            padding: 9px 10px 10px;
-        }
-        .photo-name {
-            font-size: .7rem;
-            color: var(--text-muted);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-bottom: 7px;
-        }
-        .photo-status {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: .7rem;
-            color: var(--text-muted);
-        }
-        .status-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: var(--card-border);
-            flex-shrink: 0;
-        }
-        .status-dot.done { background: #16a34a; }
-        .status-dot.error { background: #dc2626; }
-
-        .btn-dl-one {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            background: rgba(22,163,74,.1);
-            border: 1px solid rgba(22,163,74,.3);
-            color: #16a34a;
-            border-radius: 8px;
-            padding: 4px 10px;
-            font-size: .68rem;
-            font-weight: 700;
-            cursor: pointer;
-            margin-top: 6px;
-            width: 100%;
-            justify-content: center;
-            font-family: 'Poppins', sans-serif;
-            transition: all .2s;
-        }
-        .btn-dl-one:hover { background: rgba(22,163,74,.2); }
-
-        .empty-hint {
-            text-align: center;
-            color: var(--text-muted);
-            font-size: .85rem;
-            padding: 40px 0;
-            opacity: .5;
-        }
-
-        @media (max-width: 600px) {
-            .photo-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
-            .controls-bar { gap: 8px; }
-            .btn-dl-all { margin-left: 0; }
+        @media(max-width:600px){
+            .photo-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;}
+            .inp-grp input{width:75px;}
+            .btn-dl-all{margin-left:0;}
         }
     </style>
 </head>
 <body>
-
 <div class="blobs"><div class="blob blob-1"></div><div class="blob blob-2"></div><div class="blob blob-3"></div></div>
 <div class="particles" id="particles"></div>
 
 <nav class="navbar" id="navbar">
     <div class="nav-logo"><a href="index.html" style="text-decoration:none;color:inherit;">Munan<span>.hub</span></a></div>
     <div class="nav-right">
-        <a href="index.html" class="nav-login-btn">
-            <i class="fas fa-arrow-left"></i> Back
-        </a>
+        <a href="index.html" class="nav-login-btn"><i class="fas fa-arrow-left"></i> Back</a>
     </div>
 </nav>
 
 <header class="page-hero">
     <h1><i class="fas fa-images" style="color:var(--accent);margin-right:10px;"></i>Photo <span>Resizer</span></h1>
-    <p>Upload photos — resize all to exactly <strong>300 × 300 px</strong> by stretch</p>
+    <p>Resize &amp; compress — default <strong>300×300px · max 150kB</strong></p>
 </header>
 
 <div class="resizer-wrap">
 
+    <!-- Settings bar -->
+    <div class="settings-bar">
+        <span class="settings-label"><i class="fas fa-ruler-combined"></i> Resolution:</span>
+        <div class="preset-group" id="presetGroup">
+            <button class="preset-btn active" data-w="300" data-h="300">300×300</button>
+            <button class="preset-btn" data-w="800" data-h="600">800×600</button>
+            <button class="preset-btn" data-w="1280" data-h="720">1280×720</button>
+            <button class="preset-btn" data-w="1920" data-h="1080">1920×1080</button>
+        </div>
+        <button class="btn-gear" id="btnGear" title="Custom resolution"><i class="fas fa-gear"></i></button>
+    </div>
+
+    <!-- Custom panel -->
+    <div class="custom-panel" id="customPanel">
+        <div class="custom-panel-title"><i class="fas fa-sliders"></i> Custom Resolution</div>
+        <div class="custom-row">
+            <div class="inp-grp">
+                <label>Width (px)</label>
+                <input type="number" id="customW" value="300" min="10" max="8000">
+            </div>
+            <span class="cross">×</span>
+            <div class="inp-grp">
+                <label>Height (px)</label>
+                <input type="number" id="customH" value="300" min="10" max="8000">
+            </div>
+            <button class="btn-apply" id="btnApply"><i class="fas fa-check"></i> Apply</button>
+        </div>
+        <div class="size-note"><i class="fas fa-circle-info"></i> Auto-compressed to stay under 150kB.</div>
+    </div>
+
+    <!-- Drop zone -->
     <div class="drop-zone" id="dropZone">
         <input type="file" accept="image/*" multiple id="fileInput">
         <div class="drop-icon"><i class="fas fa-cloud-upload-alt"></i></div>
         <div class="drop-title">Drop photos here or tap to browse</div>
         <div class="drop-sub">JPG · PNG · WEBP · GIF &nbsp;|&nbsp; Multiple files OK</div>
+        <div class="drop-pill"><i class="fas fa-crop-alt"></i><span id="dropPillText">300 × 300 px · &lt;150kB</span></div>
     </div>
 
+    <!-- Controls -->
     <div class="controls-bar" id="controlsBar" style="display:none;">
         <div class="count-tag" id="countTag">0 photos</div>
-        <button class="btn-resize" id="btnResize">
-            <i class="fas fa-expand-arrows-alt"></i> Resize All
-        </button>
+        <button class="btn-resize" id="btnResize"><i class="fas fa-expand-arrows-alt"></i> Resize All</button>
         <button class="btn-clear" id="btnClear">Clear</button>
-        <button class="btn-dl-all" id="btnDlAll" style="display:none;">
-            <i class="fas fa-download"></i> Download All
-        </button>
+        <button class="btn-dl-all" id="btnDlAll" style="display:none;"><i class="fas fa-download"></i> Download All</button>
     </div>
 
-    <div class="progress-wrap" id="progressWrap">
-        <div class="progress-fill" id="progressFill"></div>
-    </div>
-
+    <div class="progress-wrap" id="progressWrap"><div class="progress-fill" id="progressFill"></div></div>
     <div class="photo-grid" id="photoGrid"></div>
     <div class="empty-hint" id="emptyHint">Your photos will appear here after upload</div>
-
     <canvas id="resizeCanvas" style="display:none;"></canvas>
 </div>
 
 <script>
-    const dropZone   = document.getElementById('dropZone');
-    const fileInput  = document.getElementById('fileInput');
-    const photoGrid  = document.getElementById('photoGrid');
-    const controlsBar= document.getElementById('controlsBar');
-    const countTag   = document.getElementById('countTag');
-    const btnResize  = document.getElementById('btnResize');
-    const btnClear   = document.getElementById('btnClear');
-    const btnDlAll   = document.getElementById('btnDlAll');
-    const progressWrap = document.getElementById('progressWrap');
-    const progressFill = document.getElementById('progressFill');
-    const emptyHint  = document.getElementById('emptyHint');
-    const canvas     = document.getElementById('resizeCanvas');
-    const ctx        = canvas.getContext('2d');
+    let targetW = 300, targetH = 300;
+    let files = [], results = {};
 
-    let files = [];
-    let results = {};
+    const $ = id => document.getElementById(id);
+    const dropZone=$('dropZone'), fileInput=$('fileInput'), photoGrid=$('photoGrid');
+    const controlsBar=$('controlsBar'), countTag=$('countTag');
+    const btnResize=$('btnResize'), btnClear=$('btnClear'), btnDlAll=$('btnDlAll');
+    const progressWrap=$('progressWrap'), progressFill=$('progressFill');
+    const emptyHint=$('emptyHint'), canvas=$('resizeCanvas'), ctx=canvas.getContext('2d');
+    const btnGear=$('btnGear'), customPanel=$('customPanel');
+    const customW=$('customW'), customH=$('customH'), btnApply=$('btnApply');
+    const dropPillText=$('dropPillText'), presetGroup=$('presetGroup');
 
-    /* ── DRAG & DROP ─── */
+    /* Gear */
+    btnGear.addEventListener('click', () => {
+        customPanel.classList.toggle('open');
+        btnGear.classList.toggle('open');
+    });
+
+    /* Presets */
+    presetGroup.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            presetGroup.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            targetW = +btn.dataset.w; targetH = +btn.dataset.h;
+            customW.value = targetW; customH.value = targetH;
+            updatePill(); resetResults();
+        });
+    });
+
+    /* Apply custom */
+    btnApply.addEventListener('click', () => {
+        const w = +customW.value, h = +customH.value;
+        if (!w || !h || w < 10 || h < 10) { alert('Enter valid width & height (min 10px)'); return; }
+        targetW = w; targetH = h;
+        presetGroup.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+        updatePill(); resetResults();
+        customPanel.classList.remove('open');
+        btnGear.classList.remove('open');
+    });
+
+    function updatePill() { dropPillText.textContent = targetW + ' \u00d7 ' + targetH + ' px \u00b7 <150kB'; }
+    function resetResults() { Object.values(results).forEach(r => r?.url && URL.revokeObjectURL(r.url)); results = {}; renderGrid(); }
+
+    /* Drag & Drop */
     dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragging'); });
     dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragging'));
-    dropZone.addEventListener('drop', e => {
-        e.preventDefault();
-        dropZone.classList.remove('dragging');
-        addFiles(e.dataTransfer.files);
-    });
+    dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('dragging'); addFiles(e.dataTransfer.files); });
     fileInput.addEventListener('change', e => addFiles(e.target.files));
 
-    function addFiles(newFiles) {
-        const imgs = Array.from(newFiles).filter(f => f.type.startsWith('image/'));
-        const existing = new Set(files.map(f => f.name + f.size));
-        imgs.forEach(f => { if (!existing.has(f.name + f.size)) files.push(f); });
+    function addFiles(nf) {
+        const imgs = Array.from(nf).filter(f => f.type.startsWith('image/'));
+        const ex = new Set(files.map(f => f.name + f.size));
+        imgs.forEach(f => { if (!ex.has(f.name + f.size)) files.push(f); });
         renderGrid();
     }
+    function key(f) { return f.name + f.size; }
+    function fmtSize(b) { return b < 1024 ? b + ' B' : b < 1048576 ? (b/1024).toFixed(1) + ' kB' : (b/1048576).toFixed(2) + ' MB'; }
 
     function renderGrid() {
-        if (!files.length) {
-            controlsBar.style.display = 'none';
-            emptyHint.style.display = 'block';
-            photoGrid.innerHTML = '';
-            return;
-        }
-        emptyHint.style.display = 'none';
-        controlsBar.style.display = 'flex';
-
-        const doneCount = files.filter(f => results[key(f)]?.status === 'done').length;
-        countTag.innerHTML = `<strong>${files.length}</strong> photo${files.length !== 1 ? 's' : ''}${doneCount ? ` &middot; <strong>${doneCount}</strong> resized` : ''}`;
-
-        const allDone = doneCount === files.length;
+        if (!files.length) { controlsBar.style.display='none'; emptyHint.style.display='block'; photoGrid.innerHTML=''; return; }
+        emptyHint.style.display = 'none'; controlsBar.style.display = 'flex';
+        const done = files.filter(f => results[key(f)]?.status === 'done').length;
+        countTag.innerHTML = '<strong>' + files.length + '</strong> photo' + (files.length!==1?'s':'') + (done ? ' &middot; <strong>'+done+'</strong> resized' : '');
+        const allDone = files.length > 0 && done === files.length;
         btnResize.disabled = allDone;
-        btnResize.innerHTML = allDone
-            ? '<i class="fas fa-check"></i> Done'
-            : '<i class="fas fa-expand-arrows-alt"></i> Resize All';
+        btnResize.innerHTML = allDone ? '<i class="fas fa-check"></i> Done' : '<i class="fas fa-expand-arrows-alt"></i> Resize All';
         btnDlAll.style.display = allDone ? 'inline-flex' : 'none';
-
         photoGrid.innerHTML = files.map((f, i) => {
-            const k = key(f);
-            const r = results[k];
+            const k = key(f), r = results[k];
             const src = r?.url || URL.createObjectURL(f);
-            return `
-            <div class="photo-card${r?.status === 'done' ? ' done' : ''}" id="card-${i}">
-                <div class="photo-thumb">
-                    <img src="${src}" alt="${f.name}" loading="lazy">
-                    <div class="done-overlay">✅</div>
-                </div>
-                <div class="photo-info">
-                    <div class="photo-name" title="${f.name}">${f.name}</div>
-                    <div class="photo-status">
-                        <span class="status-dot${r?.status === 'done' ? ' done' : r?.status === 'error' ? ' error' : ''}"></span>
-                        <span>${r?.status === 'done' ? '300×300 ready' : r?.status === 'error' ? 'Failed' : 'Pending'}</span>
-                    </div>
-                    ${r?.status === 'done' ? `<button class="btn-dl-one" onclick="downloadOne(${i})"><i class="fas fa-download"></i> Download</button>` : ''}
-                </div>
-            </div>`;
+            const ok = r?.size <= 153600;
+            return '<div class="photo-card' + (r?.status==='done'?' done':'') + '">'
+                + '<div class="photo-thumb"><img src="'+src+'" alt="'+f.name+'" loading="lazy"><div class="done-overlay">&#x2705;</div></div>'
+                + '<div class="photo-info">'
+                + '<div class="photo-name" title="'+f.name+'">'+f.name+'</div>'
+                + '<div class="photo-status"><span class="sdot'+(r?.status==='done'?' done':r?.status==='error'?' error':'')+'"></span>'
+                + '<span>'+(r?.status==='done' ? targetW+'&#x00d7;'+targetH : r?.status==='error' ? 'Failed' : 'Pending')+'</span></div>'
+                + (r?.status==='done' ? '<div class="fsize '+(ok?'ok':'warn')+'"><i class="fas fa-weight-hanging" style="font-size:.55rem"></i>'+fmtSize(r.size)+' '+(ok?'&#x2713;':'&#x26a0;')+'</div>'
+                    + '<button class="btn-dl-one" onclick="dlOne('+i+')"><i class="fas fa-download"></i> Download</button>' : '')
+                + '</div></div>';
         }).join('');
     }
 
-    function key(f) { return f.name + f.size; }
-
-    /* ── RESIZE ─── */
+    /* Resize + compress */
     btnResize.addEventListener('click', async () => {
         btnResize.disabled = true;
         progressWrap.classList.add('show');
-
         for (let i = 0; i < files.length; i++) {
             const f = files[i];
             if (results[key(f)]?.status === 'done') continue;
             try {
-                const blob = await resizeFile(f);
-                results[key(f)] = { status: 'done', url: URL.createObjectURL(blob), blob };
-            } catch(e) {
-                results[key(f)] = { status: 'error' };
-            }
-            const pct = Math.round(((i + 1) / files.length) * 100);
-            progressFill.style.width = pct + '%';
+                const {blob, size} = await resizeCompress(f, targetW, targetH);
+                results[key(f)] = { status:'done', url:URL.createObjectURL(blob), blob, size };
+            } catch(e) { results[key(f)] = { status:'error' }; }
+            progressFill.style.width = Math.round((i+1)/files.length*100) + '%';
             renderGrid();
         }
-
-        setTimeout(() => {
-            progressWrap.classList.remove('show');
-            progressFill.style.width = '0%';
-        }, 600);
+        setTimeout(() => { progressWrap.classList.remove('show'); progressFill.style.width='0%'; }, 600);
     });
 
-    function resizeFile(file) {
+    function resizeCompress(file, w, h) {
         return new Promise((resolve, reject) => {
-            const img = new Image();
-            const url = URL.createObjectURL(file);
-            img.onload = () => {
-                canvas.width = 300;
-                canvas.height = 300;
-                ctx.drawImage(img, 0, 0, 300, 300);
+            const img = new Image(), url = URL.createObjectURL(file);
+            img.onload = async () => {
+                canvas.width = w; canvas.height = h;
+                ctx.drawImage(img, 0, 0, w, h);
                 URL.revokeObjectURL(url);
-                canvas.toBlob(blob => blob ? resolve(blob) : reject(), 'image/jpeg', 0.92);
+                const TARGET = 153600; // 150 kB
+                let blob = await toBlob(0.92);
+                if (blob.size > TARGET) {
+                    let lo = 0.05, hi = 0.92;
+                    for (let n = 0; n < 10; n++) {
+                        const q = (lo + hi) / 2;
+                        blob = await toBlob(q);
+                        if (blob.size > TARGET) hi = q; else lo = q;
+                        if (Math.abs(hi - lo) < 0.01) break;
+                    }
+                    blob = await toBlob(lo); // final safe pass
+                }
+                resolve({ blob, size: blob.size });
             };
-            img.onerror = reject;
-            img.src = url;
+            img.onerror = reject; img.src = url;
         });
     }
+    function toBlob(q) { return new Promise((res,rej) => canvas.toBlob(b => b?res(b):rej(), 'image/jpeg', q)); }
 
-    /* ── DOWNLOAD ─── */
-    function downloadOne(i) {
-        const f = files[i];
-        const r = results[key(f)];
+    /* Download */
+    function dlOne(i) {
+        const f = files[i], r = results[key(f)];
         if (!r?.url) return;
         const a = document.createElement('a');
-        a.href = r.url;
-        a.download = f.name.replace(/\.[^.]+$/, '') + '_300x300.jpg';
-        a.click();
+        a.href = r.url; a.download = f.name.replace(/\.[^.]+$/,'')+'_'+targetW+'x'+targetH+'.jpg'; a.click();
     }
+    btnDlAll.addEventListener('click', () => files.forEach((f,i) => { if(results[key(f)]?.status==='done') dlOne(i); }));
 
-    btnDlAll.addEventListener('click', () => {
-        files.forEach((f, i) => {
-            if (results[key(f)]?.status === 'done') downloadOne(i);
-        });
-    });
-
-    /* ── CLEAR ─── */
+    /* Clear */
     btnClear.addEventListener('click', () => {
         Object.values(results).forEach(r => r?.url && URL.revokeObjectURL(r.url));
-        files = [];
-        results = {};
-        fileInput.value = '';
-        renderGrid();
-        btnDlAll.style.display = 'none';
+        files=[]; results={}; fileInput.value=''; renderGrid();
     });
 
-    /* ── PARTICLES ─── */
-    const pContainer = document.getElementById('particles');
-    for (let i = 0; i < 16; i++) {
-        const p = document.createElement('div');
-        p.className = 'particle';
-        const s = Math.random() * 9 + 3;
-        p.style.cssText = `width:${s}px;height:${s}px;left:${Math.random()*100}%;animation-duration:${Math.random()*14+8}s;animation-delay:${Math.random()*12}s;`;
-        pContainer.appendChild(p);
-    }
+    /* Particles */
+    const pc = document.getElementById('particles');
+    for (let i=0;i<16;i++){const p=document.createElement('div');p.className='particle';const s=Math.random()*9+3;p.style.cssText='width:'+s+'px;height:'+s+'px;left:'+Math.random()*100+'%;animation-duration:'+(Math.random()*14+8)+'s;animation-delay:'+(Math.random()*12)+'s;';pc.appendChild(p);}
 
-    /* ── NAVBAR SCROLL HIDE ─── */
-    let lastScroll = window.scrollY;
-    window.addEventListener('scroll', () => {
-        const nav = document.getElementById('navbar');
-        if (window.scrollY > lastScroll && window.scrollY > 70) nav.classList.add('navbar-hidden');
-        else nav.classList.remove('navbar-hidden');
-        lastScroll = window.scrollY;
-    });
+    /* Navbar */
+    let ls=window.scrollY;
+    window.addEventListener('scroll',()=>{const n=document.getElementById('navbar');if(window.scrollY>ls&&window.scrollY>70)n.classList.add('navbar-hidden');else n.classList.remove('navbar-hidden');ls=window.scrollY;});
 </script>
-
 <script src="footer.js"></script>
 </body>
 </html>
