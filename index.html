@@ -35,8 +35,50 @@
         @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0;} }
         .intro-box { max-width:600px; margin:0 auto 16px; padding:20px 26px; background:var(--card-bg); border:1px solid var(--card-border); border-radius:18px; backdrop-filter:blur(10px); font-size:.92rem; color:var(--text-muted); box-shadow:0 4px 20px rgba(2,132,199,.08); animation:fadeDown .7s .3s ease both; }
 
+        /* ── SECTION WRAPPERS ─── */
         .container { position:relative; z-index:1; max-width:1100px; margin:0 auto; padding-bottom:30px; }
         .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:18px; padding:0 5%; }
+
+        /* ── PROJECTS SECTION ─── */
+        .projects-section { position:relative; z-index:1; max-width:1100px; margin:0 auto; padding:10px 5% 30px; }
+        .projects-wrapper {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 28px 28px 22px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 32px rgba(2,132,199,.08);
+            position: relative;
+            overflow: hidden;
+        }
+        .projects-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #0284c7, #0ea5e9, #7c3aed, #0ea5e9, #0284c7);
+            background-size: 200%;
+            animation: shimmer 3s linear infinite;
+        }
+        @keyframes shimmer { 0%{background-position:0%} 100%{background-position:200%} }
+        .projects-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+        .projects-title { display:flex; align-items:center; gap:10px; font-size:1.15rem; font-weight:800; letter-spacing:-.02em; }
+        .projects-title i { color:var(--accent); }
+        .projects-subtitle { font-size:.75rem; color:var(--text-soft); font-weight:400; margin-left:4px; opacity:.7; }
+        .projects-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; }
+        .project-card { background:rgba(2,132,199,.04); border:1.5px solid rgba(2,132,199,.15); border-radius:16px; padding:18px 18px 16px; display:flex; flex-direction:column; gap:10px; transition:all var(--trans); animation:cardIn .5s ease both; }
+        .project-card:hover { border-color:var(--accent); background:rgba(2,132,199,.08); transform:translateY(-3px); box-shadow:0 10px 28px rgba(2,132,199,.14); }
+        [data-theme="dark"] .project-card { background:rgba(255,255,255,.03); border-color:rgba(255,255,255,.08); }
+        [data-theme="dark"] .project-card:hover { background:rgba(2,132,199,.1); border-color:var(--accent); }
+        .project-card-top { display:flex; align-items:flex-start; gap:12px; }
+        .project-icon { width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:.95rem; color:#fff; flex-shrink:0; }
+        .project-info { flex:1; }
+        .project-name { font-size:.9rem; font-weight:700; color:var(--text-main); margin-bottom:3px; letter-spacing:-.01em; }
+        .project-desc { font-size:.75rem; color:var(--text-muted); line-height:1.5; }
+        .project-tags { display:flex; flex-wrap:wrap; gap:5px; }
+        .project-tag { font-size:.6rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; background:rgba(2,132,199,.1); border:1px solid rgba(2,132,199,.2); border-radius:20px; padding:2px 8px; color:var(--accent); }
+        .project-btn { display:inline-flex; align-items:center; gap:6px; background:var(--accent); color:#fff; border-radius:20px; padding:7px 16px; font-size:.72rem; font-weight:700; text-decoration:none; transition:var(--trans); align-self:flex-start; margin-top:2px; }
+        .project-btn:hover { background:#0284c7; transform:translateX(2px); }
 
         /* Blog preview */
         .blog-section { position:relative; z-index:1; max-width:1100px; margin:0 auto; padding:40px 5% 20px; }
@@ -100,6 +142,9 @@
             .blog-grid { grid-template-columns:1fr; }
             .webcomic-section { padding:30px 4% 10px; }
             .webcomic-grid { grid-template-columns:1fr; }
+            .projects-section { padding:10px 4% 24px; }
+            .projects-wrapper { padding:20px 16px 18px; border-radius:18px; }
+            .projects-grid { grid-template-columns:1fr; }
         }
     </style>
 </head>
@@ -144,47 +189,99 @@
                 <a href="tools.html" class="btn">Check Tools</a>
             </div>
             <div class="card" style="animation-delay:.15s">
-                <div class="card-icon" style="background:linear-gradient(135deg,#7c3aed,#a855f7)"><i class="fas fa-keyboard"></i></div>
-                <h3>TypeMaster</h3><p>Track your WPM and accuracy in real-time — see your progress instantly.</p>
-                <a href="TypeMaster.html" class="btn">Be Master</a>
+                <div class="card-icon" style="background:linear-gradient(135deg,#1a1e2a,#3a3f52)"><i class="fab fa-github"></i></div>
+                <h3>GitHub Profile</h3><p>Explore my open-source contributions and active repositories.</p>
+                <a href="https://github.com/abamunan" class="btn" target="_blank" rel="noopener noreferrer">Follow GitHub</a>
             </div>
-            <div class="card" style="animation-delay:.20s">
-                <div class="card-icon" style="background:linear-gradient(135deg,#16a34a,#4ade80)"><i class="fas fa-wallet"></i></div>
-                <h3>Money Tracker</h3><p>Track your income and expenses easily.</p>
-                <a href="moneytracker.html" class="btn">Open Tracker</a>
-            </div>
-
-          <div class="card" style="animation-delay:.45s">
-          <div class="card-icon" style="background:linear-gradient(135deg,#be185d,#f472b6)"><i class="fas fa-images"></i></div>
-          <h3>Photo Resizer</h3><p>Batch resize photos to 300×300 px instantly — no upload needed.</p>
-          <a href="photo-resizer.html" class="btn">Resize Photos</a>
-            </div>
-
-            
             <div class="card" style="animation-delay:.20s">
                 <div class="card-icon" style="background:linear-gradient(135deg,#1a73e8,#34a8f5)"><i class="fas fa-folder-open"></i></div>
                 <h3>Files</h3><p>My personal files and resources.</p>
                 <a href="part1.html" class="btn">View</a>
             </div>
             <div class="card" style="animation-delay:.25s">
-                <div class="card-icon" style="background:linear-gradient(135deg,#ea4335,#f97b6e)"><i class="fas fa-envelope"></i></div>
-                <h3>Get in Touch</h3><p>Have a question or want to connect? I'll reply soon!</p>
-                <a href="contact.html" class="btn">Message</a>
-            </div>
-            <div class="card" style="animation-delay:.30s">
-                <div class="card-icon" style="background:linear-gradient(135deg,#1a1e2a,#3a3f52)"><i class="fab fa-github"></i></div>
-                <h3>GitHub Profile</h3><p>Explore my open-source contributions and active repositories.</p>
-                <a href="https://github.com/abamunan" class="btn" target="_blank" rel="noopener noreferrer">Follow GitHub</a>
-            </div>
-            <div class="card" style="animation-delay:.35s">
                 <div class="card-icon" style="background:linear-gradient(135deg,#d97706,#f59e0b)"><i class="fas fa-pen-nib"></i></div>
                 <h3>Blog</h3><p>Thoughts, learnings, and stories from my journey in code and life.</p>
                 <a href="blog.html" class="btn">Read Blog</a>
             </div>
-            <div class="card" style="animation-delay:.40s">
+            <div class="card" style="animation-delay:.30s">
                 <div class="card-icon" style="background:linear-gradient(135deg,#7c3aed,#a78bfa)"><i class="fas fa-book-open"></i></div>
                 <h3>My WebComics</h3><p>Stories, manga-style comics and visual narratives I create.</p>
                 <a href="webcomic.html" class="btn">Read Comics</a>
+            </div>
+            <div class="card" style="animation-delay:.35s">
+                <div class="card-icon" style="background:linear-gradient(135deg,#ea4335,#f97b6e)"><i class="fas fa-envelope"></i></div>
+                <h3>Get in Touch</h3><p>Have a question or want to connect? I'll reply soon!</p>
+                <a href="contact.html" class="btn">Message</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── PROJECTS SECTION ── -->
+    <section class="projects-section">
+        <div class="projects-wrapper">
+            <div class="projects-header">
+                <div class="projects-title">
+                    <i class="fas fa-rocket"></i>
+                    My Projects
+                    <span class="projects-subtitle">— tools I built</span>
+                </div>
+            </div>
+            <div class="projects-grid">
+
+                <div class="project-card" style="animation-delay:.05s">
+                    <div class="project-card-top">
+                        <div class="project-icon" style="background:linear-gradient(135deg,#7c3aed,#a855f7)">
+                            <i class="fas fa-keyboard"></i>
+                        </div>
+                        <div class="project-info">
+                            <div class="project-name">TypeMaster</div>
+                            <div class="project-desc">Track your WPM and accuracy in real-time — see your typing progress instantly.</div>
+                        </div>
+                    </div>
+                    <div class="project-tags">
+                        <span class="project-tag">Typing</span>
+                        <span class="project-tag">Productivity</span>
+                        <span class="project-tag">HTML/JS</span>
+                    </div>
+                    <a href="TypeMaster.html" class="project-btn">Launch <i class="fas fa-arrow-right" style="font-size:.6rem;"></i></a>
+                </div>
+
+                <div class="project-card" style="animation-delay:.10s">
+                    <div class="project-card-top">
+                        <div class="project-icon" style="background:linear-gradient(135deg,#16a34a,#4ade80)">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <div class="project-info">
+                            <div class="project-name">Money Tracker</div>
+                            <div class="project-desc">Manage income and expenses with monthly summaries, PDF/CSV export.</div>
+                        </div>
+                    </div>
+                    <div class="project-tags">
+                        <span class="project-tag">Finance</span>
+                        <span class="project-tag">Tracker</span>
+                        <span class="project-tag">HTML/JS</span>
+                    </div>
+                    <a href="moneytracker.html" class="project-btn">Open <i class="fas fa-arrow-right" style="font-size:.6rem;"></i></a>
+                </div>
+
+                <div class="project-card" style="animation-delay:.15s">
+                    <div class="project-card-top">
+                        <div class="project-icon" style="background:linear-gradient(135deg,#be185d,#f472b6)">
+                            <i class="fas fa-images"></i>
+                        </div>
+                        <div class="project-info">
+                            <div class="project-name">Photo Resizer</div>
+                            <div class="project-desc">Batch resize &amp; compress photos to custom resolution — no upload needed.</div>
+                        </div>
+                    </div>
+                    <div class="project-tags">
+                        <span class="project-tag">Image</span>
+                        <span class="project-tag">Utility</span>
+                        <span class="project-tag">HTML/JS</span>
+                    </div>
+                    <a href="photo-resizer.html" class="project-btn">Resize <i class="fas fa-arrow-right" style="font-size:.6rem;"></i></a>
+                </div>
+
             </div>
         </div>
     </section>
