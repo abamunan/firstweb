@@ -4,911 +4,456 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Abdullah All Munan — Developer, student, and builder from Bangladesh.">
-    <meta name="theme-color" content="#00D4FF">
+    <meta name="theme-color" content="#0ea5e9">
     <title>Munan | Link Hub 2026</title>
     <link rel="icon" type="image/png" href="icon.png">
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600&family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
-
+    <!-- Early theme script: prevent flash of wrong theme -->
+    <script>
+        (function(){
+            if(localStorage.getItem('theme')==='dark'){
+                document.documentElement.setAttribute('data-theme','dark');
+                document.addEventListener('DOMContentLoaded',function(){
+                    document.body.setAttribute('data-theme','dark');
+                });
+            }
+        })();
+    </script>
     <style>
-    /* ── DESIGN TOKENS ─────────────────── */
-    :root {
-        --bg:        #080C14;
-        --surface:   #0D1525;
-        --surface2:  #111C30;
-        --border:    rgba(255,255,255,.07);
-        --border-lit:rgba(0,212,255,.3);
-        --cyan:      #00D4FF;
-        --cyan-dim:  rgba(0,212,255,.12);
-        --cyan-glow: rgba(0,212,255,.25);
-        --violet:    #7C3AED;
-        --green:     #22C55E;
-        --amber:     #F59E0B;
-        --rose:      #F43F5E;
-        --teal:      #14B8A6;
-        --text:      #F0F4FF;
-        --text-2:    #8B97B0;
-        --text-3:    #4A5568;
-        --radius-sm: 12px;
-        --radius:    18px;
-        --radius-lg: 24px;
-        --trans:     .22s cubic-bezier(.4,0,.2,1);
-        --font-d:    'Space Grotesk', sans-serif;
-        --font-b:    'Inter', sans-serif;
-    }
+        /* ── INDEX-SPECIFIC STYLES ─── */
+        .hero { position:relative; z-index:1; padding:110px 20px 50px; text-align:center; }
+        .profile-wrap { display:flex; justify-content:center; margin-bottom:22px; animation:fadeDown .7s ease both; }
+        .profile-photo { width:110px; height:110px; border-radius:50%; border:3px solid var(--accent); box-shadow:0 0 28px rgba(2,132,199,.35),0 0 0 6px rgba(2,132,199,.1); object-fit:cover; transition:var(--trans); }
+        .profile-photo:hover { transform:scale(1.06); box-shadow:0 0 44px rgba(2,132,199,.5),0 0 0 8px rgba(2,132,199,.14); }
+        .hero-title { font-size:clamp(1.9rem,5vw,2.8rem); font-weight:800; letter-spacing:-.03em; line-height:1.1; margin-bottom:12px; animation:fadeDown .7s .1s ease both; }
+        .hero-title span { color:var(--accent); }
+        .hero-tagline { font-size:1rem; color:var(--text-muted); margin-bottom:28px; height:28px; animation:fadeDown .7s .2s ease both; }
+        .typed-text { color:var(--accent); font-weight:600; }
+        .cursor { display:inline-block; width:2px; height:1em; background:var(--accent); margin-left:2px; vertical-align:middle; animation:blink .75s infinite; }
+        @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0;} }
+        .intro-box { max-width:600px; margin:0 auto 16px; padding:20px 26px; background:var(--card-bg); border:1px solid var(--card-border); border-radius:18px; backdrop-filter:blur(10px); font-size:.92rem; color:var(--text-muted); box-shadow:0 4px 20px rgba(2,132,199,.08); animation:fadeDown .7s .3s ease both; }
 
-    /* ── RESET + BASE ──────────────────── */
-    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
-    html { scroll-behavior:smooth; }
-    body {
-        font-family: var(--font-b);
-        background: var(--bg);
-        color: var(--text);
-        min-height: 100vh;
-        overflow-x: hidden;
-        -webkit-font-smoothing: antialiased;
-    }
-    a { text-decoration:none; color:inherit; }
+        /* ── SECTION WRAPPERS ─── */
+        .container { position:relative; z-index:1; max-width:1100px; margin:0 auto; padding-bottom:30px; }
+        .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:18px; padding:0 5%; }
 
-    /* ── BACKGROUND LAYERS ─────────────── */
-    .bg-grid {
-        position: fixed;
-        inset: 0;
-        background-image:
-            linear-gradient(rgba(0,212,255,.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0,212,255,.03) 1px, transparent 1px);
-        background-size: 48px 48px;
-        pointer-events: none;
-        z-index: 0;
-    }
-    .bg-grid::after {
-        content:'';
-        position:absolute;
-        inset:0;
-        background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,212,255,.06) 0%, transparent 70%);
-    }
-    .noise {
-        position: fixed;
-        inset: 0;
-        opacity: .018;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
-        pointer-events: none;
-        z-index: 0;
-    }
+        /* ── PROJECTS SECTION ─── */
+        .projects-section { position:relative; z-index:1; max-width:1100px; margin:0 auto; padding:10px 5% 30px; }
+        .projects-wrapper {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 28px 28px 22px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 32px rgba(2,132,199,.08);
+            position: relative;
+            overflow: hidden;
+        }
+        .projects-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #0284c7, #0ea5e9, #7c3aed, #0ea5e9, #0284c7);
+            background-size: 200%;
+            animation: shimmer 3s linear infinite;
+        }
+        @keyframes shimmer { 0%{background-position:0%} 100%{background-position:200%} }
+        .projects-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+        .projects-title { display:flex; align-items:center; gap:10px; font-size:1.15rem; font-weight:800; letter-spacing:-.02em; }
+        .projects-title i { color:var(--accent); }
+        .projects-subtitle { font-size:.75rem; color:var(--text-soft); font-weight:400; margin-left:4px; opacity:.7; }
+        .projects-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; }
+        .project-card { background:rgba(2,132,199,.04); border:1.5px solid rgba(2,132,199,.15); border-radius:16px; padding:18px 18px 16px; display:flex; flex-direction:column; gap:10px; transition:all var(--trans); animation:cardIn .5s ease both; }
+        .project-card:hover { border-color:var(--accent); background:rgba(2,132,199,.08); transform:translateY(-3px); box-shadow:0 10px 28px rgba(2,132,199,.14); }
+        [data-theme="dark"] .project-card { background:rgba(255,255,255,.03); border-color:rgba(255,255,255,.08); }
+        [data-theme="dark"] .project-card:hover { background:rgba(2,132,199,.1); border-color:var(--accent); }
+        .project-card-top { display:flex; align-items:flex-start; gap:12px; }
+        .project-icon { width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:.95rem; color:#fff; flex-shrink:0; }
+        .project-info { flex:1; }
+        .project-name { font-size:.9rem; font-weight:700; color:var(--text-main); margin-bottom:3px; letter-spacing:-.01em; }
+        .project-desc { font-size:.75rem; color:var(--text-muted); line-height:1.5; }
+        .project-tags { display:flex; flex-wrap:wrap; gap:5px; }
+        .project-tag { font-size:.6rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; background:rgba(2,132,199,.1); border:1px solid rgba(2,132,199,.2); border-radius:20px; padding:2px 8px; color:var(--accent); }
+        .project-btn { display:inline-flex; align-items:center; gap:6px; background:var(--accent); color:#fff; border-radius:20px; padding:7px 16px; font-size:.72rem; font-weight:700; text-decoration:none; transition:var(--trans); align-self:flex-start; margin-top:2px; }
+        .project-btn:hover { background:#0284c7; transform:translateX(2px); }
 
-    /* ── NAVBAR ─────────────────────────── */
-    .nav {
-        position: fixed;
-        top: 0; left: 0; right: 0;
-        z-index: 100;
-        padding: 0 max(24px, 5vw);
-        height: 60px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: rgba(8,12,20,.7);
-        backdrop-filter: blur(20px) saturate(180%);
-        border-bottom: 1px solid var(--border);
-        transition: transform var(--trans);
-    }
-    .nav.hide { transform: translateY(-100%); }
-    .nav-logo {
-        font-family: var(--font-d);
-        font-size: 1.05rem;
-        font-weight: 700;
-        letter-spacing: -.02em;
-        color: var(--text);
-    }
-    .nav-logo span { color: var(--cyan); }
-    .nav-right { display:flex; align-items:center; gap:10px; }
-    .nav-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: var(--surface2);
-        border: 1px solid var(--border);
-        border-radius: 100px;
-        padding: 6px 14px;
-        font-family: var(--font-d);
-        font-size: .75rem;
-        font-weight: 600;
-        color: var(--text-2);
-        cursor: pointer;
-        transition: var(--trans);
-    }
-    .nav-pill:hover { border-color: var(--border-lit); color: var(--cyan); }
-    .nav-pill i { font-size: .8rem; }
-    #themeBtn { width:36px; height:36px; border-radius:50%; background:var(--surface2); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:var(--trans); color:var(--text-2); font-size:.8rem; }
-    #themeBtn:hover { border-color:var(--border-lit); color:var(--cyan); }
+        /* Blog preview */
+        .blog-section { position:relative; z-index:1; max-width:1100px; margin:0 auto; padding:40px 5% 20px; }
+        .blog-section-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; }
+        .blog-section-title { display:flex; align-items:center; gap:10px; font-size:1.15rem; font-weight:800; letter-spacing:-.02em; }
+        .blog-section-title i { color:var(--accent); }
+        .blog-view-all { display:inline-flex; align-items:center; gap:7px; background:var(--card-bg); border:1.5px solid var(--card-border); border-radius:20px; padding:6px 16px; font-size:.75rem; font-weight:700; color:var(--accent); backdrop-filter:blur(8px); transition:var(--trans); }
+        .blog-view-all:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
+        .blog-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:18px; }
+        .blog-card { background:var(--card-bg); border:1px solid var(--card-border); border-radius:16px; overflow:hidden; backdrop-filter:blur(10px); box-shadow:0 2px 14px rgba(2,132,199,.06); transition:all var(--trans); animation:cardIn .5s ease both; display:flex; flex-direction:column; text-decoration:none; }
+        .blog-card:hover { transform:translateY(-6px) scale(1.013); border-color:var(--accent); box-shadow:0 18px 40px rgba(2,132,199,.18); }
+        [data-theme="dark"] .blog-card:hover { background:rgba(255,255,255,.07); }
+        .blog-card-strip { height:5px; background:linear-gradient(90deg,var(--strip-a,#0284c7),var(--strip-b,#0ea5e9)); }
+        .blog-card-body { padding:20px 20px 16px; flex:1; display:flex; flex-direction:column; }
+        .blog-meta { display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
+        .blog-tag { display:inline-flex; align-items:center; gap:5px; background:rgba(2,132,199,.1); border:1px solid rgba(2,132,199,.25); border-radius:20px; padding:3px 10px; font-size:.65rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--accent); }
+        .blog-date { font-size:.7rem; color:var(--text-soft); display:flex; align-items:center; gap:4px; }
+        .blog-card-title { font-size:.98rem; font-weight:700; line-height:1.35; color:var(--text-main); margin-bottom:9px; letter-spacing:-.01em; }
+        .blog-card-excerpt { font-size:.8rem; color:var(--text-muted); line-height:1.6; flex:1; margin-bottom:16px; }
+        .blog-card-footer { display:flex; align-items:center; justify-content:space-between; padding-top:12px; border-top:1px solid var(--card-border); }
+        .blog-read-time { font-size:.68rem; color:var(--text-soft); display:flex; align-items:center; gap:5px; }
+        .blog-read-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(2,132,199,.1); border:1px solid rgba(2,132,199,.25); border-radius:20px; padding:5px 14px; font-size:.72rem; font-weight:700; color:var(--accent); transition:var(--trans); }
+        .blog-read-btn:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
+        .blog-empty { grid-column:1/-1; background:var(--card-bg); border:1.5px dashed var(--card-border); border-radius:16px; padding:44px 24px; text-align:center; backdrop-filter:blur(10px); }
+        .blog-empty i { font-size:2rem; color:var(--text-soft); margin-bottom:12px; display:block; }
+        .blog-empty p { color:var(--text-muted); font-size:.88rem; line-height:1.7; }
+        .blog-empty strong { color:var(--accent); }
 
-    /* ── HERO ───────────────────────────── */
-    .hero {
-        position: relative;
-        z-index: 1;
-        min-height: 100svh;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 80px 24px 60px;
-        text-align: center;
-    }
+        /* Webcomic preview */
+        .webcomic-section { position:relative; z-index:1; max-width:1100px; margin:0 auto; padding:40px 5% 20px; }
+        .webcomic-section-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; }
+        .webcomic-section-title { display:flex; align-items:center; gap:10px; font-size:1.15rem; font-weight:800; letter-spacing:-.02em; }
+        .webcomic-section-title i { color:var(--accent); }
+        .webcomic-view-all { display:inline-flex; align-items:center; gap:7px; background:var(--card-bg); border:1.5px solid var(--card-border); border-radius:20px; padding:6px 16px; font-size:.75rem; font-weight:700; color:var(--accent); backdrop-filter:blur(8px); transition:var(--trans); }
+        .webcomic-view-all:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
+        .webcomic-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:18px; }
+        .webcomic-card { background:var(--card-bg); border:1px solid var(--card-border); border-radius:16px; overflow:hidden; backdrop-filter:blur(10px); box-shadow:0 2px 14px rgba(2,132,199,.06); transition:all var(--trans); animation:cardIn .5s ease both; display:flex; flex-direction:column; cursor:pointer; text-decoration:none; }
+        .webcomic-card:hover { transform:translateY(-6px) scale(1.013); border-color:var(--accent); box-shadow:0 18px 40px rgba(2,132,199,.18); }
+        [data-theme="dark"] .webcomic-card:hover { background:rgba(255,255,255,.07); }
+        .webcomic-card-strip { height:5px; background:linear-gradient(90deg,var(--strip-a,#0284c7),var(--strip-b,#0ea5e9)); }
+        .webcomic-card-body { padding:20px 20px 16px; flex:1; display:flex; flex-direction:column; }
+        .webcomic-meta { display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
+        .webcomic-tag { display:inline-flex; align-items:center; gap:5px; background:rgba(2,132,199,.1); border:1px solid rgba(2,132,199,.25); border-radius:20px; padding:3px 10px; font-size:.65rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--accent); }
+        .webcomic-status { font-size:.7rem; color:var(--text-soft); display:flex; align-items:center; gap:4px; }
+        .webcomic-status.ongoing { color:#16a34a; }
+        .webcomic-card-title { font-size:.98rem; font-weight:700; line-height:1.35; color:var(--text-main); margin-bottom:9px; letter-spacing:-.01em; }
+        .webcomic-card-excerpt { font-size:.8rem; color:var(--text-muted); line-height:1.6; flex:1; margin-bottom:16px; }
+        .webcomic-card-footer { display:flex; align-items:center; justify-content:space-between; padding-top:12px; border-top:1px solid var(--card-border); }
+        .webcomic-ep-count { font-size:.68rem; color:var(--text-soft); display:flex; align-items:center; gap:5px; }
+        .webcomic-read-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(2,132,199,.1); border:1px solid rgba(2,132,199,.25); border-radius:20px; padding:5px 14px; font-size:.72rem; font-weight:700; color:var(--accent); transition:var(--trans); }
+        .webcomic-read-btn:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
+        .webcomic-empty { grid-column:1/-1; background:var(--card-bg); border:1.5px dashed var(--card-border); border-radius:16px; padding:44px 24px; text-align:center; backdrop-filter:blur(10px); }
+        .webcomic-empty i { font-size:2rem; color:var(--text-soft); margin-bottom:12px; display:block; }
+        .webcomic-empty p { color:var(--text-muted); font-size:.88rem; line-height:1.7; }
+        .webcomic-empty strong { color:var(--accent); }
 
-    /* Glowing orb behind photo */
-    .orb {
-        position: relative;
-        width: 130px;
-        height: 130px;
-        margin: 0 auto 28px;
-        animation: fadeUp .8s ease both;
-    }
-    .orb::before {
-        content: '';
-        position: absolute;
-        inset: -18px;
-        border-radius: 50%;
-        background: radial-gradient(circle, var(--cyan-glow) 0%, transparent 70%);
-        animation: pulse 3s ease-in-out infinite;
-        z-index: 0;
-    }
-    .orb::after {
-        content: '';
-        position: absolute;
-        inset: -8px;
-        border-radius: 50%;
-        border: 1px solid var(--border-lit);
-        animation: rotate 8s linear infinite;
-        background: conic-gradient(from 0deg, var(--cyan), transparent, transparent, var(--cyan));
-        -webkit-mask: radial-gradient(circle at center, transparent 62%, black 63%);
-        mask: radial-gradient(circle at center, transparent 62%, black 63%);
-        z-index: 1;
-    }
-    @keyframes pulse { 0%,100%{transform:scale(1);opacity:.7} 50%{transform:scale(1.15);opacity:1} }
-    @keyframes rotate { to{transform:rotate(360deg)} }
-
-    .profile-photo {
-        position: relative;
-        z-index: 2;
-        width: 130px;
-        height: 130px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 2.5px solid var(--cyan);
-        box-shadow: 0 0 0 6px rgba(0,212,255,.08), 0 0 40px rgba(0,212,255,.2);
-        display: block;
-    }
-
-    .hero-eyebrow {
-        font-family: var(--font-d);
-        font-size: .7rem;
-        font-weight: 600;
-        letter-spacing: .2em;
-        text-transform: uppercase;
-        color: var(--cyan);
-        margin-bottom: 14px;
-        animation: fadeUp .8s .1s ease both;
-        opacity: 0;
-    }
-
-    .hero-title {
-        font-family: var(--font-d);
-        font-size: clamp(2.2rem, 6vw, 3.6rem);
-        font-weight: 700;
-        letter-spacing: -.04em;
-        line-height: 1.05;
-        margin-bottom: 16px;
-        animation: fadeUp .8s .15s ease both;
-        opacity: 0;
-    }
-    .hero-title .hl {
-        background: linear-gradient(135deg, var(--cyan) 0%, #7C3AED 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-
-    .hero-sub {
-        font-size: 1rem;
-        color: var(--text-2);
-        margin-bottom: 32px;
-        height: 26px;
-        animation: fadeUp .8s .2s ease both;
-        opacity: 0;
-    }
-    .typed-text { color: var(--cyan); font-weight: 600; font-family: var(--font-d); }
-    .cursor {
-        display: inline-block;
-        width: 2px;
-        height: .9em;
-        background: var(--cyan);
-        margin-left: 2px;
-        vertical-align: middle;
-        animation: blink .75s step-end infinite;
-    }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-
-    .hero-bio {
-        max-width: 520px;
-        margin: 0 auto 36px;
-        padding: 18px 24px;
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        font-size: .9rem;
-        color: var(--text-2);
-        line-height: 1.7;
-        animation: fadeUp .8s .25s ease both;
-        opacity: 0;
-        backdrop-filter: blur(12px);
-    }
-    .hero-bio strong { color: var(--text); }
-
-    .hero-cta-row {
-        display: flex;
-        gap: 10px;
-        justify-content: center;
-        flex-wrap: wrap;
-        animation: fadeUp .8s .3s ease both;
-        opacity: 0;
-    }
-    .btn-primary {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: var(--cyan);
-        color: var(--bg);
-        font-family: var(--font-d);
-        font-weight: 700;
-        font-size: .82rem;
-        padding: 10px 22px;
-        border-radius: 100px;
-        transition: var(--trans);
-        box-shadow: 0 0 20px rgba(0,212,255,.3);
-    }
-    .btn-primary:hover { background: #22DFFF; box-shadow:0 0 32px rgba(0,212,255,.5); transform:translateY(-1px); }
-    .btn-ghost {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: transparent;
-        color: var(--text-2);
-        font-family: var(--font-d);
-        font-weight: 600;
-        font-size: .82rem;
-        padding: 10px 22px;
-        border-radius: 100px;
-        border: 1px solid var(--border);
-        transition: var(--trans);
-    }
-    .btn-ghost:hover { border-color: var(--border-lit); color: var(--cyan); background: var(--cyan-dim); }
-
-    /* scroll cue */
-    .scroll-hint {
-        position: absolute;
-        bottom: 28px;
-        left: 50%;
-        transform: translateX(-50%);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 6px;
-        font-size: .65rem;
-        color: var(--text-3);
-        letter-spacing: .1em;
-        text-transform: uppercase;
-        animation: fadeUp 1s .8s both;
-        opacity: 0;
-    }
-    .scroll-hint i { animation: bounce 2s ease-in-out infinite; }
-    @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(5px)} }
-
-    /* ── MAIN WRAPPER ───────────────────── */
-    .main {
-        position: relative;
-        z-index: 1;
-        max-width: 1080px;
-        margin: 0 auto;
-        padding: 0 max(20px,4vw) 80px;
-    }
-
-    /* ── SECTION EYEBROW ────────────────── */
-    .s-eyebrow {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 20px;
-    }
-    .s-eyebrow-label {
-        font-family: var(--font-d);
-        font-size: .68rem;
-        font-weight: 700;
-        letter-spacing: .18em;
-        text-transform: uppercase;
-        color: var(--text-3);
-    }
-    .s-eyebrow-line {
-        flex: 1;
-        height: 1px;
-        background: var(--border);
-    }
-
-    /* ── QUICK LINKS CHIPS ──────────────── */
-    .links-section { margin-bottom: 56px; }
-    .links-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: 10px;
-    }
-    .link-chip {
-        display: flex;
-        align-items: center;
-        gap: 13px;
-        padding: 14px 16px;
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-sm);
-        transition: var(--trans);
-        cursor: pointer;
-        position: relative;
-        overflow: hidden;
-    }
-    .link-chip::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: var(--chip-color, var(--cyan));
-        opacity: 0;
-        transition: opacity var(--trans);
-    }
-    .link-chip:hover { border-color: var(--chip-color, var(--cyan)); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.3); }
-    .link-chip:hover::before { opacity: .06; }
-    .link-chip:hover .chip-arrow { color: var(--chip-color, var(--cyan)); opacity: 1; transform: translateX(3px); }
-    .chip-icon {
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: .85rem;
-        color: #fff;
-        flex-shrink: 0;
-        position: relative;
-        z-index: 1;
-    }
-    .chip-text { flex: 1; position:relative; z-index:1; }
-    .chip-name {
-        font-family: var(--font-d);
-        font-size: .83rem;
-        font-weight: 600;
-        color: var(--text);
-        margin-bottom: 2px;
-    }
-    .chip-desc { font-size: .7rem; color: var(--text-2); line-height: 1.4; }
-    .chip-arrow {
-        font-size: .7rem;
-        color: var(--text-3);
-        opacity: .5;
-        transition: var(--trans);
-        position:relative; z-index:1;
-    }
-
-    /* ── BENTO PROJECTS ─────────────────── */
-    .projects-section { margin-bottom: 56px; }
-    .bento {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        grid-template-rows: auto;
-        gap: 12px;
-    }
-    .bento-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        padding: 24px;
-        transition: var(--trans);
-        position: relative;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-    }
-    .bento-card::after {
-        content:'';
-        position:absolute;
-        top:0; left:0; right:0;
-        height:2px;
-        background: var(--card-accent, var(--cyan));
-        opacity: .6;
-        transition: opacity var(--trans);
-    }
-    .bento-card:hover { border-color:rgba(255,255,255,.13); transform:translateY(-3px); box-shadow: 0 16px 40px rgba(0,0,0,.35); }
-    .bento-card:hover::after { opacity: 1; }
-
-    /* card sizes */
-    .bento-wide { grid-column: span 2; }
-    .bento-tall { grid-row: span 2; }
-
-    /* glow dot decoration */
-    .bento-card .card-glow {
-        position:absolute;
-        width:120px; height:120px;
-        border-radius:50%;
-        filter:blur(50px);
-        opacity:.15;
-        top:-20px; right:-20px;
-        background: var(--card-accent, var(--cyan));
-        pointer-events:none;
-    }
-
-    .card-tag {
-        font-family: var(--font-d);
-        font-size: .6rem;
-        font-weight: 700;
-        letter-spacing: .12em;
-        text-transform: uppercase;
-        color: var(--card-accent, var(--cyan));
-        border: 1px solid var(--card-accent, var(--cyan));
-        border-radius: 100px;
-        padding: 3px 10px;
-        display: inline-block;
-        margin-bottom: 14px;
-        opacity: .8;
-        width: fit-content;
-    }
-    .card-proj-icon {
-        width: 48px; height: 48px;
-        border-radius: 14px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.1rem;
-        color: #fff;
-        margin-bottom: 14px;
-    }
-    .card-proj-name {
-        font-family: var(--font-d);
-        font-size: 1.05rem;
-        font-weight: 700;
-        color: var(--text);
-        margin-bottom: 8px;
-        letter-spacing: -.02em;
-    }
-    .card-proj-desc {
-        font-size: .8rem;
-        color: var(--text-2);
-        line-height: 1.65;
-        flex: 1;
-        margin-bottom: 18px;
-    }
-    .card-tech-row { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:18px; }
-    .tech-pill {
-        font-size: .62rem;
-        font-weight: 600;
-        background: rgba(255,255,255,.05);
-        border: 1px solid var(--border);
-        border-radius: 100px;
-        padding: 3px 9px;
-        color: var(--text-2);
-        font-family: var(--font-d);
-    }
-    .card-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
-        font-family: var(--font-d);
-        font-size: .75rem;
-        font-weight: 700;
-        color: var(--card-accent, var(--cyan));
-        transition: var(--trans);
-        margin-top: auto;
-    }
-    .card-link i { transition: transform var(--trans); }
-    .card-link:hover i { transform: translateX(4px); }
-
-    /* ── PREVIEW SECTIONS (BLOG / COMIC) ── */
-    .preview-section { margin-bottom: 56px; }
-    .preview-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 20px;
-    }
-    .preview-title {
-        font-family: var(--font-d);
-        font-size: 1.05rem;
-        font-weight: 700;
-        letter-spacing: -.02em;
-        display: flex;
-        align-items: center;
-        gap: 9px;
-    }
-    .preview-title i { color: var(--cyan); font-size: .9rem; }
-    .preview-all {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-family: var(--font-d);
-        font-size: .72rem;
-        font-weight: 700;
-        color: var(--text-2);
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 100px;
-        padding: 6px 14px;
-        transition: var(--trans);
-    }
-    .preview-all:hover { border-color: var(--border-lit); color: var(--cyan); }
-    .preview-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:12px; }
-
-    /* Blog card */
-    .blog-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        transition: var(--trans);
-    }
-    .blog-card:hover { border-color:rgba(255,255,255,.13); transform:translateY(-3px); box-shadow:0 14px 36px rgba(0,0,0,.3); }
-    .blog-card-accent { height:3px; background:linear-gradient(90deg,var(--strip-a,#0284c7),var(--strip-b,#0ea5e9)); }
-    .blog-card-body { padding:20px; flex:1; display:flex; flex-direction:column; }
-    .blog-meta { display:flex; align-items:center; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
-    .b-tag { font-family:var(--font-d); font-size:.6rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; background:rgba(0,212,255,.1); border:1px solid rgba(0,212,255,.2); border-radius:100px; padding:3px 9px; color:var(--cyan); }
-    .b-date { font-size:.68rem; color:var(--text-3); display:flex; align-items:center; gap:4px; }
-    .b-title { font-family:var(--font-d); font-size:.92rem; font-weight:700; color:var(--text); line-height:1.35; margin-bottom:8px; }
-    .b-excerpt { font-size:.78rem; color:var(--text-2); line-height:1.6; flex:1; margin-bottom:14px; }
-    .b-footer { display:flex; justify-content:space-between; align-items:center; padding-top:12px; border-top:1px solid var(--border); }
-    .b-time { font-size:.66rem; color:var(--text-3); display:flex; align-items:center; gap:4px; }
-    .b-read { font-family:var(--font-d); font-size:.7rem; font-weight:700; color:var(--cyan); display:flex; align-items:center; gap:5px; transition:var(--trans); }
-    .b-read:hover { gap:8px; }
-
-    /* Comic card */
-    .comic-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        transition: var(--trans);
-        cursor:pointer;
-    }
-    .comic-card:hover { border-color:rgba(255,255,255,.13); transform:translateY(-3px); box-shadow:0 14px 36px rgba(0,0,0,.3); }
-    .comic-card-accent { height:3px; background:linear-gradient(90deg,var(--strip-a,#7c3aed),var(--strip-b,#a78bfa)); }
-    .comic-card-body { padding:20px; flex:1; display:flex; flex-direction:column; }
-    .comic-meta { display:flex; align-items:center; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
-    .c-tag { font-family:var(--font-d); font-size:.6rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; background:rgba(124,58,237,.12); border:1px solid rgba(124,58,237,.25); border-radius:100px; padding:3px 9px; color:#a78bfa; }
-    .c-status { font-size:.68rem; color:var(--text-3); display:flex; align-items:center; gap:4px; }
-    .c-status.ongoing { color:#22C55E; }
-    .c-title { font-family:var(--font-d); font-size:.92rem; font-weight:700; color:var(--text); line-height:1.35; margin-bottom:8px; }
-    .c-excerpt { font-size:.78rem; color:var(--text-2); line-height:1.6; flex:1; margin-bottom:14px; }
-    .c-footer { display:flex; justify-content:space-between; align-items:center; padding-top:12px; border-top:1px solid var(--border); }
-    .c-eps { font-size:.66rem; color:var(--text-3); display:flex; align-items:center; gap:4px; }
-    .c-read { font-family:var(--font-d); font-size:.7rem; font-weight:700; color:#a78bfa; display:flex; align-items:center; gap:5px; transition:var(--trans); }
-    .c-read:hover { gap:8px; }
-
-    /* Empty state */
-    .empty-state { grid-column:1/-1; background:var(--surface); border:1.5px dashed var(--border); border-radius:var(--radius); padding:48px 24px; text-align:center; }
-    .empty-state i { font-size:1.8rem; color:var(--text-3); margin-bottom:12px; display:block; }
-    .empty-state p { color:var(--text-2); font-size:.85rem; line-height:1.7; }
-    .empty-state strong { color:var(--cyan); }
-
-    /* ── RESPONSIVE ─────────────────────── */
-    @media (max-width: 860px) {
-        .bento { grid-template-columns: repeat(2,1fr); }
-        .bento-wide { grid-column: span 2; }
-    }
-    @media (max-width: 600px) {
-        .hero-title { font-size: 2rem; letter-spacing: -.03em; }
-        .bento { grid-template-columns: 1fr; }
-        .bento-wide { grid-column: span 1; }
-        .links-grid { grid-template-columns: 1fr; }
-        .preview-grid { grid-template-columns: 1fr; }
-        .hero-cta-row .btn-ghost { display:none; }
-    }
-
-    /* ── REDUCED MOTION ─────────────────── */
-    @media (prefers-reduced-motion:reduce) {
-        *, *::before, *::after { animation-duration:.01ms !important; transition-duration:.01ms !important; }
-    }
+        @media (max-width:768px) {
+            .hero-title { font-size:1.8rem; }
+            .grid { grid-template-columns:1fr; padding:0 4%; }
+            .blog-section { padding:30px 4% 10px; }
+            .blog-grid { grid-template-columns:1fr; }
+            .webcomic-section { padding:30px 4% 10px; }
+            .webcomic-grid { grid-template-columns:1fr; }
+            .projects-section { padding:10px 4% 24px; }
+            .projects-wrapper { padding:20px 16px 18px; border-radius:18px; }
+            .projects-grid { grid-template-columns:1fr; }
+        }
     </style>
 </head>
 <body>
 
-<!-- Background layers -->
-<div class="bg-grid"></div>
-<div class="noise"></div>
+    <div class="blobs"><div class="blob blob-1"></div><div class="blob blob-2"></div><div class="blob blob-3"></div></div>
+    <div class="particles" id="particles"></div>
 
-<!-- ── NAVBAR ──────────────────────────── -->
-<nav class="nav" id="nav">
-    <div class="nav-logo">Munan<span>.hub</span></div>
-    <div class="nav-right">
-        <a href="login.html" class="nav-pill" id="authBtn">
-            <i class="fas fa-user-circle"></i> Login
-        </a>
-        <div id="themeBtn" title="Coming soon"><i class="fas fa-moon"></i></div>
-    </div>
-</nav>
-
-<!-- ── HERO ────────────────────────────── -->
-<header class="hero">
-    <div class="orb">
-        <img src="Image.jpeg" alt="Munan" class="profile-photo" width="130" height="130" loading="eager">
-    </div>
-    <div class="hero-eyebrow">Bangladesh · Developer · Creator</div>
-    <h1 class="hero-title">Knowledge &amp; <span class="hl">Creation</span> Zone</h1>
-    <div class="hero-sub">I'm a <span class="typed-text" id="typed"></span><span class="cursor"></span></div>
-    <div class="hero-bio">
-        <p>Hi, I'm <strong>Munan</strong> — a developer and thinker from Bangladesh. I love solving problems through code and learning something new every day.</p>
-    </div>
-    <div class="hero-cta-row">
-        <a href="about.html" class="btn-primary"><i class="fas fa-user"></i> About Me</a>
-        <a href="contact.html" class="btn-ghost"><i class="fas fa-envelope"></i> Get in Touch</a>
-        <a href="https://github.com/abamunan" class="btn-ghost" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i> GitHub</a>
-    </div>
-    <div class="scroll-hint">
-        <span>Scroll</span>
-        <i class="fas fa-chevron-down"></i>
-    </div>
-</header>
-
-<!-- ── MAIN CONTENT ─────────────────────── -->
-<main class="main">
-
-    <!-- Quick Links -->
-    <section class="links-section">
-        <div class="s-eyebrow">
-            <span class="s-eyebrow-label">Quick Links</span>
-            <div class="s-eyebrow-line"></div>
+    <nav class="navbar" id="navbar">
+        <div class="nav-logo">Munan<span>.hub</span></div>
+        <div class="nav-right">
+            <a href="login.html" class="nav-login-btn" id="authBtn">
+                <i class="fas fa-user-circle"></i> Login
+            </a>
+            <!-- Theme toggle ONLY on index.html -->
+            <div class="theme-toggle" id="themeBtn"><i class="fas fa-moon"></i></div>
         </div>
-        <div class="links-grid">
-            <a href="about.html" class="link-chip" style="--chip-color:#0EA5E9">
-                <div class="chip-icon" style="background:linear-gradient(135deg,#0284c7,#0ea5e9)"><i class="fas fa-user"></i></div>
-                <div class="chip-text">
-                    <div class="chip-name">About Me</div>
-                    <div class="chip-desc">Who I am and what drives me</div>
-                </div>
-                <i class="fas fa-arrow-right chip-arrow"></i>
-            </a>
-            <a href="tools.html" class="link-chip" style="--chip-color:#14B8A6">
-                <div class="chip-icon" style="background:linear-gradient(135deg,#0f766e,#14b8a6)"><i class="fas fa-tools"></i></div>
-                <div class="chip-text">
-                    <div class="chip-name">My Toolbox</div>
-                    <div class="chip-desc">Software & AI tools I use daily</div>
-                </div>
-                <i class="fas fa-arrow-right chip-arrow"></i>
-            </a>
-            <a href="https://github.com/abamunan" class="link-chip" target="_blank" rel="noopener noreferrer" style="--chip-color:#8B97B0">
-                <div class="chip-icon" style="background:linear-gradient(135deg,#1a1e2a,#3a3f52)"><i class="fab fa-github"></i></div>
-                <div class="chip-text">
-                    <div class="chip-name">GitHub</div>
-                    <div class="chip-desc">Open-source repos & projects</div>
-                </div>
-                <i class="fas fa-arrow-right chip-arrow"></i>
-            </a>
-            <a href="part1.html" class="link-chip" style="--chip-color:#3B82F6">
-                <div class="chip-icon" style="background:linear-gradient(135deg,#1a73e8,#34a8f5)"><i class="fas fa-folder-open"></i></div>
-                <div class="chip-text">
-                    <div class="chip-name">Files</div>
-                    <div class="chip-desc">Personal files & resources</div>
-                </div>
-                <i class="fas fa-arrow-right chip-arrow"></i>
-            </a>
-            <a href="blog.html" class="link-chip" style="--chip-color:#F59E0B">
-                <div class="chip-icon" style="background:linear-gradient(135deg,#d97706,#f59e0b)"><i class="fas fa-pen-nib"></i></div>
-                <div class="chip-text">
-                    <div class="chip-name">Blog</div>
-                    <div class="chip-desc">Thoughts from my journey</div>
-                </div>
-                <i class="fas fa-arrow-right chip-arrow"></i>
-            </a>
-            <a href="webcomic.html" class="link-chip" style="--chip-color:#A78BFA">
-                <div class="chip-icon" style="background:linear-gradient(135deg,#7c3aed,#a78bfa)"><i class="fas fa-book-open"></i></div>
-                <div class="chip-text">
-                    <div class="chip-name">WebComics</div>
-                    <div class="chip-desc">My manga-style visual stories</div>
-                </div>
-                <i class="fas fa-arrow-right chip-arrow"></i>
-            </a>
-            <a href="contact.html" class="link-chip" style="--chip-color:#F43F5E">
-                <div class="chip-icon" style="background:linear-gradient(135deg,#ea4335,#f97b6e)"><i class="fas fa-envelope"></i></div>
-                <div class="chip-text">
-                    <div class="chip-name">Get in Touch</div>
-                    <div class="chip-desc">Have a question? I'll reply soon</div>
-                </div>
-                <i class="fas fa-arrow-right chip-arrow"></i>
-            </a>
+    </nav>
+
+    <header class="hero">
+        <div class="profile-wrap">
+            <img src="Image.jpeg" alt="Munan" class="profile-photo" width="110" height="110" loading="lazy">
+        </div>
+        <h1 class="hero-title">Knowledge &amp; <span>Creation</span> Zone</h1>
+        <div class="hero-tagline">I'm a <span class="typed-text" id="typed"></span><span class="cursor"></span></div>
+        <div class="intro-box">
+            <p>Hi, I'm <strong>Munan</strong> — a developer and thinker from Bangladesh. I love solving problems through code and learning something new every day.</p>
+        </div>
+    </header>
+
+    <section class="container">
+        <div class="section-label"><span><i class="fas fa-grip"></i>&nbsp; Quick Links</span></div>
+        <div class="grid">
+            <div class="card" style="animation-delay:.05s">
+                <div class="card-icon" style="background:linear-gradient(135deg,#0284c7,#0ea5e9)"><i class="fas fa-user"></i></div>
+                <h3>About Me</h3><p>Who I am, what I build, and what drives me every day.</p>
+                <a href="about.html" class="btn">Read More</a>
+            </div>
+            <div class="card" style="animation-delay:.10s">
+                <div class="card-icon" style="background:linear-gradient(135deg,#0f766e,#14b8a6)"><i class="fas fa-tools"></i></div>
+                <h3>My Toolbox</h3><p>Software, extensions, and AI tools I use every day.</p>
+                <a href="tools.html" class="btn">Check Tools</a>
+            </div>
+            <div class="card" style="animation-delay:.15s">
+                <div class="card-icon" style="background:linear-gradient(135deg,#1a1e2a,#3a3f52)"><i class="fab fa-github"></i></div>
+                <h3>GitHub Profile</h3><p>Explore my open-source contributions and active repositories.</p>
+                <a href="https://github.com/abamunan" class="btn" target="_blank" rel="noopener noreferrer">Follow GitHub</a>
+            </div>
+            <div class="card" style="animation-delay:.20s">
+                <div class="card-icon" style="background:linear-gradient(135deg,#1a73e8,#34a8f5)"><i class="fas fa-folder-open"></i></div>
+                <h3>Files</h3><p>My personal files and resources.</p>
+                <a href="part1.html" class="btn">View</a>
+            </div>
+            <div class="card" style="animation-delay:.25s">
+                <div class="card-icon" style="background:linear-gradient(135deg,#d97706,#f59e0b)"><i class="fas fa-pen-nib"></i></div>
+                <h3>Blog</h3><p>Thoughts, learnings, and stories from my journey in code and life.</p>
+                <a href="blog.html" class="btn">Read Blog</a>
+            </div>
+            <div class="card" style="animation-delay:.30s">
+                <div class="card-icon" style="background:linear-gradient(135deg,#7c3aed,#a78bfa)"><i class="fas fa-book-open"></i></div>
+                <h3>My WebComics</h3><p>Stories, manga-style comics and visual narratives I create.</p>
+                <a href="webcomic.html" class="btn">Read Comics</a>
+            </div>
+            <div class="card" style="animation-delay:.35s">
+                <div class="card-icon" style="background:linear-gradient(135deg,#ea4335,#f97b6e)"><i class="fas fa-envelope"></i></div>
+                <h3>Get in Touch</h3><p>Have a question or want to connect? I'll reply soon!</p>
+                <a href="contact.html" class="btn">Message</a>
+            </div>
         </div>
     </section>
 
-    <!-- Projects Bento Grid -->
+    <!-- ── PROJECTS SECTION ── -->
     <section class="projects-section">
-        <div class="s-eyebrow">
-            <span class="s-eyebrow-label">My Projects</span>
-            <div class="s-eyebrow-line"></div>
-        </div>
-        <div class="bento">
+        <div class="projects-wrapper">
+            <div class="projects-header">
+                <div class="projects-title">
+                    <i class="fas fa-rocket"></i>
+                    My Projects
+                    <span class="projects-subtitle">— tools I built</span>
+                </div>
+            </div>
+            <div class="projects-grid">
 
-            <!-- TypeMaster — wide card -->
-            <a href="TypeMaster.html" class="bento-card bento-wide" style="--card-accent:#7C3AED">
-                <div class="card-glow"></div>
-                <span class="card-tag">Productivity</span>
-                <div class="card-proj-icon" style="background:linear-gradient(135deg,#7c3aed,#a855f7)">
-                    <i class="fas fa-keyboard"></i>
+                <div class="project-card" style="animation-delay:.05s">
+                    <div class="project-card-top">
+                        <div class="project-icon" style="background:linear-gradient(135deg,#7c3aed,#a855f7)">
+                            <i class="fas fa-keyboard"></i>
+                        </div>
+                        <div class="project-info">
+                            <div class="project-name">TypeMaster</div>
+                            <div class="project-desc">Track your WPM and accuracy in real-time — see your typing progress instantly.</div>
+                        </div>
+                    </div>
+                    <div class="project-tags">
+                        <span class="project-tag">Typing</span>
+                        <span class="project-tag">Productivity</span>
+                        <span class="project-tag">HTML/JS</span>
+                    </div>
+                    <a href="TypeMaster.html" class="project-btn">Launch <i class="fas fa-arrow-right" style="font-size:.6rem;"></i></a>
                 </div>
-                <div class="card-proj-name">TypeMaster</div>
-                <div class="card-proj-desc">Real-time typing speed tracker. See your WPM and accuracy improve session by session — minimal, distraction-free, and built for serious practice.</div>
-                <div class="card-tech-row">
-                    <span class="tech-pill">HTML</span>
-                    <span class="tech-pill">Vanilla JS</span>
-                    <span class="tech-pill">CSS</span>
-                </div>
-                <span class="card-link">Launch app <i class="fas fa-arrow-right"></i></span>
-            </a>
 
-            <!-- Money Tracker -->
-            <a href="moneytracker.html" class="bento-card" style="--card-accent:#22C55E">
-                <div class="card-glow"></div>
-                <span class="card-tag">Finance</span>
-                <div class="card-proj-icon" style="background:linear-gradient(135deg,#16a34a,#4ade80)">
-                    <i class="fas fa-wallet"></i>
+                <div class="project-card" style="animation-delay:.10s">
+                    <div class="project-card-top">
+                        <div class="project-icon" style="background:linear-gradient(135deg,#16a34a,#4ade80)">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <div class="project-info">
+                            <div class="project-name">Money Tracker</div>
+                            <div class="project-desc">Manage income and expenses with monthly summaries, PDF/CSV export.</div>
+                        </div>
+                    </div>
+                    <div class="project-tags">
+                        <span class="project-tag">Finance</span>
+                        <span class="project-tag">Tracker</span>
+                        <span class="project-tag">HTML/JS</span>
+                    </div>
+                    <a href="moneytracker.html" class="project-btn">Open <i class="fas fa-arrow-right" style="font-size:.6rem;"></i></a>
                 </div>
-                <div class="card-proj-name">Money Tracker</div>
-                <div class="card-proj-desc">Track income & expenses with monthly summaries, yearly view, PDF & CSV export.</div>
-                <div class="card-tech-row">
-                    <span class="tech-pill">HTML</span>
-                    <span class="tech-pill">LocalStorage</span>
-                </div>
-                <span class="card-link">Open <i class="fas fa-arrow-right"></i></span>
-            </a>
 
-            <!-- Photo Resizer -->
-            <a href="photo-resizer.html" class="bento-card" style="--card-accent:#F43F5E">
-                <div class="card-glow"></div>
-                <span class="card-tag">Utility</span>
-                <div class="card-proj-icon" style="background:linear-gradient(135deg,#be185d,#f472b6)">
-                    <i class="fas fa-images"></i>
+                <div class="project-card" style="animation-delay:.15s">
+                    <div class="project-card-top">
+                        <div class="project-icon" style="background:linear-gradient(135deg,#be185d,#f472b6)">
+                            <i class="fas fa-images"></i>
+                        </div>
+                        <div class="project-info">
+                            <div class="project-name">Photo Resizer</div>
+                            <div class="project-desc">Batch resize &amp; compress photos to custom resolution — no upload needed.</div>
+                        </div>
+                    </div>
+                    <div class="project-tags">
+                        <span class="project-tag">Image</span>
+                        <span class="project-tag">Utility</span>
+                        <span class="project-tag">HTML/JS</span>
+                    </div>
+                    <a href="photo-resizer.html" class="project-btn">Resize <i class="fas fa-arrow-right" style="font-size:.6rem;"></i></a>
                 </div>
-                <div class="card-proj-name">Photo Resizer</div>
-                <div class="card-proj-desc">Batch resize & compress photos to any resolution. Runs entirely in-browser — nothing uploaded.</div>
-                <div class="card-tech-row">
-                    <span class="tech-pill">Canvas API</span>
-                    <span class="tech-pill">HTML</span>
-                </div>
-                <span class="card-link">Resize <i class="fas fa-arrow-right"></i></span>
-            </a>
 
+            </div>
         </div>
     </section>
 
     <!-- Blog Preview -->
-    <section class="preview-section">
-        <div class="preview-header">
-            <div class="preview-title"><i class="fas fa-pen-nib"></i> Latest from the Blog</div>
-            <a href="blog.html" class="preview-all">View All <i class="fas fa-arrow-right" style="font-size:.62rem"></i></a>
+    <section class="blog-section">
+        <div class="blog-section-header">
+            <div class="blog-section-title"><i class="fas fa-pen-nib"></i> Latest from the Blog</div>
+            <a href="blog.html" class="blog-view-all">View All <i class="fas fa-arrow-right" style="font-size:.65rem;"></i></a>
         </div>
-        <div class="preview-grid" id="blogPreviewGrid"></div>
+        <div class="blog-grid" id="blogPreviewGrid"></div>
     </section>
 
-    <!-- Webcomic Preview -->
-    <section class="preview-section">
-        <div class="preview-header">
-            <div class="preview-title"><i class="fas fa-book-open"></i> Latest Comics</div>
-            <a href="webcomic.html" class="preview-all">View All <i class="fas fa-arrow-right" style="font-size:.62rem"></i></a>
+    <!-- Webcomics Preview -->
+    <section class="webcomic-section">
+        <div class="webcomic-section-header">
+            <div class="webcomic-section-title"><i class="fas fa-book-open"></i> Latest Comics</div>
+            <a href="webcomic.html" class="webcomic-view-all">View All <i class="fas fa-arrow-right" style="font-size:.65rem;"></i></a>
         </div>
-        <div class="preview-grid" id="webcomicPreviewGrid"></div>
+        <div class="webcomic-grid" id="webcomicPreviewGrid"></div>
     </section>
 
-</main>
+    <!-- Load shared data files -->
+    <script src="posts.js"></script>
+    <script src="webcomic.js"></script>
+    <script>
+        /* ── RENDER BLOG PREVIEW ─── */
+        function renderBlogPreview() {
+            const grid = document.getElementById('blogPreviewGrid');
+            if (typeof BLOG_POSTS === 'undefined' || !Array.isArray(BLOG_POSTS)) {
+                grid.innerHTML = `<div class="blog-empty"><i class="fas fa-feather-pointed"></i><p>Error loading posts<br><strong>posts.js may not be loaded correctly.</strong></p></div>`;
+                return;
+            }
+            const count = window.innerWidth <= 768 ? 1 : 2;
+            const latest = BLOG_POSTS.slice(0, count);
+            if (!latest.length) {
+                grid.innerHTML = `<div class="blog-empty"><i class="fas fa-feather-pointed"></i><p>No posts yet — check back soon!<br><strong>First blog post coming shortly.</strong></p></div>`;
+                return;
+            }
+            grid.innerHTML = latest.map((p, i) => `
+                <a href="blog.html#post-${p.id}" class="blog-card" style="animation-delay:${i*0.08}s">
+                    <div class="blog-card-strip" style="--strip-a:${p.stripA};--strip-b:${p.stripB}"></div>
+                    <div class="blog-card-body">
+                        <div class="blog-meta">
+                            <span class="blog-tag">${p.tag}</span>
+                            <span class="blog-date"><i class="fas fa-calendar-alt"></i> ${p.date}</span>
+                        </div>
+                        <div class="blog-card-title">${p.title}</div>
+                        <div class="blog-card-excerpt">${p.excerpt}</div>
+                        <div class="blog-card-footer">
+                            <span class="blog-read-time"><i class="fas fa-clock"></i> ${p.readTime}</span>
+                            <span class="blog-read-btn">Read <i class="fas fa-arrow-right" style="font-size:.6rem;"></i></span>
+                        </div>
+                    </div>
+                </a>`).join('');
+        }
+        renderBlogPreview();
 
-<!-- ── SCRIPTS ──────────────────────────── -->
-<script src="posts.js"></script>
-<script src="webcomic.js"></script>
-<script>
-/* ── RENDER BLOG ─── */
-function renderBlogPreview() {
-    const grid = document.getElementById('blogPreviewGrid');
-    if (typeof BLOG_POSTS === 'undefined' || !Array.isArray(BLOG_POSTS)) {
-        grid.innerHTML = `<div class="empty-state"><i class="fas fa-feather-pointed"></i><p>Error loading posts.<br><strong>posts.js may not be loaded correctly.</strong></p></div>`;
-        return;
-    }
-    const count = window.innerWidth <= 600 ? 1 : 2;
-    const latest = BLOG_POSTS.slice(0, count);
-    if (!latest.length) {
-        grid.innerHTML = `<div class="empty-state"><i class="fas fa-feather-pointed"></i><p>No posts yet — check back soon!<br><strong>First blog post coming shortly.</strong></p></div>`;
-        return;
-    }
-    grid.innerHTML = latest.map((p, i) => `
-        <a href="blog.html#post-${p.id}" class="blog-card" style="animation-delay:${i*0.08}s">
-            <div class="blog-card-accent" style="--strip-a:${p.stripA};--strip-b:${p.stripB}"></div>
-            <div class="blog-card-body">
-                <div class="blog-meta">
-                    <span class="b-tag">${p.tag}</span>
-                    <span class="b-date"><i class="fas fa-calendar-alt"></i> ${p.date}</span>
-                </div>
-                <div class="b-title">${p.title}</div>
-                <div class="b-excerpt">${p.excerpt}</div>
-                <div class="b-footer">
-                    <span class="b-time"><i class="fas fa-clock"></i> ${p.readTime}</span>
-                    <span class="b-read">Read <i class="fas fa-arrow-right" style="font-size:.6rem"></i></span>
-                </div>
-            </div>
-        </a>`).join('');
-}
-renderBlogPreview();
+        /* ── RENDER WEBCOMIC PREVIEW ─── */
+        function renderWebcomicPreview() {
+            const grid = document.getElementById('webcomicPreviewGrid');
+            if (typeof WEBCOMICS === 'undefined' || !Array.isArray(WEBCOMICS) || !WEBCOMICS.length) {
+                grid.innerHTML = `<div class="webcomic-empty"><i class="fas fa-book-open"></i><p>No webcomics yet<br><strong>First series coming soon!</strong></p></div>`;
+                return;
+            }
+            const latest = WEBCOMICS.slice(0, 3);
+            grid.innerHTML = latest.map((comic, i) => `
+                <a href="webcomic.html" class="webcomic-card" style="animation-delay:${i*0.08}s">
+                    <div class="webcomic-card-strip" style="--strip-a:${comic.stripA};--strip-b:${comic.stripB}"></div>
+                    <div class="webcomic-card-body">
+                        <div class="webcomic-meta">
+                            <span class="webcomic-tag">${comic.genre}</span>
+                            <span class="webcomic-status ${comic.status.toLowerCase()}"><i class="fas fa-circle" style="font-size:.4rem;"></i> ${comic.status}</span>
+                        </div>
+                        <div class="webcomic-card-title">${comic.title}</div>
+                        <div class="webcomic-card-excerpt">${comic.description}</div>
+                        <div class="webcomic-card-footer">
+                            <span class="webcomic-ep-count"><i class="fas fa-images"></i> ${comic.episodes.length} ep${comic.episodes.length !== 1 ? 's' : ''}</span>
+                            <span class="webcomic-read-btn">Read <i class="fas fa-arrow-right" style="font-size:.6rem;"></i></span>
+                        </div>
+                    </div>
+                </a>`).join('');
+        }
+        renderWebcomicPreview();
 
-/* ── RENDER WEBCOMIC ─── */
-function renderWebcomicPreview() {
-    const grid = document.getElementById('webcomicPreviewGrid');
-    if (typeof WEBCOMICS === 'undefined' || !Array.isArray(WEBCOMICS) || !WEBCOMICS.length) {
-        grid.innerHTML = `<div class="empty-state"><i class="fas fa-book-open"></i><p>No webcomics yet.<br><strong>First series coming soon!</strong></p></div>`;
-        return;
-    }
-    const latest = WEBCOMICS.slice(0, 3);
-    grid.innerHTML = latest.map((comic, i) => `
-        <a href="webcomic.html" class="comic-card" style="animation-delay:${i*0.08}s">
-            <div class="comic-card-accent" style="--strip-a:${comic.stripA};--strip-b:${comic.stripB}"></div>
-            <div class="comic-card-body">
-                <div class="comic-meta">
-                    <span class="c-tag">${comic.genre}</span>
-                    <span class="c-status ${comic.status.toLowerCase()}"><i class="fas fa-circle" style="font-size:.35rem"></i> ${comic.status}</span>
-                </div>
-                <div class="c-title">${comic.title}</div>
-                <div class="c-excerpt">${comic.description}</div>
-                <div class="c-footer">
-                    <span class="c-eps"><i class="fas fa-images"></i> ${comic.episodes.length} ep${comic.episodes.length !== 1 ? 's' : ''}</span>
-                    <span class="c-read">Read <i class="fas fa-arrow-right" style="font-size:.6rem"></i></span>
-                </div>
-            </div>
-        </a>`).join('');
-}
-renderWebcomicPreview();
+        /* ── PARTICLES ─── */
+        const pContainer = document.getElementById('particles');
+        for (let i = 0; i < 16; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            const s = Math.random() * 9 + 3;
+            p.style.cssText = `width:${s}px;height:${s}px;left:${Math.random()*100}%;animation-duration:${Math.random()*14+8}s;animation-delay:${Math.random()*12}s;`;
+            pContainer.appendChild(p);
+        }
 
-/* ── TYPING ─── */
-const words = ['Developer', 'Student', 'Builder', 'Learner', 'Creator'];
-let wi = 0, ci = 0, deleting = false;
-const typedEl = document.getElementById('typed');
-function type() {
-    const word = words[wi];
-    if (!deleting) {
-        typedEl.textContent = word.slice(0, ++ci);
-        if (ci === word.length) { deleting = true; setTimeout(type, 1800); return; }
-    } else {
-        typedEl.textContent = word.slice(0, --ci);
-        if (ci === 0) { deleting = false; wi = (wi + 1) % words.length; }
-    }
-    setTimeout(type, deleting ? 60 : 100);
-}
-setTimeout(type, 600);
+        /* ── BUBBLES ─── */
+        for (let i = 0; i < 18; i++) {
+            const b = document.createElement('div');
+            b.className = 'bubble';
+            const s = Math.random() * 80 + 40;
+            b.style.cssText = `width:${s}px;height:${s}px;left:${Math.random()*95}%;animation-duration:${Math.random()*20+14}s;animation-delay:${Math.random()*18}s;`;
+            document.body.appendChild(b);
+        }
 
-/* ── NAVBAR HIDE ON SCROLL ─── */
-let lastScroll = window.scrollY;
-window.addEventListener('scroll', () => {
-    const nav = document.getElementById('nav');
-    if (window.scrollY > lastScroll && window.scrollY > 80) {
-        nav.classList.add('hide');
-    } else {
-        nav.classList.remove('hide');
-    }
-    lastScroll = window.scrollY;
-}, { passive: true });
+        /* ── TYPING ANIMATION ─── */
+        const words = ['Developer', 'Student', 'Builder', 'Learner', 'Creator'];
+        let wi = 0, ci = 0, deleting = false;
+        const typedEl = document.getElementById('typed');
+        function type() {
+            const word = words[wi];
+            if (!deleting) {
+                typedEl.textContent = word.slice(0, ++ci);
+                if (ci === word.length) { deleting = true; setTimeout(type, 1800); return; }
+            } else {
+                typedEl.textContent = word.slice(0, --ci);
+                if (ci === 0) { deleting = false; wi = (wi + 1) % words.length; }
+            }
+            setTimeout(type, deleting ? 60 : 100);
+        }
+        setTimeout(type, 600);
 
-/* ── AUTH BUTTON ─── */
-const authBtn = document.getElementById('authBtn');
-function updateAuthBtn() {
-    const loggedIn = localStorage.getItem('munan_auth') === 'true';
-    if (loggedIn) {
-        authBtn.href = 'dashboard.html';
-        authBtn.innerHTML = '<i class="fas fa-gauge"></i> Dashboard';
-    } else {
-        authBtn.href = 'login.html';
-        authBtn.innerHTML = '<i class="fas fa-user-circle"></i> Login';
-    }
-}
-updateAuthBtn();
-</script>
-<script src="footer.js"></script>
+        /* ── THEME TOGGLE (index.html only) ─── */
+        const themeBtn = document.getElementById('themeBtn');
+        const icon = themeBtn.querySelector('i');
+
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+        }
+
+        themeBtn.onclick = () => {
+            if (document.body.getAttribute('data-theme') === 'dark') {
+                document.body.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.body.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+            }
+        };
+
+        /* ── NAVBAR HIDE ON SCROLL ─── */
+        let lastScroll = window.scrollY;
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if (window.scrollY > lastScroll && window.scrollY > 70) {
+                nav.classList.add('navbar-hidden');
+            } else {
+                nav.classList.remove('navbar-hidden');
+            }
+            lastScroll = window.scrollY;
+        });
+
+        /* ── LOGIN / LOGOUT BUTTON ─── */
+        const authBtn = document.getElementById('authBtn');
+        function updateAuthBtn() {
+            const loggedIn = localStorage.getItem('munan_auth') === 'true';
+            if (loggedIn) {
+                authBtn.href = 'dashboard.html';
+                authBtn.className = 'nav-login-btn';
+                authBtn.innerHTML = '<i class="fas fa-gauge"></i> Dashboard';
+                authBtn.onclick = null;
+            } else {
+                authBtn.href = 'login.html';
+                authBtn.className = 'nav-login-btn';
+                authBtn.innerHTML = '<i class="fas fa-user-circle"></i> Login';
+                authBtn.onclick = null;
+            }
+        }
+        updateAuthBtn();
+    </script>
+    <script src="footer.js"></script>
 </body>
 </html>
