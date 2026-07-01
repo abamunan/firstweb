@@ -9,18 +9,9 @@
     <link rel="icon" type="image/png" href="icon.png">
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600&family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Shared theme logic — blocking, must run before first paint -->
+    <script src="theme.js"></script>
     <link rel="stylesheet" href="style.css">
-    <!-- Early theme script: prevent flash of wrong theme -->
-    <script>
-        (function(){
-            if(localStorage.getItem('theme')==='dark'){
-                document.documentElement.setAttribute('data-theme','dark');
-                document.addEventListener('DOMContentLoaded',function(){
-                    document.body.setAttribute('data-theme','dark');
-                });
-            }
-        })();
-    </script>
     <style>
         /* ── INDEX-SPECIFIC STYLES ─── */
         .hero { position:relative; z-index:1; padding:110px 20px 50px; text-align:center; }
@@ -424,26 +415,8 @@
         }
         setTimeout(type, 600);
 
-        /* ── THEME TOGGLE (index.html only) ─── */
-        const themeBtn = document.getElementById('themeBtn');
-        const icon = themeBtn.querySelector('i');
-
-        if (localStorage.getItem('theme') === 'dark') {
-            document.body.setAttribute('data-theme', 'dark');
-            icon.className = 'fas fa-sun';
-        }
-
-        themeBtn.onclick = () => {
-            if (document.body.getAttribute('data-theme') === 'dark') {
-                document.body.removeAttribute('data-theme');
-                icon.className = 'fas fa-moon';
-                localStorage.setItem('theme', 'light');
-            } else {
-                document.body.setAttribute('data-theme', 'dark');
-                icon.className = 'fas fa-sun';
-                localStorage.setItem('theme', 'dark');
-            }
-        };
+        /* ── THEME TOGGLE (shared logic — see theme.js) ─── */
+        MunanTheme.bindToggle(document.getElementById('themeBtn'));
 
         /* ── NAVBAR HIDE ON SCROLL ─── */
         let lastScroll = window.scrollY;
