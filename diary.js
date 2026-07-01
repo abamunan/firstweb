@@ -351,7 +351,12 @@ saveEntryBtn.addEventListener("click", async () => {
         await loadHistory(); // refresh History tab so it reflects the save immediately
     } catch (err) {
         console.error("Diary save failed:", err);
-        showToast("Couldn't save — check your connection and try again.", true);
+        // TEMP DEBUG: showing the real Firebase error code/message on-screen
+        // so it's visible on mobile without DevTools. Revert to the generic
+        // message once the root cause is confirmed and fixed.
+        const debugMsg = `Save failed: ${err.code || "no-code"} — ${err.message || err}`;
+        showToast(debugMsg, true);
+        alert(debugMsg); // guaranteed full-text, unstyled — remove once confirmed
         // Restore label to pre-attempt state using the snapshot, not the live flag
         saveBtnLabel.textContent = wasEditing ? "Update Entry" : "Save Entry";
     } finally {
