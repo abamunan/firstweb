@@ -321,13 +321,22 @@ saveEntryBtn.addEventListener("click", async () => {
         }
         await loadHistory(); // refresh History tab so it reflects the save immediately
     } catch (err) {
-        console.error("Diary save failed:", err);
-        // TEMP DEBUG: showing the real Firebase error code/message on-screen
-        // so it's visible on mobile without DevTools. Revert to the generic
-        // message once the root cause is confirmed and fixed.
-        const debugMsg = `Save failed: ${err.code || "no-code"} — ${err.message || err}`;
-        showToast(debugMsg, true);
-        alert(debugMsg); // guaranteed full-text, unstyled — remove once confirmed
+        // Full dump so we can see the real shape of the error in DevTools —
+        // err.message can be empty/undefined for some Firestore errors
+        // (e.g. permission-denied sometimes has no .message on mobile),
+        // which is what was producing a blank alert().
+        console.error("Diary save failed — raw error object:", err);
+        console.error("Diary save failed — code:", err && err.code);
+        console.error("Diary save failed — message:", err && err.message);
+
+        const readableMsg =
+            (err && err.code === "permission-denied")
+                ? "Save blocked: you don't have permission to write to the diary (check Firestore rules or that you're logged in)."
+                : (err && (err.message || err.code))
+                    ? `Save failed: ${err.code || "unknown"} — ${err.message || "no message"}`
+                    : "Save failed — see browser console for details.";
+
+        showToast(readableMsg, true);
         // Restore label to pre-attempt state using the snapshot, not the live flag
         saveBtnLabel.textContent = wasEditing ? "Update Entry" : "Save Entry";
     } finally {
