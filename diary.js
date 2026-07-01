@@ -84,6 +84,38 @@ function showToast(message, isError = false) {
     toastTimer = setTimeout(() => toastEl.classList.remove("show"), 3200);
 }
 
+/** Stringifies any error shape (Error instance, plain object, string, etc.) for logging. */
+function safeStringifyError(err) {
+    try {
+        if (err instanceof Error) {
+            return JSON.stringify({ name: err.name, code: err.code, message: err.message, stack: err.stack });
+        }
+        return JSON.stringify(err, Object.getOwnPropertyNames(err || {}));
+    } catch {
+        return String(err);
+    }
+}
+
+/** Builds a guaranteed-non-blank, human-readable message from any error shape. */
+function buildErrorMessage(err, actionLabel) {
+    if (err && err.code === "permission-denied") {
+        return `${actionLabel} blocked: you don't have permission (check Firestore rules or that you're logged in).`;
+    }
+    if (err && err.code === "failed-precondition") {
+        return `${actionLabel} failed: a required Firestore index is missing. Check the browser console for a link to create it.`;
+    }
+    if (err && err.code === "unavailable") {
+        return `${actionLabel} failed: couldn't reach the server. Check your connection and try again.`;
+    }
+    const code = err && err.code;
+    const message = err && err.message;
+    if (code || message) {
+        return `${actionLabel} failed: ${code || "unknown-code"} — ${message || "no message"}`;
+    }
+    // Last resort — guarantees we never show a blank toast.
+    return `${actionLabel} failed: ${safeStringifyError(err) || "unknown error (see console)"}`;
+}
+
 // ════════════════════════════════════════════════════════════
 //  AUTH GATE
 // ════════════════════════════════════════════════════════════
@@ -321,21 +353,13 @@ saveEntryBtn.addEventListener("click", async () => {
         }
         await loadHistory(); // refresh History tab so it reflects the save immediately
     } catch (err) {
-        // Full dump so we can see the real shape of the error in DevTools —
-        // err.message can be empty/undefined for some Firestore errors
-        // (e.g. permission-denied sometimes has no .message on mobile),
-        // which is what was producing a blank alert().
+        // Full dump so we can see the real shape of the error in DevTools.
         console.error("Diary save failed — raw error object:", err);
         console.error("Diary save failed — code:", err && err.code);
         console.error("Diary save failed — message:", err && err.message);
+        console.error("Diary save failed — stringified:", safeStringifyError(err));
 
-        const readableMsg =
-            (err && err.code === "permission-denied")
-                ? "Save blocked: you don't have permission to write to the diary (check Firestore rules or that you're logged in)."
-                : (err && (err.message || err.code))
-                    ? `Save failed: ${err.code || "unknown"} — ${err.message || "no message"}`
-                    : "Save failed — see browser console for details.";
-
+        const readableMsg = buildErrorMessage(err, "Save");
         showToast(readableMsg, true);
         // Restore label to pre-attempt state using the snapshot, not the live flag
         saveBtnLabel.textContent = wasEditing ? "Update Entry" : "Save Entry";
@@ -378,8 +402,11 @@ async function loadHistory() {
         cachedEntries = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
         renderEntryList(cachedEntries);
     } catch (err) {
-        console.error("Diary history fetch failed:", err);
+        console.error("Diary history fetch failed — raw error object:", err);
+        console.error("Diary history fetch failed — code:", err && err.code);
+        console.error("Diary history fetch failed — stringified:", safeStringifyError(err));
         entryListEl.innerHTML = `<div class="diary-empty"><i class="fas fa-triangle-exclamation"></i><p>Couldn't load entries. Check your connection and try again.</p></div>`;
+        showToast(buildErrorMessage(err, "Loading entries"), true);
     }
 }
 
