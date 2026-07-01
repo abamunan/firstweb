@@ -48,7 +48,6 @@ const $ = (sel) => document.querySelector(sel);
 const gate            = $("#diary-gate");
 const gateContent     = $("#diary-gate-content");
 const appRoot         = $("#diary-app");
-const themeToggleBtn  = $("#theme-toggle"); // not present in navbar (TypeMaster-identical); kept null-safe below
 
 const entryDateInput  = $("#entry-date");
 const entryTimeInput  = $("#entry-time");
@@ -67,27 +66,11 @@ const downloadPdfBtn  = $("#download-pdf-btn");
 const filterBtns      = document.querySelectorAll(".diary-filter-btn");
 const toastEl         = $("#diary-toast");
 
-// ════════════════════════════════════════════════════════════
-//  THEME (mirrors the toggle pattern used on index.html)
-// ════════════════════════════════════════════════════════════
-function applyTheme(theme) {
-    document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("munan_theme", theme);
-    if (themeToggleBtn) {
-        themeToggleBtn.innerHTML = theme === "dark"
-            ? '<i class="fas fa-sun"></i>'
-            : '<i class="fas fa-moon"></i>';
-    }
-}
-(function initTheme() {
-    const saved = localStorage.getItem("munan_theme");
-    const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-    applyTheme(saved || (prefersDark ? "dark" : "light"));
-})();
-themeToggleBtn?.addEventListener("click", () => {
-    const current = document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
-    applyTheme(current === "dark" ? "light" : "dark");
-});
+// NOTE: Theme is handled entirely by the shared theme.js script tag
+// in <head> (loaded before this module). It applies the persisted
+// theme on load and exposes window.MunanTheme for any page that has
+// a visible toggle button. This page has none, so there's nothing
+// to wire up here — see theme.js for the single source of truth.
 
 // ════════════════════════════════════════════════════════════
 //  TOAST
