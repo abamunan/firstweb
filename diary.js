@@ -5,7 +5,7 @@
 
 import { initializeApp, getApps, getApp }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut }
+import { getAuth, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
     getFirestore, collection, doc, setDoc, updateDoc,
@@ -48,9 +48,7 @@ const $ = (sel) => document.querySelector(sel);
 const gate            = $("#diary-gate");
 const gateContent     = $("#diary-gate-content");
 const appRoot         = $("#diary-app");
-const navLoginBtn     = $("#nav-login-btn");
-const navLogoutBtn    = $("#nav-logout-btn");
-const themeToggleBtn  = $("#theme-toggle");
+const themeToggleBtn  = $("#theme-toggle"); // not present in navbar (TypeMaster-identical); kept null-safe below
 
 const entryDateInput  = $("#entry-date");
 const entryTimeInput  = $("#entry-time");
@@ -128,24 +126,14 @@ function unlockApp() {
 onAuthStateChanged(auth, (user) => {
     if (user && user.emailVerified) {
         currentUser = user;
-        navLoginBtn.style.display = "none";
-        navLogoutBtn.style.display = "inline-flex";
         unlockApp();
         resetFormToNew();         // seed one default section, today's date/time
         loadHistory();             // initial fetch for History tab
     } else {
         currentUser = null;
-        navLoginBtn.style.display = "inline-flex";
-        navLogoutBtn.style.display = "none";
         renderLoggedOutGate();
     }
 });
-
-navLogoutBtn?.addEventListener("click", async () => {
-    await signOut(auth);
-    // onAuthStateChanged will re-render the gate automatically
-});
-
 // ════════════════════════════════════════════════════════════
 //  TAB SWITCHING (Write / History)
 // ════════════════════════════════════════════════════════════
