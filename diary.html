@@ -24,21 +24,57 @@
        from style.css so light/dark theming stays in sync site-wide.
        ============================================================ */
 
-    /* ── PAGE SHELL ──────────────────────────────────────────── */
-    main.diary-shell {
-        position: relative; z-index: 1;
-        max-width: 880px; margin: 0 auto;
-        padding: 110px 6% 40px;
-        min-height: 70vh;
+    /* ── BODY OVERRIDE (identical to TypeMaster.html) ────────── */
+    body {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        min-height: 100vh;
     }
 
-    .diary-header { text-align: center; margin-bottom: 28px; animation: fadeDown .6s ease both; }
-    .diary-header h1 {
-        font-size: 1.8rem; font-weight: 800; letter-spacing: -.02em;
-        margin-bottom: 6px;
+    /* ── NAVBAR OVERRIDE (identical to TypeMaster.html) ──────── */
+    .nav-links { display: flex; gap: 10px; }
+    .nav-btn {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: rgba(255,255,255,.55); border: 1.5px solid rgba(255,255,255,.6);
+        border-radius: 12px; padding: 6px 14px 6px 10px;
+        font-size: .78rem; font-weight: 600; color: var(--text-main);
+        backdrop-filter: blur(8px); transition: var(--trans);
     }
-    .diary-header h1 span { color: var(--accent); }
-    .diary-header p { font-size: .85rem; color: var(--text-soft); }
+    .nav-btn:hover { background: rgba(255,255,255,.85); border-color: #7ec8e8; }
+    .nav-btn-icon {
+        width: 24px; height: 24px; border-radius: 6px;
+        background: linear-gradient(135deg,#5bb8e8,#2e8fc7);
+        display: flex; align-items: center; justify-content: center;
+        color: #fff; font-size: .7rem; flex-shrink: 0;
+    }
+
+    /* ── PAGE SHELL ──────────────────────────────────────────── */
+    /* Identical to TypeMaster's .page-content wrapper, with a
+       narrower max-width suited to diary's reading-focused layout. */
+    .page-content {
+        width: 100%;
+        max-width: 880px;
+        margin: 0 auto;
+        padding: 72px 20px 40px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        flex: 1;
+    }
+
+    /* ── HEADER (identical structure to TypeMaster.html) ────── */
+    header { text-align: center; padding: 14px 0 6px; }
+    .logo-main {
+        font-size: 3rem; font-weight: 800; letter-spacing: -2px;
+        color: var(--text-main); display: block; line-height: 1.15;
+    }
+    .logo-main span { color: var(--accent); }
+    .logo-sub {
+        font-size: .72rem; font-weight: 400; letter-spacing: 3px;
+        color: var(--text-soft); text-transform: uppercase;
+        margin-top: 7px; display: block;
+    }
 
     /* ── TABS ─────────────────────────────────────────────────── */
     .diary-tabs {
@@ -273,8 +309,8 @@
 
     /* ── RESPONSIVE ───────────────────────────────────────────── */
     @media (max-width: 600px) {
-        main.diary-shell { padding: 100px 5% 32px; }
-        .diary-header h1 { font-size: 1.5rem; }
+        .page-content { padding: 66px 12px 32px; }
+        .logo-main { font-size: 2.2rem; }
         .diary-datetime-row { flex-direction: column; }
         .diary-history-toolbar { flex-direction: column; align-items: stretch; }
         .diary-pdf-btn { justify-content: center; }
@@ -291,22 +327,18 @@
     <div class="blob blob-3"></div>
 </div>
 
-<!-- ── NAVBAR (matches existing site pattern) ── -->
+<!-- ── NAVBAR (identical structure to TypeMaster.html) ── -->
 <nav class="navbar" id="navbar">
-    <a href="index.html" class="nav-logo">Munan<span>.hub</span></a>
-    <div class="nav-right">
-        <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> Back</a>
-        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
-            <i class="fas fa-moon"></i>
-        </button>
-        <a href="login.html" class="nav-login-btn" id="nav-login-btn">
-            <i class="fas fa-right-to-bracket"></i> Login
+    <div class="nav-logo">Munan<span>.hub</span></div>
+    <div class="nav-links">
+        <a href="index.html" class="nav-btn">
+            <span class="nav-btn-icon"><i class="fas fa-home"></i></span>
+            Home
         </a>
-        <button class="nav-logout-btn" id="nav-logout-btn" style="display:none;">
-            <i class="fas fa-right-from-bracket"></i> Logout
-        </button>
     </div>
 </nav>
+
+<div class="page-content">
 
 <!-- ── AUTH GATE (shown while checking session, or when logged out) ── -->
 <div class="diary-gate" id="diary-gate">
@@ -318,13 +350,13 @@
     </div>
 </div>
 
-<!-- ── MAIN APP (hidden until auth confirms) ── -->
-<main class="diary-shell" id="diary-app" style="display:none;">
+<!-- ════════════════ MAIN APP (hidden until auth confirms) ════════════════ -->
+<div id="diary-app" style="display:none;">
 
-    <div class="diary-header">
-        <h1>Munan's <span>Diary</span></h1>
-        <p>Private, dated entries — write freely, organize by section.</p>
-    </div>
+    <header>
+        <span class="logo-main">Munan's <span>Diary</span></span>
+        <span class="logo-sub">Write &nbsp;·&nbsp; Organize &nbsp;·&nbsp; Revisit</span>
+    </header>
 
     <div class="diary-tabs">
         <button class="diary-tab active" data-tab="write"><i class="fas fa-pen"></i> Write</button>
@@ -393,7 +425,9 @@
 
     </section>
 
-</main>
+</div><!-- /#diary-app -->
+
+</div><!-- /.page-content -->
 
 <!-- Toast -->
 <div class="diary-toast" id="diary-toast"></div>
