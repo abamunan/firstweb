@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diary · Munan.hub</title>
+<meta name="description" content="A private, dated diary with sections — write, revisit, and export your entries.">
+
+<!-- Fonts (matches site-wide Poppins / Hind Siliguri) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&amp;family=Hind+Siliguri:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+
+<!-- Font Awesome (footer.js renders fa-* icons; navbar/diary UI also use it) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<!-- Shared site stylesheet -->
+<link rel="stylesheet" href="style.css">
+
+<style>
+    /* ============================================================
+       Page-specific styles — Diary
+       Reuses --card-bg, --card-border, --accent, --text-* tokens
+       from style.css so light/dark theming stays in sync site-wide.
+       ============================================================ */
+
+    /* ── PAGE SHELL ──────────────────────────────────────────── */
+    main.diary-shell {
+        position: relative; z-index: 1;
+        max-width: 880px; margin: 0 auto;
+        padding: 110px 6% 40px;
+        min-height: 70vh;
+    }
+
+    .diary-header { text-align: center; margin-bottom: 28px; animation: fadeDown .6s ease both; }
+    .diary-header h1 {
+        font-size: 1.8rem; font-weight: 800; letter-spacing: -.02em;
+        margin-bottom: 6px;
+    }
+    .diary-header h1 span { color: var(--accent); }
+    .diary-header p { font-size: .85rem; color: var(--text-soft); }
+
+    /* ── TABS ─────────────────────────────────────────────────── */
+    .diary-tabs {
+        display: flex; gap: 8px; justify-content: center;
+        margin-bottom: 24px; animation: fadeUp .6s ease .05s both;
+    }
+    .diary-tab {
+        display: inline-flex; align-items: center; gap: 7px;
+        padding: 9px 22px; border-radius: 20px;
+        background: var(--card-bg); border: 1.5px solid var(--card-border);
+        color: var(--text-muted); font-size: .82rem; font-weight: 700;
+        cursor: pointer; backdrop-filter: blur(8px); transition: var(--trans);
+    }
+    .diary-tab:hover { border-color: var(--accent); color: var(--text-main); }
+    .diary-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    [data-theme="dark"] .diary-tab.active { color: #020617; }
+
+    .diary-view { display: none; animation: fadeUp .45s ease both; }
+    .diary-view.active { display: block; }
+
+    /* ── WRITE: DATE/TIME ROW ────────────────────────────────── */
+    .diary-card { margin-bottom: 18px; }
+    .diary-datetime-row {
+        display: flex; gap: 14px; flex-wrap: wrap; width: 100%;
+    }
+    .diary-field { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 150px; }
+    .diary-field label {
+        font-size: .72rem; font-weight: 700; text-transform: uppercase;
+        letter-spacing: .06em; color: var(--text-soft);
+    }
+    .diary-field input[type="date"],
+    .diary-field input[type="time"],
+    .diary-field input[type="text"],
+    .diary-field textarea {
+        font-family: inherit; font-size: .88rem; color: var(--text-main);
+        background: rgba(255,255,255,.7); border: 1.5px solid var(--card-border);
+        border-radius: 10px; padding: 9px 12px; transition: var(--trans);
+        width: 100%;
+    }
+    .diary-field input:focus, .diary-field textarea:focus {
+        outline: none; border-color: var(--accent);
+        background: rgba(255,255,255,.95);
+        box-shadow: 0 0 0 3px rgba(2,132,199,.12);
+    }
+    [data-theme="dark"] .diary-field input:focus,
+    [data-theme="dark"] .diary-field textarea:focus {
+        box-shadow: 0 0 0 3px rgba(0,212,255,.12);
+    }
+
+    /* ── SECTIONS ─────────────────────────────────────────────── */
+    .diary-sections { display: flex; flex-direction: column; gap: 14px; width: 100%; margin-top: 18px; }
+    .diary-section {
+        background: rgba(255,255,255,.35); border: 1px solid var(--card-border);
+        border-radius: 12px; padding: 14px; position: relative;
+        animation: cardIn .35s ease both;
+    }
+    [data-theme="dark"] .diary-section { background: rgba(255,255,255,.04); }
+    .diary-section-head {
+        display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+    }
+    .diary-section-head input[type="text"] {
+        flex: 1; font-weight: 600; font-size: .85rem;
+        background: transparent; border: none; border-bottom: 1.5px dashed var(--card-border);
+        border-radius: 0; padding: 4px 2px; color: var(--text-main);
+    }
+    .diary-section-head input[type="text"]:focus {
+        outline: none; border-bottom-color: var(--accent); box-shadow: none; background: transparent;
+    }
+    .diary-section-remove {
+        width: 26px; height: 26px; flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center;
+        background: rgba(239,68,68,.12); border: 1.5px solid rgba(239,68,68,.3);
+        border-radius: 50%; color: #ef4444; font-size: .75rem; cursor: pointer;
+        transition: var(--trans);
+    }
+    .diary-section-remove:hover { background: rgba(239,68,68,.55); color: #fff; }
+    .diary-section textarea {
+        width: 100%; box-sizing: border-box;
+        min-height: 110px; resize: vertical; line-height: 1.6;
+    }
+
+    .diary-add-section {
+        display: inline-flex; align-items: center; gap: 7px;
+        margin-top: 14px; padding: 9px 18px;
+        background: rgba(255,255,255,.55); border: 1.5px dashed var(--card-border);
+        border-radius: 10px; color: var(--accent); font-size: .82rem; font-weight: 700;
+        cursor: pointer; transition: var(--trans); width: 100%; justify-content: center;
+    }
+    .diary-add-section:hover { border-color: var(--accent); background: rgba(2,132,199,.06); }
+    .diary-add-section:disabled,
+    .diary-add-section[hidden] { display: none; }
+    .diary-section-cap { text-align: center; font-size: .72rem; color: var(--text-soft); margin-top: 8px; }
+
+    /* ── WRITE ACTIONS ────────────────────────────────────────── */
+    .diary-actions {
+        display: flex; gap: 10px; flex-wrap: wrap; margin-top: 22px;
+    }
+    .diary-btn {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 11px 22px; border-radius: 10px; border: 1.5px solid transparent;
+        font-size: .85rem; font-weight: 700; cursor: pointer; transition: var(--trans);
+        font-family: inherit;
+    }
+    .diary-btn-primary { background: var(--accent); color: #fff; }
+    .diary-btn-primary:hover { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 8px 22px rgba(2,132,199,.3); }
+    [data-theme="dark"] .diary-btn-primary { color: #020617; }
+    .diary-btn-ghost {
+        background: var(--card-bg); border-color: var(--card-border); color: var(--text-muted);
+    }
+    .diary-btn-ghost:hover { border-color: var(--accent); color: var(--text-main); }
+    .diary-btn:disabled { opacity: .55; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+
+    .diary-editing-banner {
+        display: none; align-items: center; gap: 8px;
+        background: rgba(2,132,199,.1); border: 1px solid rgba(2,132,199,.3);
+        border-radius: 10px; padding: 9px 14px; margin-bottom: 16px;
+        font-size: .78rem; color: var(--accent); font-weight: 600;
+    }
+    .diary-editing-banner.active { display: flex; }
+    .diary-editing-banner button {
+        margin-left: auto; background: none; border: none; color: var(--accent);
+        font-size: .75rem; font-weight: 700; cursor: pointer; text-decoration: underline;
+        font-family: inherit;
+    }
+
+    /* ── HISTORY ──────────────────────────────────────────────── */
+    .diary-history-toolbar {
+        display: flex; justify-content: space-between; align-items: center;
+        flex-wrap: wrap; gap: 12px; margin-bottom: 18px;
+    }
+    .diary-filter-group {
+        display: inline-flex; gap: 6px; background: var(--card-bg);
+        border: 1.5px solid var(--card-border); border-radius: 20px; padding: 4px;
+        backdrop-filter: blur(8px);
+    }
+    .diary-filter-btn {
+        padding: 6px 14px; border-radius: 16px; border: none; background: transparent;
+        color: var(--text-soft); font-size: .76rem; font-weight: 700; cursor: pointer;
+        transition: var(--trans); font-family: inherit;
+    }
+    .diary-filter-btn.active { background: var(--accent); color: #fff; }
+    [data-theme="dark"] .diary-filter-btn.active { color: #020617; }
+
+    .diary-pdf-btn {
+        display: inline-flex; align-items: center; gap: 7px;
+        padding: 9px 18px; border-radius: 10px;
+        background: rgba(255,255,255,.7); border: 1.5px solid var(--card-border);
+        color: var(--accent); font-size: .8rem; font-weight: 700; cursor: pointer;
+        transition: var(--trans); font-family: inherit;
+    }
+    .diary-pdf-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+    [data-theme="dark"] .diary-pdf-btn:hover { color: #020617; }
+    .diary-pdf-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    .diary-entry-list { display: flex; flex-direction: column; gap: 10px; }
+    .diary-entry {
+        display: flex; align-items: center; gap: 14px;
+        background: var(--card-bg); border: 1px solid var(--card-border);
+        border-radius: 12px; padding: 13px 16px; cursor: pointer;
+        backdrop-filter: blur(8px); transition: var(--trans);
+        animation: cardIn .4s ease both;
+    }
+    .diary-entry:hover { border-color: var(--accent); transform: translateX(3px); background: rgba(255,255,255,.82); }
+    [data-theme="dark"] .diary-entry:hover { background: rgba(255,255,255,.1); }
+    .diary-entry-date {
+        flex-shrink: 0; width: 58px; text-align: center;
+        display: flex; flex-direction: column; gap: 1px;
+        padding: 7px 4px; border-radius: 9px;
+        background: rgba(2,132,199,.1); color: var(--accent);
+    }
+    [data-theme="dark"] .diary-entry-date { background: rgba(0,212,255,.1); }
+    .diary-entry-date .d { font-size: 1.05rem; font-weight: 800; line-height: 1; }
+    .diary-entry-date .m { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+    .diary-entry-body { flex: 1; min-width: 0; }
+    .diary-entry-title { font-size: .87rem; font-weight: 700; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .diary-entry-snippet { font-size: .78rem; color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .diary-entry-time { flex-shrink: 0; font-size: .72rem; color: var(--text-soft); font-weight: 600; }
+    .diary-entry-arrow { flex-shrink: 0; color: var(--text-soft); font-size: .75rem; transition: var(--trans); }
+    .diary-entry:hover .diary-entry-arrow { color: var(--accent); transform: translateX(2px); }
+
+    .diary-empty {
+        text-align: center; padding: 50px 20px; color: var(--text-soft);
+    }
+    .diary-empty i { font-size: 2.2rem; margin-bottom: 12px; opacity: .4; display: block; }
+    .diary-empty p { font-size: .85rem; }
+
+    .diary-loading {
+        text-align: center; padding: 40px 20px; color: var(--text-soft); font-size: .85rem;
+    }
+    .diary-loading i { margin-right: 8px; }
+
+    /* ── TOAST ────────────────────────────────────────────────── */
+    .diary-toast {
+        position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+        background: var(--text-main); color: var(--main-bg);
+        padding: 12px 22px; border-radius: 10px; font-size: .82rem; font-weight: 600;
+        box-shadow: 0 10px 30px rgba(0,0,0,.2); z-index: 3000;
+        opacity: 0; pointer-events: none; transition: opacity .3s ease, transform .3s ease;
+        display: flex; align-items: center; gap: 8px;
+    }
+    .diary-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .diary-toast.error { background: #ef4444; color: #fff; }
+    [data-theme="dark"] .diary-toast { background: #f1f5f9; color: #0f172a; }
+    [data-theme="dark"] .diary-toast.error { background: #ef4444; color: #fff; }
+
+    /* ── AUTH GATE OVERLAY ────────────────────────────────────── */
+    .diary-gate {
+        position: fixed; inset: 0; z-index: 2000;
+        display: flex; align-items: center; justify-content: center;
+        background: rgba(2,6,23,.55); backdrop-filter: blur(6px);
+        padding: 20px;
+    }
+    .diary-gate-card {
+        max-width: 380px; width: 100%; text-align: center;
+        background: var(--card-bg); border: 1px solid var(--card-border);
+        border-radius: 18px; padding: 36px 28px; backdrop-filter: blur(16px);
+        box-shadow: 0 24px 60px rgba(0,0,0,.3);
+        animation: cardIn .4s ease both;
+    }
+    .diary-gate-card i.lock-icon {
+        width: 56px; height: 56px; border-radius: 50%; margin: 0 auto 16px;
+        display: flex; align-items: center; justify-content: center;
+        background: rgba(2,132,199,.12); color: var(--accent); font-size: 1.4rem;
+    }
+    .diary-gate-card h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 8px; }
+    .diary-gate-card p { font-size: .82rem; color: var(--text-soft); margin-bottom: 22px; line-height: 1.6; }
+    .diary-gate-card a.diary-btn { text-decoration: none; }
+
+    /* Checking-session state (before we know auth status) */
+    .diary-checking { display: flex; flex-direction: column; align-items: center; gap: 10px; color: #fff; }
+    .diary-checking i { font-size: 1.6rem; }
+
+    /* ── RESPONSIVE ───────────────────────────────────────────── */
+    @media (max-width: 600px) {
+        main.diary-shell { padding: 100px 5% 32px; }
+        .diary-header h1 { font-size: 1.5rem; }
+        .diary-datetime-row { flex-direction: column; }
+        .diary-history-toolbar { flex-direction: column; align-items: stretch; }
+        .diary-pdf-btn { justify-content: center; }
+        .diary-entry-time { display: none; }
+    }
+</style>
+</head>
+<body>
+
+<!-- ── AMBIENT BACKGROUND (matches site-wide hero treatment) ── -->
+<div class="blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+</div>
+
+<!-- ── NAVBAR (matches existing site pattern) ── -->
+<nav class="navbar" id="navbar">
+    <a href="index.html" class="nav-logo">Munan<span>.hub</span></a>
+    <div class="nav-right">
+        <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> Back</a>
+        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+            <i class="fas fa-moon"></i>
+        </button>
+        <a href="login.html" class="nav-login-btn" id="nav-login-btn">
+            <i class="fas fa-right-to-bracket"></i> Login
+        </a>
+        <button class="nav-logout-btn" id="nav-logout-btn" style="display:none;">
+            <i class="fas fa-right-from-bracket"></i> Logout
+        </button>
+    </div>
+</nav>
+
+<!-- ── AUTH GATE (shown while checking session, or when logged out) ── -->
+<div class="diary-gate" id="diary-gate">
+    <div id="diary-gate-content">
+        <div class="diary-checking">
+            <i class="fas fa-circle-notch fa-spin"></i>
+            <span>Checking your session…</span>
+        </div>
+    </div>
+</div>
+
+<!-- ── MAIN APP (hidden until auth confirms) ── -->
+<main class="diary-shell" id="diary-app" style="display:none;">
+
+    <div class="diary-header">
+        <h1>Munan's <span>Diary</span></h1>
+        <p>Private, dated entries — write freely, organize by section.</p>
+    </div>
+
+    <div class="diary-tabs">
+        <button class="diary-tab active" data-tab="write"><i class="fas fa-pen"></i> Write</button>
+        <button class="diary-tab" data-tab="history"><i class="fas fa-clock-rotate-left"></i> History</button>
+    </div>
+
+    <!-- ════════════════ WRITE VIEW ════════════════ -->
+    <section class="diary-view active" id="view-write">
+
+        <div class="diary-editing-banner" id="editing-banner">
+            <i class="fas fa-pen-to-square"></i>
+            <span id="editing-banner-text">Editing an existing entry</span>
+            <button id="cancel-edit-btn" type="button">Start new instead</button>
+        </div>
+
+        <div class="card diary-card" style="align-items:stretch;">
+            <div class="diary-datetime-row">
+                <div class="diary-field">
+                    <label for="entry-date">Date</label>
+                    <input type="date" id="entry-date">
+                </div>
+                <div class="diary-field">
+                    <label for="entry-time">Time</label>
+                    <input type="time" id="entry-time">
+                </div>
+            </div>
+
+            <div class="diary-sections" id="sections-container">
+                <!-- sections injected by JS -->
+            </div>
+
+            <button class="diary-add-section" id="add-section-btn" type="button">
+                <i class="fas fa-plus"></i> Add Section
+            </button>
+            <div class="diary-section-cap" id="section-cap-msg" style="display:none;">Maximum of 10 sections reached</div>
+        </div>
+
+        <div class="diary-actions">
+            <button class="diary-btn diary-btn-primary" id="save-entry-btn" type="button">
+                <i class="fas fa-floppy-disk"></i> <span id="save-btn-label">Save Entry</span>
+            </button>
+            <button class="diary-btn diary-btn-ghost" id="clear-form-btn" type="button">
+                <i class="fas fa-rotate-left"></i> Clear
+            </button>
+        </div>
+
+    </section>
+
+    <!-- ════════════════ HISTORY VIEW ════════════════ -->
+    <section class="diary-view" id="view-history">
+
+        <div class="diary-history-toolbar">
+            <div class="diary-filter-group" role="group" aria-label="Entry limit filter">
+                <button class="diary-filter-btn active" data-limit="10">Last 10</button>
+                <button class="diary-filter-btn" data-limit="50">Last 50</button>
+                <button class="diary-filter-btn" data-limit="all">All</button>
+            </div>
+            <button class="diary-pdf-btn" id="download-pdf-btn">
+                <i class="fas fa-file-pdf"></i> Download PDF
+            </button>
+        </div>
+
+        <div class="diary-entry-list" id="entry-list">
+            <div class="diary-loading"><i class="fas fa-circle-notch fa-spin"></i> Loading entries…</div>
+        </div>
+
+    </section>
+
+</main>
+
+<!-- Toast -->
+<div class="diary-toast" id="diary-toast"></div>
+
+<!-- ── html2pdf.js (client-side PDF export, per Munan's choice) ── -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<!-- ── Firebase (same project as login.html / moneytracker.html / auth.js) ── -->
+<script type="module" src="diary.js"></script>
+
+<!-- ── Shared footer injector ── -->
+<script src="footer.js"></script>
+
+</body>
+</html>
