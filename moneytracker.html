@@ -447,6 +447,9 @@
       <div class="field-row"><span class="field-icon">📟</span><span class="field-label">Gadget</span><input class="field-input" type="number" placeholder="0" id="f_gadget" min="0"></div>
       <div class="field-row"><span class="field-icon">🎁</span><span class="field-label">Gift</span><input class="field-input" type="number" placeholder="0" id="f_gift" min="0"></div>
       <div class="field-row"><span class="field-icon">👥</span><span class="field-label">Social</span><input class="field-input" type="number" placeholder="0" id="f_social" min="0"></div>
+      <div class="field-row"><span class="field-icon">🧳</span><span class="field-label">Tour</span><input class="field-input" type="number" placeholder="0" id="f_tour" min="0"></div>
+      <div class="field-row"><span class="field-icon">🧾</span><span class="field-label">Necessary</span><input class="field-input" type="number" placeholder="0" id="f_necessary" min="0"></div>
+      <div class="field-row"><span class="field-icon">💊</span><span class="field-label">Medicine</span><input class="field-input" type="number" placeholder="0" id="f_medicine" min="0"></div>
       <div class="total-row exp"><span>Total Expense</span><span id="totalExp">৳ 0</span></div>
     </div>
     <div class="section-card">
@@ -482,6 +485,8 @@
     </div>
     <div class="section-title">Daily Trend</div>
     <div class="chart-card"><canvas id="dailyBarChart"></canvas></div>
+    <div class="section-title">Expense Curve</div>
+    <div class="chart-card"><canvas id="dailyAreaChart"></canvas></div>
     <div class="section-title">Category Breakdown</div>
     <div class="chart-card"><canvas id="categoryPieChart"></canvas></div>
     <div id="breakdownList"></div>
@@ -552,6 +557,9 @@ const EXPENSE_FIELDS = [
   {id:'gadget',label:'Gadget',icon:'📟'},
   {id:'gift',label:'Gift',icon:'🎁'},
   {id:'social',label:'Social',icon:'👥'},
+  {id:'tour',label:'Tour',icon:'🧳'},
+  {id:'necessary',label:'Necessary',icon:'🧾'},
+  {id:'medicine',label:'Medicine',icon:'💊'},
 ];
 const INCOME_FIELDS = [
   {id:'family',label:'Family Income',icon:'👨‍👩‍👧'},
@@ -765,7 +773,7 @@ function calcMonth(y,m){
 
 // ─── CHARTS (bar + pie, theme-aware) ───────────────────────────────────────────
 const chartInstances={};
-const CAT_PALETTE=['#0284c7','#16a34a','#dc2626','#d97706','#7c3aed','#db2777','#0d9488','#ca8a04','#4f46e5','#059669','#e11d48','#0891b2','#65a30d','#c026d3','#ea580c','#2563eb'];
+const CAT_PALETTE=['#0284c7','#16a34a','#dc2626','#d97706','#7c3aed','#db2777','#0d9488','#ca8a04','#4f46e5','#059669','#e11d48','#0891b2','#65a30d','#c026d3','#ea580c','#2563eb','#0e7490','#9333ea','#b45309'];
 
 function chartColors(){
   const cs=getComputedStyle(document.documentElement);
@@ -782,7 +790,7 @@ function destroyChart(id){
   if(chartInstances[id]){ chartInstances[id].destroy(); delete chartInstances[id]; }
 }
 
-function renderBarChart(id,labels,expData,incData){
+function renderBarChart(id,labels,expData){
   const ctx=document.getElementById(id);
   destroyChart(id);
   if(!ctx||typeof Chart==='undefined'||!labels.length) return;
@@ -790,12 +798,42 @@ function renderBarChart(id,labels,expData,incData){
   chartInstances[id]=new Chart(ctx,{
     type:'bar',
     data:{labels,datasets:[
-      {label:'Expense',data:expData,backgroundColor:c.exp,borderRadius:4,maxBarThickness:22},
-      {label:'Income',data:incData,backgroundColor:c.inc,borderRadius:4,maxBarThickness:22}
+      {label:'Expense',data:expData,backgroundColor:c.exp,borderRadius:4,maxBarThickness:22}
     ]},
     options:{
       responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{labels:{color:c.text,font:{family:'Poppins',size:11}}}},
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{color:c.text,font:{size:10}},grid:{display:false}},
+        y:{beginAtZero:true,ticks:{color:c.text,font:{size:10}},grid:{color:c.grid}}
+      }
+    }
+  });
+}
+
+function renderAreaChart(id,labels,expData){
+  const ctx=document.getElementById(id);
+  destroyChart(id);
+  if(!ctx||typeof Chart==='undefined'||!labels.length) return;
+  const c=chartColors();
+  chartInstances[id]=new Chart(ctx,{
+    type:'line',
+    data:{labels,datasets:[{
+      label:'Expense',
+      data:expData,
+      borderColor:c.exp,
+      backgroundColor:c.exp+'33',
+      fill:true,
+      tension:0.35,
+      pointRadius:3,
+      pointBackgroundColor:c.exp,
+      pointBorderColor:c.cardBg,
+      pointBorderWidth:1.5,
+      borderWidth:2
+    }]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
       scales:{
         x:{ticks:{color:c.text,font:{size:10}},grid:{display:false}},
         y:{beginAtZero:true,ticks:{color:c.text,font:{size:10}},grid:{color:c.grid}}
@@ -831,7 +869,8 @@ function renderSummary(){
   netEl.style.color=net>=0?'var(--accent2)':'var(--danger)';
   document.getElementById('summarySubtitle').textContent=`${MONTHS[curMonth]} ${curYear} — ${daily.length} days recorded`;
 
-  renderBarChart('dailyBarChart', daily.map(d=>'D'+d.day), daily.map(d=>d.exp), daily.map(d=>d.inc));
+  renderBarChart('dailyBarChart', daily.map(d=>'D'+d.day), daily.map(d=>d.exp));
+  renderAreaChart('dailyAreaChart', daily.map(d=>'D'+d.day), daily.map(d=>d.exp));
   renderPieChart('categoryPieChart', catTotals);
 
   const bl=document.getElementById('breakdownList');
@@ -881,7 +920,7 @@ function renderYearly(){
   yrNetEl.style.color=yrNet>=0?'var(--accent2)':'var(--danger)';
   document.getElementById('yearlySubtitle').textContent=`${monthData.length} months recorded`;
 
-  renderBarChart('yearlyBarChart', monthData.map(md=>MONTHS[md.m].slice(0,3)), monthData.map(md=>md.totalExp), monthData.map(md=>md.totalInc));
+  renderBarChart('yearlyBarChart', monthData.map(md=>MONTHS[md.m].slice(0,3)), monthData.map(md=>md.totalExp));
   renderPieChart('yearlyPieChart', yrCat);
 
   // Monthly breakdown
