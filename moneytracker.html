@@ -326,6 +326,13 @@
     height: 230px;
   }
   .chart-card canvas { width: 100%!important; height: 100%!important; }
+  .chart-empty {
+    display: none;
+    position: absolute; inset: 14px;
+    align-items: center; justify-content: center;
+    text-align: center; color: var(--text-soft);
+    font-size: 0.78rem; line-height: 1.4; padding: 10px;
+  }
 
   /* ── BREAKDOWN ROWS ─────────────────────────── */
   .breakdown-row {
@@ -790,10 +797,30 @@ function destroyChart(id){
   if(chartInstances[id]){ chartInstances[id].destroy(); delete chartInstances[id]; }
 }
 
+// Shows/hides a message inside a chart-card so "no data" and "library
+// failed to load" are visibly different from a silent blank box.
+function setChartEmpty(id,show,msg){
+  const canvas=document.getElementById(id);
+  if(!canvas) return;
+  let empty=document.getElementById(id+'_empty');
+  if(!empty){
+    empty=document.createElement('div');
+    empty.id=id+'_empty';
+    empty.className='chart-empty';
+    canvas.parentElement.appendChild(empty);
+  }
+  if(msg) empty.textContent=msg;
+  empty.style.display=show?'flex':'none';
+  canvas.style.display=show?'none':'block';
+}
+
 function renderBarChart(id,labels,expData){
   const ctx=document.getElementById(id);
   destroyChart(id);
-  if(!ctx||typeof Chart==='undefined'||!labels.length) return;
+  if(!ctx) return;
+  if(typeof Chart==='undefined'){ setChartEmpty(id,true,'⚠️ Chart library failed to load — check your internet connection'); return; }
+  if(!labels.length||!expData.some(v=>v>0)){ setChartEmpty(id,true,'No expense data yet for this period'); return; }
+  setChartEmpty(id,false);
   const c=chartColors();
   chartInstances[id]=new Chart(ctx,{
     type:'bar',
@@ -814,7 +841,10 @@ function renderBarChart(id,labels,expData){
 function renderAreaChart(id,labels,expData){
   const ctx=document.getElementById(id);
   destroyChart(id);
-  if(!ctx||typeof Chart==='undefined'||!labels.length) return;
+  if(!ctx) return;
+  if(typeof Chart==='undefined'){ setChartEmpty(id,true,'⚠️ Chart library failed to load — check your internet connection'); return; }
+  if(!labels.length||!expData.some(v=>v>0)){ setChartEmpty(id,true,'No expense data yet for this period'); return; }
+  setChartEmpty(id,false);
   const c=chartColors();
   chartInstances[id]=new Chart(ctx,{
     type:'line',
@@ -845,9 +875,11 @@ function renderAreaChart(id,labels,expData){
 function renderPieChart(id,catTotals){
   const ctx=document.getElementById(id);
   destroyChart(id);
-  if(!ctx||typeof Chart==='undefined') return;
+  if(!ctx) return;
+  if(typeof Chart==='undefined'){ setChartEmpty(id,true,'⚠️ Chart library failed to load — check your internet connection'); return; }
   const entries=EXPENSE_FIELDS.map((f,i)=>({label:f.label,val:catTotals[f.id]||0,color:CAT_PALETTE[i%CAT_PALETTE.length]})).filter(e=>e.val>0);
-  if(!entries.length) return;
+  if(!entries.length){ setChartEmpty(id,true,'No expense data yet for this period'); return; }
+  setChartEmpty(id,false);
   const c=chartColors();
   chartInstances[id]=new Chart(ctx,{
     type:'pie',
