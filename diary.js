@@ -562,12 +562,19 @@ function buildPrintableDocument(entries) {
         entryBlock.style.cssText = `
             margin-bottom: 22px; padding-bottom: 18px;
             ${idx < entries.length - 1 ? "border-bottom: 1px solid #e2e8f0;" : ""}
-            page-break-inside: avoid;
         `;
+        // NOTE: no page-break-inside here on purpose. This block's height is
+        // unbounded (a diary entry can be many sections of free text), and
+        // html2pdf.js's "css" pagebreak mode can render a BLANK document when
+        // it's told to avoid breaking inside a block taller than one page —
+        // it can't find a legal break point, so it fails to place the
+        // content at all. "avoid" is safe only on small, bounded elements
+        // (see dateHeading below).
 
         const dateHeading = document.createElement("div");
         dateHeading.style.cssText = `
             display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px;
+            page-break-inside: avoid; page-break-after: avoid;
         `;
         dateHeading.innerHTML = `
             <div style="width:5px;height:18px;background:${ACCENT_HEX};border-radius:3px;flex-shrink:0;"></div>
@@ -578,7 +585,10 @@ function buildPrintableDocument(entries) {
 
         (entry.sections || []).forEach((sec) => {
             const secEl = document.createElement("div");
-            secEl.style.cssText = `margin-bottom: 12px; margin-left: 15px; page-break-inside: avoid;`;
+            secEl.style.cssText = `margin-bottom: 12px; margin-left: 15px;`;
+            // same reasoning as entryBlock above — a section's content is
+            // free text and can run longer than a page, so it can't safely
+            // carry page-break-inside: avoid
             secEl.innerHTML = `
                 <div style="font-size:12px;font-weight:700;color:${ACCENT_HEX};margin-bottom:4px;letter-spacing:0.02em;">
                     ${escapeHtml(sec.title || "Untitled")}
