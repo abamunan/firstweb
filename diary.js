@@ -568,77 +568,78 @@ function buildPrintableDocument(entries) {
     const root = document.createElement("div");
     root.style.cssText = `
         width: 190mm;
-        background: #ffffff; color: #0f172a;
-        font-family: 'Poppins', 'Hind Siliguri', sans-serif;
-        padding: 4mm 2mm;
+        background: #ffffff; color: #2c3e50;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+                     'Hind Siliguri', Helvetica, Arial, sans-serif;
+        padding: 6mm 2mm;
+        -webkit-font-smoothing: antialiased;
     `;
     // Visibility/hiding is handled entirely by the wrapper in the click
-    // handler (overflow:hidden; height:0), NOT by styles on this element.
-    // Earlier attempts hid THIS element directly (offscreen left, negative
-    // z-index, near-zero opacity) and every one of them corrupted what
-    // html2canvas actually rasterized, producing a blank PDF. This element
-    // now stays fully normal — static position, full opacity — so the
-    // capture matches exactly what's built here.
+    // handler (overflow:hidden; height:0), NOT by styles on this element —
+    // see the notes on hideWrapper above. This element stays fully normal
+    // so html2canvas captures it exactly as authored.
 
+    // ── HEADER ──────────────────────────────────────────────────
     const header = document.createElement("div");
     header.style.cssText = `
-        text-align: center; padding-bottom: 14px; margin-bottom: 18px;
-        border-bottom: 2.5px solid ${ACCENT_HEX};
+        text-align: center; padding-bottom: 16px; margin-bottom: 26px;
+        border-bottom: 1px solid #e2e8f0;
     `;
     header.innerHTML = `
-        <div style="font-size:22px;font-weight:800;letter-spacing:-0.02em;color:#0f172a;">
-            Munan's <span style="color:${ACCENT_HEX};">Diary</span>
+        <div style="font-size:24px;font-weight:700;letter-spacing:-0.02em;color:#1e293b;">
+            Munan's <span style="color:${ACCENT_HEX};font-weight:800;">Diary</span>
         </div>
-        <div style="font-size:10.5px;color:#64748b;margin-top:5px;letter-spacing:0.04em;text-transform:uppercase;">
+        <div style="font-size:12px;color:#94a3b8;margin-top:6px;font-weight:500;">
             ${entries.length} ${entries.length === 1 ? "entry" : "entries"} · exported ${new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
         </div>
     `;
     root.appendChild(header);
 
+    // ── ENTRY CARDS ─────────────────────────────────────────────
     entries.forEach((entry, idx) => {
-        const entryBlock = document.createElement("div");
-        entryBlock.style.cssText = `
-            margin-bottom: 22px; padding-bottom: 18px;
-            ${idx < entries.length - 1 ? "border-bottom: 1px solid #e2e8f0;" : ""}
+        const entryCard = document.createElement("div");
+        entryCard.style.cssText = `
+            background: #ffffff;
+            border: 1px solid #e2e8f0; border-radius: 10px;
+            padding: 18px 20px;
+            margin-bottom: 16px;
+            page-break-inside: avoid; break-inside: avoid;
         `;
-        // NOTE: no page-break-inside here on purpose. This block's height is
-        // unbounded (a diary entry can be many sections of free text), and
-        // html2pdf.js's "css" pagebreak mode can render a BLANK document when
-        // it's told to avoid breaking inside a block taller than one page —
-        // it can't find a legal break point, so it fails to place the
-        // content at all. "avoid" is safe only on small, bounded elements
-        // (see dateHeading below).
+        // Cards are capped at one diary entry's worth of sections, which in
+        // practice is short enough that "avoid" is safe here — unlike the
+        // old borderless flowing layout, each card is a small bounded unit
+        // so html2pdf's css pagebreak mode can always find a legal break
+        // point (between cards), instead of failing to place an oversized
+        // block and rendering blank.
 
         const dateHeading = document.createElement("div");
         dateHeading.style.cssText = `
-            display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px;
-            page-break-inside: avoid; page-break-after: avoid;
+            display: flex; align-items: baseline; gap: 9px; margin-bottom: 14px;
+            padding-bottom: 10px; border-bottom: 1px solid #f1f5f9;
         `;
         dateHeading.innerHTML = `
-            <div style="width:5px;height:18px;background:${ACCENT_HEX};border-radius:3px;flex-shrink:0;"></div>
-            <div style="font-size:15px;font-weight:700;color:#0f172a;">${escapeHtml(formatDateLabel(entry.datetime))}</div>
-            <div style="font-size:11px;font-weight:600;color:#64748b;">${escapeHtml(formatTimeLabel(entry.datetime))}</div>
+            <div style="width:4px;height:16px;background:${ACCENT_HEX};border-radius:2px;flex-shrink:0;"></div>
+            <div style="font-size:14px;font-weight:700;color:#1e293b;">${escapeHtml(formatDateLabel(entry.datetime))}</div>
+            <div style="font-size:12px;font-weight:500;color:#94a3b8;">${escapeHtml(formatTimeLabel(entry.datetime))}</div>
         `;
-        entryBlock.appendChild(dateHeading);
+        entryCard.appendChild(dateHeading);
 
-        (entry.sections || []).forEach((sec) => {
+        (entry.sections || []).forEach((sec, secIdx) => {
             const secEl = document.createElement("div");
-            secEl.style.cssText = `margin-bottom: 12px; margin-left: 15px;`;
-            // same reasoning as entryBlock above — a section's content is
-            // free text and can run longer than a page, so it can't safely
-            // carry page-break-inside: avoid
+            const isLast = secIdx === (entry.sections.length - 1);
+            secEl.style.cssText = `margin-bottom: ${isLast ? "0" : "14px"};`;
             secEl.innerHTML = `
-                <div style="font-size:12px;font-weight:700;color:${ACCENT_HEX};margin-bottom:4px;letter-spacing:0.02em;">
+                <div style="font-size:11.5px;font-weight:700;color:${ACCENT_HEX};margin-bottom:5px;letter-spacing:0.03em;text-transform:uppercase;">
                     ${escapeHtml(sec.title || "Untitled")}
                 </div>
-                <div style="font-size:11px;line-height:1.7;color:#334155;white-space:pre-wrap;">
+                <div style="font-size:13.5px;line-height:1.6;color:#2c3e50;white-space:pre-wrap;">
                     ${escapeHtml(sec.content || "")}
                 </div>
             `;
-            entryBlock.appendChild(secEl);
+            entryCard.appendChild(secEl);
         });
 
-        root.appendChild(entryBlock);
+        root.appendChild(entryCard);
     });
 
     return root;
