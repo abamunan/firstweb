@@ -270,18 +270,21 @@
     .diary-loading i { margin-right: 8px; }
 
     /* ── TOAST ────────────────────────────────────────────────── */
+    /* Uses fixed, explicit colors rather than var(--text-main)/var(--main-bg).
+       Those theme variables were resolving to the same value (or to nothing)
+       at the moment the toast fired, producing invisible black-on-black
+       text. Hardcoding the palette here makes the toast legible regardless
+       of theme state, load order, or which page injected diary.js. */
     .diary-toast {
         position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
-        background: var(--text-main); color: var(--main-bg);
+        background: #1e293b; color: #f8fafc;
         padding: 12px 22px; border-radius: 10px; font-size: .82rem; font-weight: 600;
-        box-shadow: 0 10px 30px rgba(0,0,0,.2); z-index: 3000;
+        box-shadow: 0 10px 30px rgba(0,0,0,.35); z-index: 3000;
         opacity: 0; pointer-events: none; transition: opacity .3s ease, transform .3s ease;
         display: flex; align-items: center; gap: 8px;
     }
     .diary-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     .diary-toast.error { background: #ef4444; color: #fff; }
-    [data-theme="dark"] .diary-toast { background: #f1f5f9; color: #0f172a; }
-    [data-theme="dark"] .diary-toast.error { background: #ef4444; color: #fff; }
 
     /* ── AUTH GATE OVERLAY ────────────────────────────────────── */
     .diary-gate {

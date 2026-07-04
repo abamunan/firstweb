@@ -550,19 +550,25 @@ downloadPdfBtn.addEventListener("click", async () => {
 function buildPrintableDocument(entries) {
     const root = document.createElement("div");
     root.style.cssText = `
-        position: fixed; left: 0; top: 0; z-index: -1; width: 190mm;
+        position: fixed; left: 0; top: 0; z-index: 999999999; width: 190mm;
         background: #ffffff; color: #0f172a;
         font-family: 'Poppins', 'Hind Siliguri', sans-serif;
         padding: 4mm 2mm;
+        opacity: 0.01; pointer-events: none;
     `;
-    // NOTE: this used to be positioned off-screen with left: -9999px to hide
-    // it from view. That's the classic trick, but html2canvas clamps/loses
-    // negative coordinates when it works out what to capture — so the
-    // content sat completely outside the region it actually rasterizes,
-    // producing a structurally valid but totally blank PDF page. Keeping it
-    // at (0,0) and pushing it behind everything with z-index: -1 hides it
-    // from the user just as well, while staying inside coordinates
-    // html2canvas can actually see.
+    // NOTE: two earlier approaches both produced a blank PDF:
+    //   1) left: -9999px — html2canvas clamps/loses negative coordinates
+    //      when computing what to capture, so the content sat entirely
+    //      outside the captured region.
+    //   2) z-index: -1 — on some mobile WebViews (in-app browsers, TWAs,
+    //      including what this app is running in) an element pushed BEHIND
+    //      the rest of the page gets composited out of the layer html2canvas
+    //      rasterizes, so the capture is structurally valid but empty.
+    // Fix: keep it at (0,0) with a very HIGH z-index (on top, so it's never
+    // dropped from the paint layer), but make it invisible to the user via
+    // opacity: 0.01 (not display:none / visibility:hidden — html2canvas
+    // skips those too) and pointer-events: none so it can't be interacted
+    // with while it's briefly in the DOM.
 
     const header = document.createElement("div");
     header.style.cssText = `
