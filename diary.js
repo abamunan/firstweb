@@ -351,7 +351,9 @@ saveEntryBtn.addEventListener("click", async () => {
             saveBtnLabel.textContent = "Update Entry";
             showToast("Entry saved.");
         }
-        await loadHistory(); // refresh History tab so it reflects the save immediately
+        await loadHistory(true); // refresh History tab; silent=true so a refresh failure
+                                   // (e.g. missing composite index) can't overwrite/mask
+                                   // the "Entry saved." toast shown above
     } catch (err) {
         // Full dump so we can see the real shape of the error in DevTools.
         console.error("Diary save failed — raw error object:", err);
@@ -384,7 +386,7 @@ filterBtns.forEach((btn) => {
 // Collection: diaryEntries  |  Fields: userId ASC, datetime DESC
 // First query on a fresh project will throw with a URL to auto-create it.
 // Click that URL once in the browser console and it's done.
-async function loadHistory() {
+async function loadHistory(silent = false) {
     if (!currentUser) return;
     entryListEl.innerHTML = `<div class="diary-loading"><i class="fas fa-circle-notch fa-spin"></i> Loading entries…</div>`;
 
@@ -406,7 +408,11 @@ async function loadHistory() {
         console.error("Diary history fetch failed — code:", err && err.code);
         console.error("Diary history fetch failed — stringified:", safeStringifyError(err));
         entryListEl.innerHTML = `<div class="diary-empty"><i class="fas fa-triangle-exclamation"></i><p>Couldn't load entries. Check your connection and try again.</p></div>`;
-        showToast(buildErrorMessage(err, "Loading entries"), true);
+        // silent=true is used for the auto-refresh right after a save — that save
+        // already succeeded and told the user so via toast. Showing a second,
+        // unrelated error toast here would overwrite/mask that success message
+        // and make it look like the SAVE failed, when only this refresh did.
+        if (!silent) showToast(buildErrorMessage(err, "Loading entries"), true);
     }
 }
 
