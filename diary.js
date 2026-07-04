@@ -524,7 +524,7 @@ downloadPdfBtn.addEventListener("click", async () => {
 
         await window.html2pdf()
             .set({
-                margin:       [14, 12, 16, 12], // mm: top, left, bottom, right
+                margin:       [14, 8, 14, 14], // mm: top, left, bottom, right — left tightened per request, top/bottom/right equal
                 filename:     `Munans-Diary-${todayDateString()}.pdf`,
                 image:        { type: "jpeg", quality: 0.98 },
                 html2canvas:  { scale: 2, useCORS: true, backgroundColor: "#ffffff", windowWidth: 900 },
@@ -567,17 +567,21 @@ downloadPdfBtn.addEventListener("click", async () => {
 function buildPrintableDocument(entries) {
     const root = document.createElement("div");
     root.style.cssText = `
-        width: 190mm;
+        width: 188mm;
+        box-sizing: border-box;
         background: #ffffff; color: #2c3e50;
         font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
                      'Hind Siliguri', Helvetica, Arial, sans-serif;
-        padding: 6mm 2mm;
+        padding: 4mm 0;
         -webkit-font-smoothing: antialiased;
     `;
-    // Visibility/hiding is handled entirely by the wrapper in the click
-    // handler (overflow:hidden; height:0), NOT by styles on this element —
-    // see the notes on hideWrapper above. This element stays fully normal
-    // so html2canvas captures it exactly as authored.
+    // Width is set to exactly match the usable page area: A4 is 210mm wide,
+    // and the PDF export margins are left:8mm / right:14mm, so usable width
+    // = 210 - 8 - 14 = 188mm. The earlier 190mm root width (with 12mm/12mm
+    // margins, usable width 186mm) was 4mm WIDER than the page could fit,
+    // so content was overflowing and getting cut off on the right edge.
+    // Any change to the margin values below must keep this width in sync:
+    // root width = 210 - marginLeft - marginRight.
 
     // ── HEADER ──────────────────────────────────────────────────
     const header = document.createElement("div");
@@ -599,6 +603,7 @@ function buildPrintableDocument(entries) {
     entries.forEach((entry, idx) => {
         const entryCard = document.createElement("div");
         entryCard.style.cssText = `
+            box-sizing: border-box;
             background: #ffffff;
             border: 1px solid #e2e8f0; border-radius: 10px;
             padding: 18px 20px;
