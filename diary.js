@@ -43,6 +43,20 @@ let sectionIdSeq  = 0;         // increments to give each section row a unique D
 let historyLimit  = 10;        // 10 | 50 | 'all'
 let cachedEntries = [];        // last fetched batch, reused for PDF export so we don't re-query
 
+// ── TEMP DEBUG HOOK (safe to remove once PDF export is confirmed working) ──
+// Since diary.js is a module, its functions aren't reachable from the
+// console normally. This exposes what's needed to visually check whether
+// buildPrintableDocument() is producing real content, independent of
+// whether html2canvas can capture it.
+window.__diaryDebug = {
+    showPrintable() {
+        const r = buildPrintableDocument(cachedEntries);
+        r.style.cssText += "position:fixed;top:0;left:0;z-index:999999;overflow:auto;max-height:100vh;box-shadow:0 0 0 9999px rgba(0,0,0,.6);";
+        document.body.appendChild(r);
+        return r;
+    }
+};
+
 // ── DOM REFS ─────────────────────────────────────────────────
 const $ = (sel) => document.querySelector(sel);
 const gate            = $("#diary-gate");
