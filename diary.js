@@ -505,29 +505,55 @@ downloadPdfBtn.addEventListener("click", async () => {
         const printRoot = buildPrintableDocument(cachedEntries);
 
         // Wrapper clips the printable doc from view WITHOUT touching the
-        // printable doc's own styles. Earlier attempts (left:-9999px,
-        // z-index:-1, opacity:0.01) all modified the target element itself —
-        // html2canvas renders exactly what it's told to render, so hiding
-        // tricks applied to that same element corrupt the capture:
-        //   • negative offset -> coordinates get clamped/lost
-        //   • negative z-index -> some mobile WebViews drop it from the paint layer
-        //   • near-zero opacity -> gets crushed to invisible at JPEG encode time
-        // A wrapper with overflow:hidden + height:0 hides it from the *user*
-        // (nothing paints outside the wrapper's box on screen) while the
-        // printRoot element passed to html2pdf is left completely normal —
-        // full opacity, positive z-index, in-flow — so html2canvas captures
-        // it exactly as authored.
+        // printable doc's own styles. Earlier failed approaches applied
+        // hiding styles directly to printRoot itself (offscreen left,
+        // negative z-index, near-zero opacity) — html2canvas renders
+        // exactly what it's told to render, so those tricks corrupted the
+        // capture instead of just hiding it from the user.
         const hideWrapper = document.createElement("div");
         hideWrapper.style.cssText = "position: absolute; top: 0; left: 0; width: 0; height: 0; overflow: hidden;";
+        // Kept at (0,0) rather than a large negative offset — negative
+        // coordinates were the original cause of a totally blank PDF
+        // (html2canvas clamps/loses them when computing what to capture).
+        // width/height: 0 + overflow:hidden keeps it invisible to the user
+        // without moving it off-canvas. This no longer risks squashing
+        // printRoot's own width, because printRoot uses an explicit
+        // width: 190mm (not a percentage), which CSS defines as
+        // independent of the containing block's size — and separately,
+        // html2canvas's capture width is now pinned explicitly below from
+        // printRoot.scrollWidth, so even page-level scrollWidth quirks
+        // can't leak into what gets captured.
         hideWrapper.appendChild(printRoot);
         document.body.appendChild(hideWrapper);
 
+        // Force layout to flush so scrollWidth below reflects the final
+        // rendered size before html2canvas measures anything.
+        // eslint-disable-next-line no-unused-expressions
+        printRoot.offsetHeight;
+        const captureWidthPx = printRoot.scrollWidth;
+
         await window.html2pdf()
             .set({
-                margin:       [14, 8, 14, 14], // mm: top, left, bottom, right — left tightened per request, top/bottom/right equal
+                margin:       [12, 10, 12, 10], // mm: top, left, bottom, right — all equal
                 filename:     `Munans-Diary-${todayDateString()}.pdf`,
                 image:        { type: "jpeg", quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, backgroundColor: "#ffffff", windowWidth: 900 },
+                html2canvas:  {
+                    scale: 2, useCORS: true, backgroundColor: "#ffffff",
+                    // Pin BOTH width and windowWidth to printRoot's own
+                    // measured pixel width. Without this, html2canvas can
+                    // pick up extra invisible width from the page/ancestors
+                    // (e.g. the hidden app underneath, or the 1px clipping
+                    // wrapper still sitting in the layout tree), so the
+                    // captured canvas ends up wider than printRoot actually
+                    // is. jsPDF then scales that whole canvas down to fit
+                    // pageWidth - margins, which squeezes real content and
+                    // clips its true right edge — exactly the symptom seen
+                    // (cards cut off at the page edge, not overflowing past
+                    // it). Locking both to the same measured value forces
+                    // html2canvas to capture exactly printRoot, nothing more.
+                    width: captureWidthPx,
+                    windowWidth: captureWidthPx,
+                },
                 jsPDF:        { unit: "mm", format: "a4", orientation: "portrait" },
                 pagebreak:    { mode: ["css", "legacy"] },
             })
@@ -567,7 +593,7 @@ downloadPdfBtn.addEventListener("click", async () => {
 function buildPrintableDocument(entries) {
     const root = document.createElement("div");
     root.style.cssText = `
-        width: 188mm;
+        width: 190mm;
         box-sizing: border-box;
         background: #ffffff; color: #2c3e50;
         font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
@@ -575,13 +601,18 @@ function buildPrintableDocument(entries) {
         padding: 4mm 0;
         -webkit-font-smoothing: antialiased;
     `;
-    // Width is set to exactly match the usable page area: A4 is 210mm wide,
-    // and the PDF export margins are left:8mm / right:14mm, so usable width
-    // = 210 - 8 - 14 = 188mm. The earlier 190mm root width (with 12mm/12mm
-    // margins, usable width 186mm) was 4mm WIDER than the page could fit,
-    // so content was overflowing and getting cut off on the right edge.
-    // Any change to the margin values below must keep this width in sync:
-    // root width = 210 - marginLeft - marginRight.
+    // NOTE on width: html2pdf.js always rescales the captured canvas to fit
+    // exactly (pageWidth - marginLeft - marginRight) on the PDF page,
+    // proportionally — so this mm width does NOT need to be kept in manual
+    // sync with the margin values in the click handler. 190mm is simply a
+    // comfortable rendering width for crisp, non-blurry text at scale:2.
+    // The actual right-edge-cutoff bug was that html2canvas could capture
+    // MORE width than this element actually has (picking up invisible
+    // ancestor/page width), and then that whole wider canvas got squeezed
+    // into the page, clipping real content at the true right edge. Fixed by
+    // explicitly pinning html2canvas's width/windowWidth options to this
+    // element's own measured scrollWidth in the click handler below, so it
+    // can never capture more than printRoot itself.
 
     // ── HEADER ──────────────────────────────────────────────────
     const header = document.createElement("div");
