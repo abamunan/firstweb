@@ -180,6 +180,40 @@
   .field-input.income-inp { color: var(--accent2); }
   .field-input.income-inp:focus { border-color: var(--accent2); background: var(--surface); box-shadow: 0 0 0 3px var(--accent2-glow); }
 
+  .note-btn {
+    background: transparent; border: none;
+    font-size: 0.92rem; line-height: 1; padding: 5px 6px;
+    border-radius: 8px; cursor: pointer; flex-shrink: 0;
+    opacity: 0.32; transition: var(--trans);
+  }
+  .note-btn:hover { opacity: 0.75; background: var(--surface); }
+  .note-btn.has-note { opacity: 1; background: var(--surface); }
+  .field-row.note-open { border-bottom: none; }
+
+  .note-row {
+    display: none;
+    padding: 0 16px 10px 42px;
+    border-bottom: 1px solid var(--card-border);
+    background: transparent;
+  }
+  .note-row.open { display: block; }
+  .note-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 6px 10px;
+    font-family: var(--font); font-size: 0.78rem; font-weight: 400;
+    color: var(--text-main); outline: none;
+    transition: var(--trans);
+  }
+  .note-input:focus {
+    border-color: var(--accent);
+    background: var(--surface2);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+  .note-input::placeholder { color: var(--text-soft); font-size: 0.74rem; }
+
   .total-row {
     display: flex; justify-content: space-between; align-items: center;
     padding: 11px 16px; font-weight: 700; font-size: 0.86rem;
@@ -438,31 +472,31 @@
     </div>
     <div class="section-card">
       <div class="section-head expense">💸 EXPENSES</div>
-      <div class="field-row"><span class="field-icon">🍳</span><span class="field-label">Nasta</span><input class="field-input" type="number" placeholder="0" id="f_nasta" min="0"></div>
-      <div class="field-row"><span class="field-icon">🍛</span><span class="field-label">Lunch</span><input class="field-input" type="number" placeholder="0" id="f_lunch" min="0"></div>
-      <div class="field-row"><span class="field-icon">🍽️</span><span class="field-label">Dinner</span><input class="field-input" type="number" placeholder="0" id="f_dinner" min="0"></div>
-      <div class="field-row"><span class="field-icon">🥡</span><span class="field-label">Extra Food</span><input class="field-input" type="number" placeholder="0" id="f_extrafood" min="0"></div>
-      <div class="field-row"><span class="field-icon">🚌</span><span class="field-label">Transportation</span><input class="field-input" type="number" placeholder="0" id="f_transport" min="0"></div>
-      <div class="field-row"><span class="field-icon">➕</span><span class="field-label">Extra</span><input class="field-input" type="number" placeholder="0" id="f_extra" min="0"></div>
-      <div class="field-row"><span class="field-icon">🎓</span><span class="field-label">University Fee</span><input class="field-input" type="number" placeholder="0" id="f_unifee" min="0"></div>
-      <div class="field-row"><span class="field-icon">🏠</span><span class="field-label">Home Rent</span><input class="field-input" type="number" placeholder="0" id="f_rent" min="0"></div>
-      <div class="field-row"><span class="field-icon">📱</span><span class="field-label">Mobile</span><input class="field-input" type="number" placeholder="0" id="f_mobile" min="0"></div>
-      <div class="field-row"><span class="field-icon">🏦</span><span class="field-label">Bank DP</span><input class="field-input" type="number" placeholder="0" id="f_bankdp" min="0"></div>
-      <div class="field-row"><span class="field-icon">📝</span><span class="field-label">Stationary</span><input class="field-input" type="number" placeholder="0" id="f_stationary" min="0"></div>
-      <div class="field-row"><span class="field-icon">🛍️</span><span class="field-label">Shopping</span><input class="field-input" type="number" placeholder="0" id="f_shopping" min="0"></div>
-      <div class="field-row"><span class="field-icon">💄</span><span class="field-label">Beauty</span><input class="field-input" type="number" placeholder="0" id="f_beauty" min="0"></div>
-      <div class="field-row"><span class="field-icon">📟</span><span class="field-label">Gadget</span><input class="field-input" type="number" placeholder="0" id="f_gadget" min="0"></div>
-      <div class="field-row"><span class="field-icon">🎁</span><span class="field-label">Gift</span><input class="field-input" type="number" placeholder="0" id="f_gift" min="0"></div>
-      <div class="field-row"><span class="field-icon">👥</span><span class="field-label">Social</span><input class="field-input" type="number" placeholder="0" id="f_social" min="0"></div>
-      <div class="field-row"><span class="field-icon">🧳</span><span class="field-label">Tour</span><input class="field-input" type="number" placeholder="0" id="f_tour" min="0"></div>
-      <div class="field-row"><span class="field-icon">🧾</span><span class="field-label">Necessary</span><input class="field-input" type="number" placeholder="0" id="f_necessary" min="0"></div>
-      <div class="field-row"><span class="field-icon">💊</span><span class="field-label">Medicine</span><input class="field-input" type="number" placeholder="0" id="f_medicine" min="0"></div>
+      <div class="field-row"><span class="field-icon">🍳</span><span class="field-label">Nasta</span><input class="field-input" type="number" placeholder="0" id="f_nasta" min="0"><button class="note-btn" type="button" onclick="toggleNote('nasta')" id="nbtn_nasta" title="Add note">📝</button></div><div class="note-row" id="noterow_nasta"><input class="note-input" type="text" placeholder="Note (optional)" id="note_nasta" maxlength="200"></div>
+      <div class="field-row"><span class="field-icon">🍛</span><span class="field-label">Lunch</span><input class="field-input" type="number" placeholder="0" id="f_lunch" min="0"><button class="note-btn" type="button" onclick="toggleNote('lunch')" id="nbtn_lunch" title="Add note">📝</button></div><div class="note-row" id="noterow_lunch"><input class="note-input" type="text" placeholder="Note (optional)" id="note_lunch" maxlength="200"></div>
+      <div class="field-row"><span class="field-icon">🍽️</span><span class="field-label">Dinner</span><input class="field-input" type="number" placeholder="0" id="f_dinner" min="0"><button class="note-btn" type="button" onclick="toggleNote('dinner')" id="nbtn_dinner" title="Add note">📝</button></div><div class="note-row" id="noterow_dinner"><input class="note-input" type="text" placeholder="Note (optional)" id="note_dinner" maxlength="200"></div>
+      <div class="field-row"><span class="field-icon">🥡</span><span class="field-label">Extra Food</span><input class="field-input" type="number" placeholder="0" id="f_extrafood" min="0"><button class="note-btn" type="button" onclick="toggleNote('extrafood')" id="nbtn_extrafood" title="Add note">📝</button></div><div class="note-row" id="noterow_extrafood"><input class="note-input" type="text" placeholder="Note (optional)" id="note_extrafood" maxlength="200"></div>
+      <div class="field-row"><span class="field-icon">🚌</span><span class="field-label">Transportation</span><input class="field-input" type="number" placeholder="0" id="f_transport" min="0"><button class="note-btn" type="button" onclick="toggleNote('transport')" id="nbtn_transport" title="Add note">📝</button></div><div class="note-row" id="noterow_transport"><input class="note-input" type="text" placeholder="Note (optional)" id="note_transport" maxlength="200"></div>
+      <div class="field-row"><span class="field-icon">➕</span><span class="field-label">Extra</span><input class="field-input" type="number" placeholder="0" id="f_extra" min="0"><button class="note-btn" type="button" onclick="toggleNote('extra')" id="nbtn_extra" title="Add note">📝</button></div><div class="note-row" id="noterow_extra"><input class="note-input" type="text" placeholder="Note (optional)" id="note_extra" maxlength="200"></div>
+      <div class="field-row"><span class="field-icon">🎓</span><span class="field-label">University Fee</span><input class="field-input" type="number" placeholder="0" id="f_unifee" min="0"><button class="note-btn" type="button" onclick="toggleNote('unifee')" id="nbtn_unifee" title="Add note">📝</button></div><div class="note-row" id="noterow_unifee"><input class="note-input" type="text" placeholder="Note (optional)" id="note_unifee" maxlength="200"></div>
+      <div class="field-row"><span class="field-icon">🏠</span><span class="field-label">Home Rent</span><input class="field-input" type="number" placeholder="0" id="f_rent" min="0"><button class="note-btn" type="button" onclick="toggleNote('rent')" id="nbtn_rent" title="Add note">📝</button></div><div class="note-row" id="noterow_rent"><input class="note-input" type="text" placeholder="Note (optional)" id="note_rent" maxlength="200"></div>
+      <div class="field-row"><span class="field-icon">📱</span><span class="field-label">Mobile</span><input class="field-input" type="number" placeholder="0" id="f_mobile" min="0"><button class="note-btn" type="button" onclick="toggleNote('mobile')" id="nbtn_mobile" title="Add note">📝</button></div><div class="note-row" id="noterow_mobile"><input class="note-input" type="text" placeholder="Note (optional)" id="note_mobile" maxlength="200"></div>
+      <div class="field-row"><span class="field-icon">🏦</span><span class="field-label">Bank DP</span><input class="field-input" type="number" placeholder="0" id="f_bankdp" min="0"><button class="note-btn" type="button" onclick="toggleNote('bankdp')" id="nbtn_bankdp" title="Add note">📝</button></div><div class="note-row" id="noterow_bankdp"><input class="note-input" type="text" placeholder="Note (optional)" id="note_bankdp" maxlength="200"></div>
+      <div class="field-row"><span class="field-icon">📝</span><span class="field-label">Stationary</span><input class="field-input" type="number" placeholder="0" id="f_stationary" min="0"><button class="note-btn" type="button" onclick="toggleNote('stationary')" id="nbtn_stationary" title="Add note">📝</button></div><div class="note-row" id="noterow_stationary"><input class="note-input" type="text" placeholder="Note (optional)" id="note_stationary" maxlength="200"></div>
+      <div class="field-row"><span class="field-icon">🛍️</span><span class="field-label">Shopping</span><input class="field-input" type="number" placeholder="0" id="f_shopping" min="0"><button class="note-btn" type="button" onclick="toggleNote('shopping')" id="nbtn_shopping" title="Add note">📝</button></div><div class="note-row" id="noterow_shopping"><input class="note-input" type="text" placeholder="Note (optional)" id="note_shopping" maxlength="200"></div>
+      <div class="field-row"><span class="field-icon">💄</span><span class="field-label">Beauty</span><input class="field-input" type="number" placeholder="0" id="f_beauty" min="0"><button class="note-btn" type="button" onclick="toggleNote('beauty')" id="nbtn_beauty" title="Add note">📝</button></div><div class="note-row" id="noterow_beauty"><input class="note-input" type="text" placeholder="Note (optional)" id="note_beauty" maxlength="200"></div>
+      <div class="field-row"><span class="field-icon">📟</span><span class="field-label">Gadget</span><input class="field-input" type="number" placeholder="0" id="f_gadget" min="0"><button class="note-btn" type="button" onclick="toggleNote('gadget')" id="nbtn_gadget" title="Add note">📝</button></div><div class="note-row" id="noterow_gadget"><input class="note-input" type="text" placeholder="Note (optional)" id="note_gadget" maxlength="200"></div>
+      <div class="field-row"><span class="field-icon">🎁</span><span class="field-label">Gift</span><input class="field-input" type="number" placeholder="0" id="f_gift" min="0"><button class="note-btn" type="button" onclick="toggleNote('gift')" id="nbtn_gift" title="Add note">📝</button></div><div class="note-row" id="noterow_gift"><input class="note-input" type="text" placeholder="Note (optional)" id="note_gift" maxlength="200"></div>
+      <div class="field-row"><span class="field-icon">👥</span><span class="field-label">Social</span><input class="field-input" type="number" placeholder="0" id="f_social" min="0"><button class="note-btn" type="button" onclick="toggleNote('social')" id="nbtn_social" title="Add note">📝</button></div><div class="note-row" id="noterow_social"><input class="note-input" type="text" placeholder="Note (optional)" id="note_social" maxlength="200"></div>
+      <div class="field-row"><span class="field-icon">🧳</span><span class="field-label">Tour</span><input class="field-input" type="number" placeholder="0" id="f_tour" min="0"><button class="note-btn" type="button" onclick="toggleNote('tour')" id="nbtn_tour" title="Add note">📝</button></div><div class="note-row" id="noterow_tour"><input class="note-input" type="text" placeholder="Note (optional)" id="note_tour" maxlength="200"></div>
+      <div class="field-row"><span class="field-icon">🧾</span><span class="field-label">Necessary</span><input class="field-input" type="number" placeholder="0" id="f_necessary" min="0"><button class="note-btn" type="button" onclick="toggleNote('necessary')" id="nbtn_necessary" title="Add note">📝</button></div><div class="note-row" id="noterow_necessary"><input class="note-input" type="text" placeholder="Note (optional)" id="note_necessary" maxlength="200"></div>
+      <div class="field-row"><span class="field-icon">💊</span><span class="field-label">Medicine</span><input class="field-input" type="number" placeholder="0" id="f_medicine" min="0"><button class="note-btn" type="button" onclick="toggleNote('medicine')" id="nbtn_medicine" title="Add note">📝</button></div><div class="note-row" id="noterow_medicine"><input class="note-input" type="text" placeholder="Note (optional)" id="note_medicine" maxlength="200"></div>
       <div class="total-row exp"><span>Total Expense</span><span id="totalExp">৳ 0</span></div>
     </div>
     <div class="section-card">
       <div class="section-head income">💵 INCOME</div>
-      <div class="field-row"><span class="field-icon">👨‍👩‍👧</span><span class="field-label">Family Income</span><input class="field-input income-inp" type="number" placeholder="0" id="f_family" min="0"></div>
-      <div class="field-row"><span class="field-icon">💼</span><span class="field-label">Self Income</span><input class="field-input income-inp" type="number" placeholder="0" id="f_self" min="0"></div>
+      <div class="field-row"><span class="field-icon">👨‍👩‍👧</span><span class="field-label">Family Income</span><input class="field-input income-inp" type="number" placeholder="0" id="f_family" min="0"><button class="note-btn" type="button" onclick="toggleNote('family')" id="nbtn_family" title="Add note">📝</button></div><div class="note-row" id="noterow_family"><input class="note-input" type="text" placeholder="Note (optional)" id="note_family" maxlength="200"></div>
+      <div class="field-row"><span class="field-icon">💼</span><span class="field-label">Self Income</span><input class="field-input income-inp" type="number" placeholder="0" id="f_self" min="0"><button class="note-btn" type="button" onclick="toggleNote('self')" id="nbtn_self" title="Add note">📝</button></div><div class="note-row" id="noterow_self"><input class="note-input" type="text" placeholder="Note (optional)" id="note_self" maxlength="200"></div>
       <div class="total-row inc"><span>Total Income</span><span id="totalInc">৳ 0</span></div>
     </div>
     <div class="net-card positive" id="netCard">
@@ -667,8 +701,33 @@ function loadDay(d){
   ALL_FIELDS.forEach(f=>{
     const el=document.getElementById('f_'+f.id);
     if(el) el.value=data[f.id]||'';
+    const noteEl=document.getElementById('note_'+f.id);
+    if(noteEl){
+      const noteVal=data['note_'+f.id]||'';
+      noteEl.value=noteVal;
+      const row=document.getElementById('noterow_'+f.id);
+      const frow=document.getElementById('nbtn_'+f.id)?.closest('.field-row');
+      if(row) row.classList.toggle('open', !!noteVal);
+      if(frow) frow.classList.toggle('note-open', !!noteVal);
+      updateNoteIndicator(f.id, !!noteVal);
+    }
   });
   updateTotals();
+}
+
+// ── NOTES (per item, Day section only) ───────────────────────
+function toggleNote(id){
+  const row=document.getElementById('noterow_'+id);
+  const btn=document.getElementById('nbtn_'+id);
+  const frow=btn?.closest('.field-row');
+  if(!row) return;
+  const isOpen=row.classList.toggle('open');
+  if(frow) frow.classList.toggle('note-open', isOpen);
+  if(isOpen) document.getElementById('note_'+id)?.focus();
+}
+
+function updateNoteIndicator(id,hasNote){
+  document.getElementById('nbtn_'+id)?.classList.toggle('has-note', hasNote);
 }
 
 function getVal(id){return parseFloat(document.getElementById(id)?.value)||0;}
@@ -691,7 +750,12 @@ function updateTotals(){
 
 function collectDayData(){
   const data={};
-  ALL_FIELDS.forEach(f=>{data[f.id]=parseFloat(document.getElementById('f_'+f.id)?.value)||0;});
+  ALL_FIELDS.forEach(f=>{
+    data[f.id]=parseFloat(document.getElementById('f_'+f.id)?.value)||0;
+    const noteEl=document.getElementById('note_'+f.id);
+    const noteVal=noteEl?noteEl.value.trim():'';
+    if(noteVal) data['note_'+f.id]=noteVal;
+  });
   return data;
 }
 
@@ -999,19 +1063,22 @@ function exportDayPDF(){
   const exp=EXPENSE_FIELDS.reduce((s,f)=>s+(data[f.id]||0),0);
   const inc=INCOME_FIELDS.reduce((s,f)=>s+(data[f.id]||0),0);
   const net=inc-exp;
+  const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   let rows='';
   EXPENSE_FIELDS.forEach(f=>{
     const v=data[f.id]||0;
-    if(v) rows+=`<tr><td>${f.icon} ${f.label}</td><td>Expense</td><td class="num exp">${v.toLocaleString('en-IN')}</td></tr>`;
+    const note=data['note_'+f.id]||'';
+    if(v) rows+=`<tr><td>${f.icon} ${f.label}</td><td>Expense</td><td class="num exp">${v.toLocaleString('en-IN')}</td><td>${esc(note)}</td></tr>`;
   });
-  rows+=`<tr class="subtotal"><td colspan="2">Total Expense</td><td class="num exp">${exp.toLocaleString('en-IN')}</td></tr>`;
+  rows+=`<tr class="subtotal"><td colspan="2">Total Expense</td><td class="num exp">${exp.toLocaleString('en-IN')}</td><td></td></tr>`;
   INCOME_FIELDS.forEach(f=>{
     const v=data[f.id]||0;
-    if(v) rows+=`<tr><td>${f.icon} ${f.label}</td><td>Income</td><td class="num inc">${v.toLocaleString('en-IN')}</td></tr>`;
+    const note=data['note_'+f.id]||'';
+    if(v) rows+=`<tr><td>${f.icon} ${f.label}</td><td>Income</td><td class="num inc">${v.toLocaleString('en-IN')}</td><td>${esc(note)}</td></tr>`;
   });
-  rows+=`<tr class="subtotal"><td colspan="2">Total Income</td><td class="num inc">${inc.toLocaleString('en-IN')}</td></tr>`;
-  rows+=`<tr class="grand"><td colspan="2">Net Balance</td><td class="num ${net>=0?'inc':'exp'}">${net.toLocaleString('en-IN')}</td></tr>`;
-  printHTML(pdfStyle()+`<h1>💰 Money Tracker — Day ${currentDay}</h1><div class="sub">${new Date(curYear,curMonth,currentDay).toLocaleDateString('en-US',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div><table><tr><th>Category</th><th>Type</th><th class="num">Amount (৳)</th></tr>${rows}</table>`);
+  rows+=`<tr class="subtotal"><td colspan="2">Total Income</td><td class="num inc">${inc.toLocaleString('en-IN')}</td><td></td></tr>`;
+  rows+=`<tr class="grand"><td colspan="2">Net Balance</td><td class="num ${net>=0?'inc':'exp'}">${net.toLocaleString('en-IN')}</td><td></td></tr>`;
+  printHTML(pdfStyle()+`<h1>💰 Money Tracker — Day ${currentDay}</h1><div class="sub">${new Date(curYear,curMonth,currentDay).toLocaleDateString('en-US',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div><table><tr><th>Category</th><th>Type</th><th class="num">Amount (৳)</th><th>Note</th></tr>${rows}</table>`);
   showToast('PDF ready ✓');
 }
 
@@ -1179,6 +1246,11 @@ ALL_FIELDS.forEach(f=>{
   if(el) el.addEventListener('input',()=>{
     if(el.value!==''&&parseFloat(el.value)<0) el.value=0;
     updateTotals();
+    scheduleAutoSave();
+  });
+  const noteEl=document.getElementById('note_'+f.id);
+  if(noteEl) noteEl.addEventListener('input',()=>{
+    updateNoteIndicator(f.id, noteEl.value.trim().length>0);
     scheduleAutoSave();
   });
 });
