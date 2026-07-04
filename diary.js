@@ -503,14 +503,31 @@ downloadPdfBtn.addEventListener("click", async () => {
 
     try {
         const printRoot = buildPrintableDocument(cachedEntries);
-        document.body.appendChild(printRoot);
+
+        // Wrapper clips the printable doc from view WITHOUT touching the
+        // printable doc's own styles. Earlier attempts (left:-9999px,
+        // z-index:-1, opacity:0.01) all modified the target element itself —
+        // html2canvas renders exactly what it's told to render, so hiding
+        // tricks applied to that same element corrupt the capture:
+        //   • negative offset -> coordinates get clamped/lost
+        //   • negative z-index -> some mobile WebViews drop it from the paint layer
+        //   • near-zero opacity -> gets crushed to invisible at JPEG encode time
+        // A wrapper with overflow:hidden + height:0 hides it from the *user*
+        // (nothing paints outside the wrapper's box on screen) while the
+        // printRoot element passed to html2pdf is left completely normal —
+        // full opacity, positive z-index, in-flow — so html2canvas captures
+        // it exactly as authored.
+        const hideWrapper = document.createElement("div");
+        hideWrapper.style.cssText = "position: absolute; top: 0; left: 0; width: 0; height: 0; overflow: hidden;";
+        hideWrapper.appendChild(printRoot);
+        document.body.appendChild(hideWrapper);
 
         await window.html2pdf()
             .set({
                 margin:       [14, 12, 16, 12], // mm: top, left, bottom, right
                 filename:     `Munans-Diary-${todayDateString()}.pdf`,
                 image:        { type: "jpeg", quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
+                html2canvas:  { scale: 2, useCORS: true, backgroundColor: "#ffffff", windowWidth: 900 },
                 jsPDF:        { unit: "mm", format: "a4", orientation: "portrait" },
                 pagebreak:    { mode: ["css", "legacy"] },
             })
@@ -531,7 +548,7 @@ downloadPdfBtn.addEventListener("click", async () => {
             })
             .save();
 
-        printRoot.remove();
+        hideWrapper.remove();
         showToast("PDF downloaded.");
     } catch (err) {
         console.error("PDF export failed:", err);
@@ -550,25 +567,18 @@ downloadPdfBtn.addEventListener("click", async () => {
 function buildPrintableDocument(entries) {
     const root = document.createElement("div");
     root.style.cssText = `
-        position: fixed; left: 0; top: 0; z-index: 999999999; width: 190mm;
+        width: 190mm;
         background: #ffffff; color: #0f172a;
         font-family: 'Poppins', 'Hind Siliguri', sans-serif;
         padding: 4mm 2mm;
-        opacity: 0.01; pointer-events: none;
     `;
-    // NOTE: two earlier approaches both produced a blank PDF:
-    //   1) left: -9999px — html2canvas clamps/loses negative coordinates
-    //      when computing what to capture, so the content sat entirely
-    //      outside the captured region.
-    //   2) z-index: -1 — on some mobile WebViews (in-app browsers, TWAs,
-    //      including what this app is running in) an element pushed BEHIND
-    //      the rest of the page gets composited out of the layer html2canvas
-    //      rasterizes, so the capture is structurally valid but empty.
-    // Fix: keep it at (0,0) with a very HIGH z-index (on top, so it's never
-    // dropped from the paint layer), but make it invisible to the user via
-    // opacity: 0.01 (not display:none / visibility:hidden — html2canvas
-    // skips those too) and pointer-events: none so it can't be interacted
-    // with while it's briefly in the DOM.
+    // Visibility/hiding is handled entirely by the wrapper in the click
+    // handler (overflow:hidden; height:0), NOT by styles on this element.
+    // Earlier attempts hid THIS element directly (offscreen left, negative
+    // z-index, near-zero opacity) and every one of them corrupted what
+    // html2canvas actually rasterized, producing a blank PDF. This element
+    // now stays fully normal — static position, full opacity — so the
+    // capture matches exactly what's built here.
 
     const header = document.createElement("div");
     header.style.cssText = `
