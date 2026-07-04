@@ -536,11 +536,19 @@ downloadPdfBtn.addEventListener("click", async () => {
 function buildPrintableDocument(entries) {
     const root = document.createElement("div");
     root.style.cssText = `
-        position: fixed; left: -9999px; top: 0; width: 190mm;
+        position: fixed; left: 0; top: 0; z-index: -1; width: 190mm;
         background: #ffffff; color: #0f172a;
         font-family: 'Poppins', 'Hind Siliguri', sans-serif;
         padding: 4mm 2mm;
     `;
+    // NOTE: this used to be positioned off-screen with left: -9999px to hide
+    // it from view. That's the classic trick, but html2canvas clamps/loses
+    // negative coordinates when it works out what to capture — so the
+    // content sat completely outside the region it actually rasterizes,
+    // producing a structurally valid but totally blank PDF page. Keeping it
+    // at (0,0) and pushing it behind everything with z-index: -1 hides it
+    // from the user just as well, while staying inside coordinates
+    // html2canvas can actually see.
 
     const header = document.createElement("div");
     header.style.cssText = `
