@@ -118,6 +118,15 @@
         [data-theme="dark"] .pdftk-pg.pdftk-removed::after{background:rgba(2,6,23,.5);}
         .pdftk-pg.pdftk-dragging{opacity:.4;}
         .pdftk-pg.pdftk-drag-over{border-color:var(--accent);border-style:dashed;}
+        .pdftk-pg-remove{
+            position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;
+            border:none;background:rgba(15,23,42,.72);color:#fff;font-size:.7rem;font-weight:800;
+            display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:3;
+            padding:0;line-height:1;transition:background .2s;
+        }
+        .pdftk-pg-remove:hover{background:#dc2626;}
+        .pdftk-pg.pdftk-removed .pdftk-pg-remove{background:var(--accent);}
+        .pdftk-pg.pdftk-removed .pdftk-pg-remove:hover{background:#0284c7;}
 
         /* ---------- Fields / inputs ---------- */
         .pdftk-field{margin-bottom:16px;}
@@ -244,6 +253,7 @@ const TOOLS = [
   { id:'compress', name:'Compress',      desc:'Shrink file size by %' },
   { id:'protect',  name:'Lock / Unlock', desc:'Add or remove a password' },
   { id:'rearrange',name:'Rearrange',     desc:'Reorder or delete pages' },
+  { id:'invert',   name:'Colour Inverter', desc:'Invert page colours' },
 ];
 
 let active = 'rotate';
@@ -256,6 +266,7 @@ const state = {
   compress: { file:null, bytes:null, pct:50 },
   protect:  { mode:'lock', file:null, bytes:null },
   rearrange:{ file:null, bytes:null, pageCount:0, order:[], removed:new Set(), thumbs:[] },
+  invert:   { file:null, bytes:null },
 };
 
 /* ============================================================
@@ -337,6 +348,7 @@ function renderMain(){
     case 'compress':  renderCompress(main); break;
     case 'protect':   renderProtect(main); break;
     case 'rearrange': renderRearrange(main); break;
+    case 'invert':    renderInvert(main); break;
   }
 }
 
@@ -1344,7 +1356,7 @@ async function renderRearrange(main){
   body += fileBar(s.file.name, `${fmtBytes(s.bytes.byteLength)} · ${s.pageCount} pages · ${remainingCount} will remain`);
   body += `
     <div class="pdftk-strip-wrap">
-      <div class="pdftk-strip-label"><span>drag to reorder · click ✕ to remove / restore a page</span></div>
+      <div class="pdftk-strip-label"><span>drag to reorder · click the ✕ button to remove / restore a page</span></div>
       <div class="pdftk-strip" id="rearStrip"></div>
     </div>
     <div class="pdftk-btn-row">
@@ -1368,11 +1380,17 @@ async function renderRearrange(main){
       div.className = 'pdftk-pg' + (s.removed.has(origIdx)?' pdftk-removed':'');
       div.draggable = true;
       div.dataset.pos = pos;
-      div.innerHTML = `<canvas></canvas><div class="pdftk-pg-num">${pos+1} <span style="opacity:.5">(orig ${origIdx+1})</span></div>`;
+      div.innerHTML = `<canvas></canvas><button type="button" class="pdftk-pg-remove" title="${s.removed.has(origIdx)?'restore page':'remove page'}">${s.removed.has(origIdx)?'\u21ba':'\u2715'}</button><div class="pdftk-pg-num">${pos+1} <span style="opacity:.5">(orig ${origIdx+1})</span></div>`;
       const img = new Image();
       img.onload = ()=>{ const c=div.querySelector('canvas'); c.width=img.width; c.height=img.height; c.getContext('2d').drawImage(img,0,0); };
       img.src = s.thumbs[origIdx];
 
+      div.querySelector('.pdftk-pg-remove').addEventListener('click', e=>{
+        e.stopPropagation();
+        if(s.removed.has(origIdx)) s.removed.delete(origIdx); else s.removed.add(origIdx);
+        draw();
+        updateHeader();
+      });
       div.addEventListener('click', ()=>{
         if(s.removed.has(origIdx)) s.removed.delete(origIdx); else s.removed.add(origIdx);
         draw();
@@ -1435,6 +1453,49 @@ async function handleRearrangeFile(file){
   }catch(err){
     console.error(err);
     setStatus(main, 'could not open this PDF — '+err.message, 'err');
+  }
+}
+
+/* ============================================================
+   7. COLOUR INVERTER — placeholder (logic to be added later)
+   ============================================================ */
+async function renderInvert(main){
+  const s = state.invert;
+  let body = stageHead('07 · Colour', 'Colour Inverter', 'Invert the colours of every page — useful for turning a bright scan into a dark-mode-friendly version.');
+
+  if(!s.file){
+    body += dropzone('invertDz');
+    main.innerHTML = body;
+    wireDropzone('invertDz', f=>handleInvertFile(f));
+    return;
+  }
+
+  body += fileBar(s.file.name, `${fmtBytes(s.bytes.byteLength)}`);
+  body += `
+    <div class="pdftk-status">colour inversion is coming soon — hook up the processing logic here.</div>
+    <div class="pdftk-btn-row">
+      <button class="pdftk-btn" id="invertExport" disabled>Invert &amp; export</button>
+      <button class="pdftk-btn pdftk-secondary" id="invertClear2">start over</button>
+    </div>
+    <div id="invertStatus"></div>
+  `;
+  main.innerHTML = body;
+
+  document.getElementById('fbClear').onclick = ()=>{ state.invert={file:null,bytes:null}; renderMain(); };
+  document.getElementById('invertClear2').onclick = ()=>{ state.invert={file:null,bytes:null}; renderMain(); };
+}
+
+async function handleInvertFile(file){
+  const main = document.getElementById('pdftkMain');
+  setStatus(main, '<span class="pdftk-spinner"></span> reading file…');
+  try{
+    const buf = await fileToArrayBuffer(file);
+    state.invert.file = file;
+    state.invert.bytes = new Uint8Array(buf);
+    renderMain();
+  }catch(err){
+    console.error(err);
+    setStatus(main, 'could not read this file — '+err.message, 'err');
   }
 }
 
