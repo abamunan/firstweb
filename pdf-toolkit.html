@@ -62,6 +62,13 @@
         .pdftk-dz-main{font-size:1rem;font-weight:700;margin-bottom:5px;color:var(--text-main);}
         .pdftk-dz-sub{font-size:.78rem;color:var(--text-muted);}
 
+        /* ---------- Invert link-out panel ---------- */
+        .pdftk-invert-panel{
+            border:2px dashed var(--card-border);border-radius:18px;padding:44px 24px;text-align:center;
+            background:var(--card-bg);backdrop-filter:blur(10px);margin-bottom:20px;
+        }
+        .pdftk-invert-panel .pdftk-btn{text-decoration:none;}
+
         /* ---------- File summary bar ---------- */
         .pdftk-file-bar{
             display:flex;align-items:center;gap:14px;background:var(--card-bg);
@@ -266,7 +273,6 @@ const state = {
   compress: { file:null, bytes:null, pct:50 },
   protect:  { mode:'lock', file:null, bytes:null },
   rearrange:{ file:null, bytes:null, pageCount:0, order:[], removed:new Set(), thumbs:[] },
-  invert:   { file:null, bytes:null },
 };
 
 /* ============================================================
@@ -796,8 +802,8 @@ async function renderCompress(main){
 
   body += `<div class="pdftk-field">
     <label>Target reduction</label>
-    <input type="range" id="pctSlider" min="10" max="90" step="5" value="${s.pct}">
-    <div class="pdftk-field-hint">10% = light cleanup, images barely touched · 90% = aggressive, visible image softening</div>
+    <input type="range" id="pctSlider" min="10" max="95" step="5" value="${s.pct}">
+    <div class="pdftk-field-hint">10% = light cleanup, images barely touched · 70% = visible image softening · above 70% every page (including text) is converted to a compressed image to guarantee a real size drop — text stays readable but is no longer selectable</div>
   </div>`;
 
   body += `<div class="pdftk-compress-readout">
@@ -824,9 +830,17 @@ async function renderCompress(main){
   function updateEst(){
     const pct = +slider.value;
     pctNum.textContent = pct+'%';
-    // rough heuristic estimate for display only — actual result depends on image content
-    const factor = 1 - (pct/100)*0.7;
-    estSize.textContent = '~ ' + fmtBytes(Math.max(s.bytes.byteLength*factor, s.bytes.byteLength*0.15));
+    // rough heuristic estimate for display only — actual result depends on image content.
+    // Two-zone curve to mirror compressPdf(): gentle to 70%, steeper (force-raster) beyond it.
+    let factor;
+    if(pct <= 70){
+      factor = 1 - (pct/100)*0.75;
+    } else {
+      const base = 1 - 0.70*0.75; // factor at pct=70
+      const t = (pct - 70) / 30;
+      factor = base - t*(base - 0.06); // drives down toward ~6% of original by pct=100
+    }
+    estSize.textContent = '~ ' + fmtBytes(Math.max(s.bytes.byteLength*factor, s.bytes.byteLength*0.05));
   }
   slider.addEventListener('input', updateEst);
   updateEst();
@@ -834,14 +848,19 @@ async function renderCompress(main){
   document.getElementById('compExport').onclick = async ()=>{
     const st = document.getElementById('compStatus');
     const pct = +slider.value;
-    setStatus(st, '<span class="pdftk-spinner"></span> checking each page and re-sampling where it actually helps…');
+    const aggressive = pct > 70;
+    setStatus(st, aggressive
+      ? '<span class="pdftk-spinner"></span> aggressive mode — converting every page to a compressed image…'
+      : '<span class="pdftk-spinner"></span> checking each page and re-sampling where it actually helps…');
     try{
       const result = await compressPdf(s.bytes, pct);
       const outBytes = result.bytes;
       const savedPct = Math.round((1 - outBytes.length/s.bytes.byteLength)*100);
       downloadBytes(outBytes, baseName(s.file.name)+'-compressed.pdf');
       let note = '';
-      if(result.rasterizedCount === 0){
+      if(aggressive){
+        note = ' — aggressive mode: all pages were converted to compressed images, text is no longer selectable';
+      } else if(result.rasterizedCount === 0){
         note = ' — this file was already efficient, so pages were left as-is';
       } else if(result.rasterizedCount < result.pageCount){
         note = ` — ${result.rasterizedCount} of ${result.pageCount} pages were re-sampled, the rest were already smaller as-is`;
@@ -873,20 +892,48 @@ async function handleCompressFile(file){
 
 /* Compress: for each page, render a downsampled JPEG raster at a quality
    tied to pct, and compare its real byte size against a fair estimate of
-   that page's original share of the file. Only pages where rasterizing
-   is genuinely smaller are replaced — anything already efficient (typical
-   text/vector pages) is left completely untouched. This is decided per
-   page, from measured bytes, not guessed from content type, so a mixed
-   document (some scanned pages, some text pages) gets the right treatment
-   on every page rather than one blanket rule for the whole file. */
+   that page's original share of the file.
+
+   Below the force-raster threshold (pct <= 70): only pages where
+   rasterizing is genuinely smaller are replaced — anything already
+   efficient (typical text/vector pages) is left completely untouched.
+   This is decided per page, from measured bytes, not guessed from
+   content type, so a mixed document (some scanned pages, some text
+   pages) gets the right treatment on every page rather than one
+   blanket rule for the whole file.
+
+   Above the threshold (pct > 70, "aggressive"): every page is forced
+   through the raster pipeline regardless of whether it beats its own
+   original size. This guarantees a real size drop even on pure-text/
+   vector pages, at the cost of those pages becoming images (text will
+   no longer be selectable, and will look softer). Quality/scale floors
+   are still kept high enough to stay readable even at pct=95 — this is
+   "aggressive but usable", not a lossless-text-destroying free-fall. */
 async function compressPdf(bytes, pct){
   const srcDoc = await PDFDocument.load(bytes);
   const pdfjsDoc = await loadPdfJs(bytes);
   const outDoc = await PDFDocument.create();
   const pageCount = srcDoc.getPageCount();
 
-  const jpegQuality = Math.max(0.15, 1 - (pct/100)*0.85);
-  const scaleFactor = Math.max(0.4, 1 - (pct/100)*0.55);
+  const FORCE_THRESHOLD = 70;
+  const forceRaster = pct > FORCE_THRESHOLD;
+
+  // Quality/scale curves are split into two zones so the floor at pct=95
+  // is meaningfully lower than before (real compression), while still
+  // being tuned to stay legible rather than collapsing to mush:
+  //  - 0–70%:  gentle curve, matches previous behaviour (quality 1.0→0.4, scale 1.0→0.61)
+  //  - 70–100%: steeper curve down to a readable floor (quality 0.4→0.22, scale 0.61→0.45)
+  let jpegQuality, scaleFactor;
+  if(pct <= FORCE_THRESHOLD){
+    jpegQuality = 1 - (pct/100)*0.6;      // 100%→0.4 at pct=70
+    scaleFactor = 1 - (pct/100)*0.55;     // 100%→0.615 at pct=70
+  } else {
+    const t = (pct - FORCE_THRESHOLD) / (100 - FORCE_THRESHOLD); // 0 at 70, 1 at 100
+    jpegQuality = 0.40 - t*0.18;          // 0.40 → 0.22
+    scaleFactor = 0.615 - t*0.165;        // 0.615 → 0.45
+  }
+  jpegQuality = Math.max(0.20, jpegQuality);
+  scaleFactor = Math.max(0.42, scaleFactor);
 
   let rasterizedCount = 0;
 
@@ -902,14 +949,18 @@ async function compressPdf(bytes, pct){
     }
 
     // Ground truth for THIS page: save it alone, untouched, and measure
-    // its real byte size. This is what the rasterized version has to beat —
-    // a whole-file average would let one huge image page inflate the bar
-    // for every other page and wrongly rasterize plain text pages next to it.
-    const soloDoc = await PDFDocument.create();
-    const [soloCopy] = await soloDoc.copyPages(srcDoc, [i]);
-    soloDoc.addPage(soloCopy);
-    const soloBytes = await soloDoc.save();
-    const ownSize = soloBytes.length;
+    // its real byte size. This is what the rasterized version has to beat
+    // (unless forceRaster is active) — a whole-file average would let one
+    // huge image page inflate the bar for every other page and wrongly
+    // rasterize plain text pages next to it.
+    let ownSize = Infinity;
+    if(!forceRaster){
+      const soloDoc = await PDFDocument.create();
+      const [soloCopy] = await soloDoc.copyPages(srcDoc, [i]);
+      soloDoc.addPage(soloCopy);
+      const soloBytes = await soloDoc.save();
+      ownSize = soloBytes.length;
+    }
 
     const pjsPage = await pdfjsDoc.getPage(i+1);
     const vp = pjsPage.getViewport({scale: scaleFactor * (150/72)});
@@ -924,9 +975,11 @@ async function compressPdf(bytes, pct){
     const jpegDataUrl = canvas.toDataURL('image/jpeg', jpegQuality);
     const jpegBytes = Uint8Array.from(atob(jpegDataUrl.split(',')[1]), c=>c.charCodeAt(0));
 
-    // Only commit to the raster version if it actually beats this specific
-    // page's own real size. Otherwise keep the original page exactly as-is.
-    if(jpegBytes.length < ownSize * 0.85){
+    // forceRaster: always commit the raster version, guaranteeing a size
+    // drop on every page (text becomes non-selectable at this setting).
+    // Otherwise: only commit if it actually beats this specific page's
+    // own real size — keep the original page exactly as-is if not.
+    if(forceRaster || jpegBytes.length < ownSize * 0.85){
       const embedded = await outDoc.embedJpg(jpegBytes);
       const newPage = outDoc.addPage([width, height]);
       newPage.drawImage(embedded, {x:0, y:0, width, height});
@@ -1457,46 +1510,29 @@ async function handleRearrangeFile(file){
 }
 
 /* ============================================================
-   7. COLOUR INVERTER — placeholder (logic to be added later)
+   7. COLOUR INVERTER — full engine lives in its own file
+   (invert-colors.html). It has a real, substantial pipeline
+   (content-stream + image + tiling-pattern colour inversion,
+   password handling, its own pdf.js version/worker patch) that
+   doesn't share globals cleanly with this module, so rather than
+   risk a fragile merge it's kept standalone and opened from here.
    ============================================================ */
-async function renderInvert(main){
-  const s = state.invert;
-  let body = stageHead('07 · Colour', 'Colour Inverter', 'Invert the colours of every page — useful for turning a bright scan into a dark-mode-friendly version.');
+function renderInvert(main){
+  let body = stageHead('07 · Colour', 'Colour Inverter', 'Invert page colours losslessly — vector fills/strokes and raster images are inverted directly, without rasterizing text. This tool opens in its own page.');
 
-  if(!s.file){
-    body += dropzone('invertDz');
-    main.innerHTML = body;
-    wireDropzone('invertDz', f=>handleInvertFile(f));
-    return;
-  }
-
-  body += fileBar(s.file.name, `${fmtBytes(s.bytes.byteLength)}`);
   body += `
-    <div class="pdftk-status">colour inversion is coming soon — hook up the processing logic here.</div>
-    <div class="pdftk-btn-row">
-      <button class="pdftk-btn" id="invertExport" disabled>Invert &amp; export</button>
-      <button class="pdftk-btn pdftk-secondary" id="invertClear2">start over</button>
+    <div class="pdftk-invert-panel">
+      <div class="pdftk-dz-icon"><i class="fa-solid fa-droplet-slash"></i></div>
+      <div class="pdftk-dz-main">Open the Colour Inverter</div>
+      <div class="pdftk-dz-sub">Full page/image/pattern colour inversion, opens in a new tab.</div>
+      <div class="pdftk-btn-row" style="justify-content:center;margin-top:18px;">
+        <a class="pdftk-btn" href="invert-colors.html" target="_blank" rel="noopener">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Colour Inverter
+        </a>
+      </div>
     </div>
-    <div id="invertStatus"></div>
   `;
   main.innerHTML = body;
-
-  document.getElementById('fbClear').onclick = ()=>{ state.invert={file:null,bytes:null}; renderMain(); };
-  document.getElementById('invertClear2').onclick = ()=>{ state.invert={file:null,bytes:null}; renderMain(); };
-}
-
-async function handleInvertFile(file){
-  const main = document.getElementById('pdftkMain');
-  setStatus(main, '<span class="pdftk-spinner"></span> reading file…');
-  try{
-    const buf = await fileToArrayBuffer(file);
-    state.invert.file = file;
-    state.invert.bytes = new Uint8Array(buf);
-    renderMain();
-  }catch(err){
-    console.error(err);
-    setStatus(main, 'could not read this file — '+err.message, 'err');
-  }
 }
 
 /* ============================================================
