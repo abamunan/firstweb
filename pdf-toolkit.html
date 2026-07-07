@@ -62,12 +62,18 @@
         .pdftk-dz-main{font-size:1rem;font-weight:700;margin-bottom:5px;color:var(--text-main);}
         .pdftk-dz-sub{font-size:.78rem;color:var(--text-muted);}
 
-        /* ---------- Invert link-out panel ---------- */
-        .pdftk-invert-panel{
-            border:2px dashed var(--card-border);border-radius:18px;padding:44px 24px;text-align:center;
+        /* ---------- Invert embedded frame ---------- */
+        .pdftk-invert-frame-wrap{
+            border:1px solid var(--card-border);border-radius:18px;overflow:hidden;
             background:var(--card-bg);backdrop-filter:blur(10px);margin-bottom:20px;
+            height:min(78vh, 900px);
         }
-        .pdftk-invert-panel .pdftk-btn{text-decoration:none;}
+        .pdftk-invert-frame{
+            width:100%;height:100%;border:none;display:block;background:#FAF9F6;
+        }
+        @media (max-width:720px){
+            .pdftk-invert-frame-wrap{height:82vh;border-radius:12px;}
+        }
 
         /* ---------- File summary bar ---------- */
         .pdftk-file-bar{
@@ -1514,22 +1520,23 @@ async function handleRearrangeFile(file){
    (invert-colors.html). It has a real, substantial pipeline
    (content-stream + image + tiling-pattern colour inversion,
    password handling, its own pdf.js version/worker patch) that
-   doesn't share globals cleanly with this module, so rather than
-   risk a fragile merge it's kept standalone and opened from here.
+   doesn't share globals cleanly with this module. Rather than
+   risk a fragile merge, it's kept as a fully separate document
+   and embedded here via <iframe> — this gives complete CSS/JS
+   isolation (no name collisions, no pdf.js version conflicts)
+   while still living inside the toolkit's own page and stage.
    ============================================================ */
 function renderInvert(main){
-  let body = stageHead('07 · Colour', 'Colour Inverter', 'Invert page colours losslessly — vector fills/strokes and raster images are inverted directly, without rasterizing text. This tool opens in its own page.');
+  let body = stageHead('07 · Colour', 'Colour Inverter', 'Invert page colours losslessly — vector fills/strokes and raster images are inverted directly, without rasterizing text.');
 
   body += `
-    <div class="pdftk-invert-panel">
-      <div class="pdftk-dz-icon"><i class="fa-solid fa-droplet-slash"></i></div>
-      <div class="pdftk-dz-main">Open the Colour Inverter</div>
-      <div class="pdftk-dz-sub">Full page/image/pattern colour inversion, opens in a new tab.</div>
-      <div class="pdftk-btn-row" style="justify-content:center;margin-top:18px;">
-        <a class="pdftk-btn" href="invert-colors.html" target="_blank" rel="noopener">
-          <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Colour Inverter
-        </a>
-      </div>
+    <div class="pdftk-invert-frame-wrap">
+      <iframe
+        class="pdftk-invert-frame"
+        src="invert-colors.html"
+        title="Colour Inverter"
+        loading="lazy"
+      ></iframe>
     </div>
   `;
   main.innerHTML = body;
