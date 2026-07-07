@@ -69,11 +69,32 @@
             height:min(78vh, 900px);
         }
         .pdftk-invert-frame{
-            width:100%;height:100%;border:none;display:block;background:#FAF9F6;
+            width:100%;height:100%;border:none;display:block;background:transparent;
         }
         @media (max-width:720px){
             .pdftk-invert-frame-wrap{height:82vh;border-radius:12px;}
         }
+
+        /* ---------- Colour Inverter disclosure dropdown ---------- */
+        .pdftk-disclosure{
+            border:1px solid var(--card-border);border-radius:14px;background:var(--card-bg);
+            backdrop-filter:blur(10px);overflow:hidden;margin-bottom:20px;
+        }
+        .pdftk-disclosure-sum{
+            list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;
+            padding:13px 18px;cursor:pointer;font-size:.82rem;font-weight:700;color:var(--text-main);
+            user-select:none;
+        }
+        .pdftk-disclosure-sum::-webkit-details-marker{display:none;}
+        .pdftk-disclosure-sum i.fa-circle-info{color:var(--accent);margin-right:2px;}
+        .pdftk-disclosure-chev{font-size:.72rem;color:var(--text-muted);transition:transform .2s;}
+        .pdftk-disclosure[open] .pdftk-disclosure-chev{transform:rotate(180deg);}
+        .pdftk-disclosure-body{
+            padding:2px 18px 18px;font-size:.78rem;line-height:1.65;color:var(--text-muted);
+            border-top:1px solid var(--card-border);
+        }
+        .pdftk-disclosure-body p{margin-top:14px;}
+        .pdftk-disclosure-body b{color:var(--text-main);}
 
         /* ---------- File summary bar ---------- */
         .pdftk-file-bar{
@@ -1527,7 +1548,7 @@ async function handleRearrangeFile(file){
    while still living inside the toolkit's own page and stage.
    ============================================================ */
 function renderInvert(main){
-  let body = stageHead('07 · Colour', 'Colour Inverter', 'Invert page colours losslessly — vector fills/strokes and raster images are inverted directly, without rasterizing text.');
+  let body = stageHead('07 · Colour', 'Colour Inverter', 'Invert page colours losslessly — vector fills/strokes and raster images are inverted directly in the page\'s own drawing instructions, so text is never rasterized.');
 
   body += `
     <div class="pdftk-invert-frame-wrap">
@@ -1538,6 +1559,17 @@ function renderInvert(main){
         loading="lazy"
       ></iframe>
     </div>
+
+    <details class="pdftk-disclosure">
+      <summary class="pdftk-disclosure-sum">
+        <span><i class="fa-solid fa-circle-info"></i> What this does &amp; known limitations</span>
+        <i class="fa-solid fa-chevron-down pdftk-disclosure-chev"></i>
+      </summary>
+      <div class="pdftk-disclosure-body">
+        <p><b>What this does losslessly:</b> vector fill/stroke colors (RGB, Gray, CMYK) are inverted directly in the page's drawing instructions — no rasterization of text or paths. Fill and stroke color spaces (set by cs/CS) are tracked separately and correctly follow the content stream's q/Q graphics-state save/restore stack, so a color space changed inside a q...Q block doesn't leak out (or get lost) once the matching Q is hit. Separation/DeviceN spot-color tints (scn/SCN/sc/SC) are inverted too, after checking — by actually evaluating the color space's Type 0/2/3 tint-transform function (PostScript Type 4 functions are unsupported and reported, not guessed) — that the transform is monotonic, so a straight tint flip won't produce the wrong color; non-monotonic or unverifiable tints are left untouched and reported rather than risk an incorrect color. Uncolored tiling patterns (PaintType 2) are supported too: since the pattern itself carries no color, the color instead comes from the numeric operands given alongside the pattern name in scn/SCN (e.g. "c1 c2 c3 /P1 scn") — these are resolved against the Pattern color space's underlying base space and inverted using the same Gray/RGB/CMYK or Separation/DeviceN (monotonicity-checked) rules as any other color operator; the count of these inverted is reported separately from ordinary color operators. Photos, scanned images, indexed/palette images, 1–16 bit images, and raw CMYK images (as regular XObjects or as inline images) are decoded, inverted pixel-for-pixel, and re-embedded. XObject images using CCITTFax/JBIG2/JPX(JPEG2000) filters are inverted without touching the compressed data at all, by flipping the image's /Decode array (Indexed images instead have their palette inverted directly) — this covers Lab color space (using its correct non-[0,1] default range: L∈[0,100], a/b from the color space's own /Range or the [-100,100] spec default), Separation/DeviceN spot-color images, and — since /Decode [0 1] vs [1 0] just swaps which sample value means "paint" vs "transparent" — CCITTFax/JBIG2/JPX stencil masks (/ImageMask true) too, reported separately as stencil-mask inversions rather than color-image inversions. Inline images support FlateDecode, RunLengthDecode, LZWDecode (honoring an explicit /EarlyChange in DecodeParms), and CCITTFaxDecode filters, and resolve named color spaces (e.g. /CS /CS0) — including Lab and Separation/DeviceN, with the matching non-[0,1] default decode ranges — against the page or form's Resources dict. ICCBased images declare their component count via /N or an /Alternate space when available; if neither is present, RGB is assumed (flagged in the results, since a 1- or 4-component profile guessed as RGB would invert incorrectly). Colored tiling patterns (PaintType 1) have their own drawing instructions inverted too. Form XObjects — headers, footers, watermarks, transparency groups, annotation appearances — are recursed into, so their own content streams and any images/patterns nested inside them are inverted as well. Password-protected PDFs are detected on upload and prompt for a password so the page preview can be decrypted and shown.</p>
+        <p><b>Known limitations</b> (left untouched, reported after processing rather than silently mishandled): shading patterns, CCITTFax/JBIG2/JPX images in color spaces other than Gray/RGB/CMYK/Indexed/Lab/Separation/DeviceN, and inline CCITTFax images in color spaces that can't be resolved to Gray/RGB/CMYK/Lab/Separation/DeviceN (an unrecognized named colorspace, or an inline indexed array). Raw CMYK→RGB conversion uses a simple formula rather than a full color-managed profile, so hues may shift slightly compared to Adobe's rendering. Password-protected PDFs: even after entering the correct password to preview a file, the actual invert-and-save step uses pdf-lib, which has no built-in support for decrypting PDF content streams for editing — this is a known, long-standing upstream limitation of the library (not fixed by pointing at a newer version), so editing genuinely encrypted files here will typically still fail; remove the password with another tool first (e.g. Acrobat's "Remove Security" or "qpdf --decrypt") and re-upload the unprotected PDF.</p>
+      </div>
+    </details>
   `;
   main.innerHTML = body;
 }

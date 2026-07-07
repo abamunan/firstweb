@@ -4,44 +4,60 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Invert Colors — PDF Toolkit</title>
+<!-- Blocking, must run before first paint so [data-theme] is set before any
+     CSS below reads it — same theme.js used across the rest of the site,
+     and since this page is embedded same-origin, it reads the same
+     localStorage key the parent toolkit page uses, so light/dark always
+     stays in sync automatically. -->
+<script src="theme.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 <style>
+  /* Tokens mapped from the toolkit's own style.css so this page (loaded via
+     iframe) reads as part of the same product rather than a separate app.
+     Variable NAMES are kept the same as before (--ink, --stone, --amber,
+     --hairline) to avoid touching 40+ usages below — only their VALUES
+     change, plus a couple of new tokens for the panel fill and button text
+     colour, which the toolkit itself flips between light/dark. */
   :root {
-    --paper: #FAF9F6;
-    --ink: #1C1B19;
-    --stone: #6B6862;
-    --amber: #B5622A;
-    --hairline: #E2DFD8;
+    --ink:      #0f172a;              /* = toolkit --text-main  */
+    --stone:    #334155;              /* = toolkit --text-muted */
+    --amber:    #0284c7;              /* = toolkit --accent     */
+    --hairline: rgba(14,165,233,.25); /* = toolkit --card-border */
+    --panel-bg: rgba(255,255,255,.55);/* = toolkit --card-bg    */
+    --btn-text: #ffffff;              /* text on accent-coloured buttons */
+  }
+  [data-theme="dark"] {
+    --ink:      #f1f5f9;
+    --stone:    #cbd5e1;
+    --amber:    #00d4ff;
+    --hairline: rgba(0,212,255,.18);
+    --panel-bg: rgba(255,255,255,.07);
+    --btn-text: #020617;              /* toolkit uses dark text on its bright accent in dark mode */
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
-    background: var(--paper);
+    background: transparent; /* the toolkit's own card wrapper supplies the fill behind this iframe */
     color: var(--ink);
-    font-family: 'Inter', sans-serif;
+    font-family: 'Poppins', 'Hind Siliguri', sans-serif;
   }
-  .workspace { max-width: 900px; margin: 0 auto; padding: 40px 48px; }
-  h1 {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 18px;
-    font-weight: 600;
-    margin: 0 0 4px 0;
-    letter-spacing: 0.02em;
-  }
-  .subtitle { color: var(--stone); font-size: 14px; margin: 0 0 32px 0; }
+  .workspace { max-width: 900px; margin: 0 auto; padding: 12px 4px 28px; }
   .dropzone {
-    border: 1px dashed var(--hairline);
-    border-radius: 4px;
+    border: 1.5px dashed var(--hairline);
+    border-radius: 12px;
     padding: 48px 24px;
     text-align: center;
     color: var(--stone);
     font-size: 14px;
     cursor: pointer;
-    transition: border-color 0.15s;
+    background: var(--panel-bg);
+    backdrop-filter: blur(10px);
+    transition: border-color 0.15s, box-shadow 0.15s;
   }
-  .dropzone:hover, .dropzone.dragover { border-color: var(--amber); color: var(--ink); }
+  .dropzone:hover, .dropzone.dragover { border-color: var(--amber); color: var(--ink); box-shadow: 0 0 30px rgba(2,132,199,.12); }
+  [data-theme="dark"] .dropzone:hover, [data-theme="dark"] .dropzone.dragover { box-shadow: 0 0 30px rgba(0,212,255,.15); }
   .dropzone input { display: none; }
   .file-info {
     font-family: 'JetBrains Mono', monospace;
@@ -91,7 +107,7 @@
     font-family: 'JetBrains Mono', monospace;
     font-size: 13px;
     background: var(--amber);
-    color: var(--paper);
+    color: var(--btn-text);
     border: none;
     padding: 10px 20px;
     border-radius: 3px;
@@ -112,15 +128,6 @@
     white-space: pre-line;
   }
   .status.done { color: var(--amber); }
-  .disclosure {
-    margin-top: 40px;
-    padding-top: 20px;
-    border-top: 1px solid var(--hairline);
-    font-size: 12px;
-    color: var(--stone);
-    line-height: 1.6;
-  }
-  .disclosure b { color: var(--ink); font-weight: 500; }
   a.download-link {
     display: inline-block;
     margin-top: 14px;
@@ -132,12 +139,10 @@
   }
 </style>
 </head>
+
 <body>
 
 <div class="workspace">
-  <h1>INVERT COLORS</h1>
-  <p class="subtitle">Lossless color inversion — vector colors and raster images, no rasterized text.</p>
-
   <div class="dropzone" id="dropzone">
     <input type="file" id="fileInput" accept="application/pdf">
     Drop a PDF here, or click to choose a file
@@ -159,12 +164,6 @@
     </div>
 
     <div class="status" id="status"></div>
-  </div>
-
-  <div class="disclosure">
-    <b>What this does losslessly:</b> vector fill/stroke colors (RGB, Gray, CMYK) are inverted directly in the page's drawing instructions — no rasterization of text or paths. Separation/DeviceN spot-color tints (scn/SCN/sc/SC) are inverted too, after checking — by actually evaluating the color space's Type 0/2/3 tint-transform function (PostScript Type 4 functions are unsupported and reported, not guessed) — that the transform is monotonic, so a straight tint flip won't produce the wrong color; non-monotonic or unverifiable tints are left untouched and reported rather than risk an incorrect color. Photos, scanned images, indexed/palette images, 1–16 bit images, and raw CMYK images (as regular XObjects or as inline images) are decoded, inverted pixel-for-pixel, and re-embedded. XObject images using CCITTFax/JBIG2/JPX(JPEG2000) filters are inverted without touching the compressed data at all, by flipping the image's /Decode array (Indexed images instead have their palette inverted directly) — this now also covers Lab color space (using its correct non-[0,1] default range: L∈[0,100], a/b from the color space's own /Range or the [-100,100] spec default) and Separation/DeviceN spot-color images. Inline images support FlateDecode, RunLengthDecode, LZWDecode (honoring an explicit /EarlyChange in DecodeParms), and CCITTFaxDecode filters, and resolve named color spaces (e.g. /CS /CS0) against the page or form's Resources dict. ICCBased images declare their component count via /N or an /Alternate space when available; if neither is present, RGB is assumed (flagged in the results, since a 1- or 4-component profile guessed as RGB would invert incorrectly). Colored tiling patterns (PaintType 1) have their own drawing instructions inverted too. Form XObjects — headers, footers, watermarks, transparency groups, annotation appearances — are recursed into, so their own content streams and any images/patterns nested inside them are inverted as well. Password-protected PDFs are detected on upload and prompt for a password so the page preview can be decrypted and shown.
-    <br><br>
-    <b>Known limitations</b> (left untouched, reported after processing rather than silently mishandled): uncolored tiling patterns (PaintType 2, since the pattern itself carries no color — it's supplied by the paint operator, which isn't inverted), shading patterns, CCITTFax/JBIG2/JPX images used as stencil masks (/ImageMask true, where /Decode has different semantics), CCITTFax/JBIG2/JPX images in color spaces other than Gray/RGB/CMYK/Indexed/Lab/Separation/DeviceN, and inline CCITTFax images in anything other than Gray/RGB/CMYK (Lab/Separation/DeviceN aren't resolved for the inline case). The current-color-space tracking for scn/SCN spot tints is sequential only (no q/Q graphics-state stack), so a stream that restores a different named color space across a Q is an edge case that isn't specially handled. Raw CMYK→RGB conversion uses a simple formula rather than a full color-managed profile, so hues may shift slightly compared to Adobe's rendering. Password-protected PDFs: even after entering the correct password to preview a file, the actual invert-and-save step uses pdf-lib, which has no built-in support for decrypting PDF content streams for editing — this is a known, long-standing upstream limitation of the library (not fixed by pointing at a newer version), so editing genuinely encrypted files here will typically still fail; remove the password with another tool first (e.g. Acrobat's "Remove Security" or "qpdf --decrypt") and re-upload the unprotected PDF.
   </div>
 </div>
 
@@ -323,34 +322,87 @@ function resolveNamedColorSpace(doc, resources, name) {
 async function invertContentStreamColors(bytes, doc, resources) {
   const tokens = tokenize(bytes);
   const out = [];
-  let numBuffer = [];
+  // `pending` holds number/name tokens seen since the last operator, in
+  // original order, so they can be re-emitted (inverted or verbatim) once we
+  // know which operator consumes them. A name token is deferred rather than
+  // flushed immediately so a trailing pattern name (see the `scn`/`SCN`
+  // handling below) can be told apart from the color operands that precede
+  // it — `c1 c2 c3 /P1 scn` needs c1..c3 inverted and /P1 left alone.
+  let pending = [];
   let inlineInverted = 0;
+  let patternColorsInverted = 0;
   const inlineSkipped = [];
   const colorOpsSkipped = [];
-  // Tracks the color space most recently set by `/name cs` or `/name CS` —
-  // sequential/linear tracking only (no q/Q graphics-state stack), which
-  // covers the vast majority of real content streams; streams that restore
-  // a *different* named color space across a Q are an edge case we don't
-  // special-case, so a stale name could in rare cases cause a scn/SCN to be
-  // (correctly, if conservatively) routed through the wrong-but-harmless
-  // "not Separation/DeviceN" path rather than mis-inverted.
-  let currentColorSpaceName = null;
-  let lastNameTok = null;
+  // Tracks the color space most recently set by `/name cs` (fill) or
+  // `/name CS` (stroke) — kept as two separate variables since fill and
+  // stroke color spaces are independent graphics-state parameters. A stack
+  // mirrors the content stream's q/Q save/restore pairs so a color space set
+  // inside a q...Q block doesn't leak out (or get lost) across the restore.
+  let currentFillColorSpaceName = null;
+  let currentStrokeColorSpaceName = null;
+  const gsStack = [];
   let t = 0;
+  function flushPendingVerbatim() {
+    for (const p of pending) { out.push(bytesToLatin1(bytes, p.start, p.end)); out.push(' '); }
+    pending = [];
+  }
+  // Looks up `/name cs`'s resource-dict entry directly (rather than via
+  // resolveNamedColorSpace, which only returns the *base* type) so we can
+  // detect the `[/Pattern baseSpace]` array form used by uncolored tiling
+  // patterns and recover that underlying color space.
+  function resolvePatternBaseColorSpace(spaceName) {
+    if (!spaceName || !doc || !resources || !resources.lookup) return null;
+    try {
+      const csDict = resources.lookup(PDFLib.PDFName.of('ColorSpace'), PDFLib.PDFDict);
+      const csEntry = csDict ? csDict.get(PDFLib.PDFName.of(spaceName)) : null;
+      if (!csEntry) return null;
+      const resolvedEntry = csEntry instanceof PDFLib.PDFRef ? doc.context.lookup(csEntry) : csEntry;
+      if (resolvedEntry instanceof PDFLib.PDFArray && resolvedEntry.size() > 1) {
+        const fam = doc.context.lookup(resolvedEntry.get(0)).toString();
+        if (fam === '/Pattern') return resolveColorSpace(doc, resolvedEntry.get(1));
+      }
+    } catch (e) { /* fall through */ }
+    return null;
+  }
   while (t < tokens.length) {
     const tok = tokens[t];
-    if (tok.type === 'number') { numBuffer.push(tok); t++; continue; }
-    if (tok.type === 'name') { lastNameTok = tok; }
+    if (tok.type === 'number' || tok.type === 'name') { pending.push(tok); t++; continue; }
     if (tok.type === 'operator') {
       const opText = bytesToLatin1(bytes, tok.start, tok.end);
 
+      if (opText === 'q') {
+        gsStack.push({ fill: currentFillColorSpaceName, stroke: currentStrokeColorSpaceName });
+        flushPendingVerbatim();
+        out.push(opText); out.push('\n');
+        t++;
+        continue;
+      }
+      if (opText === 'Q') {
+        if (gsStack.length) {
+          const restored = gsStack.pop();
+          currentFillColorSpaceName = restored.fill;
+          currentStrokeColorSpaceName = restored.stroke;
+        }
+        flushPendingVerbatim();
+        out.push(opText); out.push('\n');
+        t++;
+        continue;
+      }
+
       if (opText === 'cs' || opText === 'CS') {
-        if (lastNameTok) currentColorSpaceName = bytesToLatin1(bytes, lastNameTok.start + 1, lastNameTok.end);
+        const nameTok = pending.length && pending[pending.length - 1].type === 'name' ? pending[pending.length - 1] : null;
+        if (nameTok) {
+          const nm = bytesToLatin1(bytes, nameTok.start + 1, nameTok.end);
+          if (opText === 'cs') currentFillColorSpaceName = nm; else currentStrokeColorSpaceName = nm;
+        }
+        flushPendingVerbatim();
+        out.push(opText); out.push('\n');
+        t++;
+        continue;
       }
 
       if (opText === 'BI') {
-        for (const numTok of numBuffer) { out.push(bytesToLatin1(bytes, numTok.start, numTok.end)); out.push(' '); }
-        numBuffer = [];
+        flushPendingVerbatim();
 
         let j = t + 1;
         const dictTokens = [];
@@ -391,63 +443,115 @@ async function invertContentStreamColors(bytes, doc, resources) {
       }
 
       if (COLOR_OPS.has(opText)) {
-        // Separation/DeviceN tint values (scn/SCN or sc/SC while a named
-        // Separation/DeviceN color space is active) need special handling:
-        // blindly doing `1 - t` is only correct when the tint-transform
-        // function is monotonic. We check that with evaluatePdfFunction
-        // before deciding; if it isn't (or can't be verified), we leave the
-        // operator untouched and report it rather than guess wrong.
-        let handledAsTint = false;
-        if ((opText === 'scn' || opText === 'SCN' || opText === 'sc' || opText === 'SC') && currentColorSpaceName && doc && resources) {
-          const namedCs = resolveNamedColorSpace(doc, resources, currentColorSpaceName);
-          if (namedCs && (namedCs.type === 'Separation' || namedCs.type === 'DeviceN') && numBuffer.length === namedCs.numComponents) {
-            handledAsTint = true;
-            let monotonic = false;
-            try { monotonic = isTintTransformMonotonic(doc, namedCs); } catch (e) { monotonic = false; }
-            if (monotonic) {
-              for (const numTok of numBuffer) {
-                const raw = bytesToLatin1(bytes, numTok.start, numTok.end);
-                out.push(formatNumber(1 - parseFloat(raw)));
-                out.push(' ');
+        const isFillOp = (opText === 'scn' || opText === 'sc' || opText === 'g' || opText === 'rg' || opText === 'k');
+        const currentSpaceName = isFillOp ? currentFillColorSpaceName : currentStrokeColorSpaceName;
+        // Only scn/SCN can carry a trailing pattern name (`c1 c2 c3 /P1 scn`
+        // for an uncolored pattern, or bare `/P1 scn` for a colored one).
+        const patternNameTok = (opText === 'scn' || opText === 'SCN') && pending.length && pending[pending.length - 1].type === 'name'
+          ? pending[pending.length - 1] : null;
+        const colorNumToks = (patternNameTok ? pending.slice(0, -1) : pending).filter(p => p.type === 'number');
+
+        if (patternNameTok) {
+          // Pattern invocation. Colored patterns (PaintType 1) carry no
+          // preceding numbers — nothing to invert. Uncolored patterns
+          // (PaintType 2) get their color from these operands, resolved
+          // against the Pattern color space's underlying base space.
+          const patternName = bytesToLatin1(bytes, patternNameTok.start + 1, patternNameTok.end);
+          const baseCs = colorNumToks.length ? resolvePatternBaseColorSpace(currentSpaceName) : null;
+          let handledPatternColor = false;
+          if (baseCs) {
+            if (baseCs.type === 'Separation' || baseCs.type === 'DeviceN') {
+              if (colorNumToks.length === (baseCs.numComponents || 1)) {
+                let monotonic = false;
+                try { monotonic = isTintTransformMonotonic(doc, baseCs); } catch (e) { monotonic = false; }
+                if (monotonic) {
+                  for (const nt of colorNumToks) { out.push(formatNumber(1 - parseFloat(bytesToLatin1(bytes, nt.start, nt.end)))); out.push(' '); }
+                  patternColorsInverted++;
+                } else {
+                  colorOpsSkipped.push(`Uncolored tiling pattern (/${patternName}) underlying Separation/DeviceN tint via ${opText}: tint-transform function is non-monotonic or could not be evaluated — left uninverted to avoid an incorrect color`);
+                  for (const nt of colorNumToks) { out.push(bytesToLatin1(bytes, nt.start, nt.end)); out.push(' '); }
+                }
+                handledPatternColor = true;
               }
             } else {
-              colorOpsSkipped.push(`Separation/DeviceN tint (/${currentColorSpaceName}) via ${opText}: tint-transform function is non-monotonic or could not be evaluated — left uninverted to avoid an incorrect color`);
-              for (const numTok of numBuffer) { out.push(bytesToLatin1(bytes, numTok.start, numTok.end)); out.push(' '); }
+              const n = getLinearComponentCount(baseCs.type);
+              if (n !== null && colorNumToks.length === n) {
+                for (const nt of colorNumToks) { out.push(formatNumber(1 - parseFloat(bytesToLatin1(bytes, nt.start, nt.end)))); out.push(' '); }
+                patternColorsInverted++;
+                handledPatternColor = true;
+              }
+            }
+          }
+          if (!handledPatternColor) {
+            for (const nt of colorNumToks) { out.push(bytesToLatin1(bytes, nt.start, nt.end)); out.push(' '); }
+          }
+          out.push('/' + patternName); out.push(' ');
+        } else {
+          // Separation/DeviceN tint values (scn/SCN or sc/SC while a named
+          // Separation/DeviceN color space is active) need special handling:
+          // blindly doing `1 - t` is only correct when the tint-transform
+          // function is monotonic. We check that with evaluatePdfFunction
+          // before deciding; if it isn't (or can't be verified), we leave the
+          // operator untouched and report it rather than guess wrong.
+          let handledAsTint = false;
+          // Non-linear named color spaces (currently just Lab: L is in
+          // [0,100] and a/b are in a signed range, usually [-100,100], not
+          // the [0,1] that formatNumber's `1 - x` assumes) need to be
+          // detected here too, or `1 - x` silently clamps them into garbage
+          // (e.g. L=75 -> 1-75 = -74 -> clamped to 0 by formatNumber).
+          // CalRGB/CalGray are still safe to fall through to the generic
+          // linear-arity branch below: like their Device counterparts
+          // they're defined on [0,1] per component.
+          let nonLinearNamedCs = null;
+          if ((opText === 'scn' || opText === 'SCN' || opText === 'sc' || opText === 'SC') && currentSpaceName && doc && resources) {
+            const namedCs = resolveNamedColorSpace(doc, resources, currentSpaceName);
+            if (namedCs && (namedCs.type === 'Separation' || namedCs.type === 'DeviceN') && colorNumToks.length === namedCs.numComponents) {
+              handledAsTint = true;
+              let monotonic = false;
+              try { monotonic = isTintTransformMonotonic(doc, namedCs); } catch (e) { monotonic = false; }
+              if (monotonic) {
+                for (const nt of colorNumToks) { out.push(formatNumber(1 - parseFloat(bytesToLatin1(bytes, nt.start, nt.end)))); out.push(' '); }
+              } else {
+                colorOpsSkipped.push(`Separation/DeviceN tint (/${currentSpaceName}) via ${opText}: tint-transform function is non-monotonic or could not be evaluated — left uninverted to avoid an incorrect color`);
+                for (const nt of colorNumToks) { out.push(bytesToLatin1(bytes, nt.start, nt.end)); out.push(' '); }
+              }
+            } else if (namedCs && namedCs.type === 'Lab' && colorNumToks.length === 3) {
+              nonLinearNamedCs = namedCs;
+            }
+          }
+          if (nonLinearNamedCs) {
+            colorOpsSkipped.push(`Lab color (/${currentSpaceName}) via ${opText}: component ranges are not [0,1] (L in [0,100], a/b typically [-100,100]) so a direct 1-x inversion would be wrong — left uninverted`);
+            for (const nt of colorNumToks) { out.push(bytesToLatin1(bytes, nt.start, nt.end)); out.push(' '); }
+          } else if (!handledAsTint) {
+            const arity = EXPECTED_ARITY[opText];
+            const matches = arity === undefined ? true : colorNumToks.length === arity;
+            const variableOk = arity === undefined && (colorNumToks.length === 1 || colorNumToks.length === 3 || colorNumToks.length === 4);
+            if ((arity !== undefined && matches) || variableOk) {
+              for (const nt of colorNumToks) { out.push(formatNumber(1 - parseFloat(bytesToLatin1(bytes, nt.start, nt.end)))); out.push(' '); }
+            } else {
+              for (const nt of colorNumToks) { out.push(bytesToLatin1(bytes, nt.start, nt.end)); out.push(' '); }
             }
           }
         }
-        if (!handledAsTint) {
-          const arity = EXPECTED_ARITY[opText];
-          const matches = arity === undefined ? true : numBuffer.length === arity;
-          const variableOk = arity === undefined && (numBuffer.length === 1 || numBuffer.length === 3 || numBuffer.length === 4);
-          if ((arity !== undefined && matches) || variableOk) {
-            for (const numTok of numBuffer) {
-              const raw = bytesToLatin1(bytes, numTok.start, numTok.end);
-              out.push(formatNumber(1 - parseFloat(raw)));
-              out.push(' ');
-            }
-          } else {
-            for (const numTok of numBuffer) { out.push(bytesToLatin1(bytes, numTok.start, numTok.end)); out.push(' '); }
-          }
-        }
+        pending = [];
       } else {
-        for (const numTok of numBuffer) { out.push(bytesToLatin1(bytes, numTok.start, numTok.end)); out.push(' '); }
+        flushPendingVerbatim();
       }
-      numBuffer = [];
       out.push(opText); out.push('\n');
       t++;
       continue;
     }
-    for (const numTok of numBuffer) { out.push(bytesToLatin1(bytes, numTok.start, numTok.end)); out.push(' '); }
-    numBuffer = [];
+    // 'other' token (string/array/dict literal) — flush anything buffered
+    // first so ordering is preserved, then pass this token through untouched.
+    flushPendingVerbatim();
     out.push(bytesToLatin1(bytes, tok.start, tok.end)); out.push(' ');
     t++;
   }
-  for (const numTok of numBuffer) { out.push(bytesToLatin1(bytes, numTok.start, numTok.end)); out.push(' '); }
+  flushPendingVerbatim();
   const outStr = out.join('');
   const outBytes = new Uint8Array(outStr.length);
   for (let k = 0; k < outStr.length; k++) outBytes[k] = outStr.charCodeAt(k) & 0xff;
-  return { bytes: outBytes, inlineInverted, inlineSkipped, colorOpsSkipped };
+  return { bytes: outBytes, inlineInverted, inlineSkipped, colorOpsSkipped, patternColorsInverted };
 }
 function invertRGBASamples(rgba) {
   const out = new Uint8Array(rgba.length);
@@ -807,16 +911,29 @@ function isTintTransformMonotonic(doc, cs) {
 function cmykToRgb01(c, m, y, k) {
   return [255 * (1 - Math.min(1, c + k)), 255 * (1 - Math.min(1, m + k)), 255 * (1 - Math.min(1, y + k))];
 }
+// Decodes a raw CMYK image AND inverts it in one step, by flipping each
+// C/M/Y/K component (1-x) before converting to RGB for the PNG re-embed —
+// this matches the "invert" convention used everywhere else CMYK appears in
+// this file (the k/K vector operator, and the /Decode-array flip used for
+// CCITTFax/JBIG2/JPX DeviceCMYK images, both of which flip C/M/Y/K directly).
+// Converting to RGB first and then inverting the RGB (255-r/g/b) is NOT the
+// same operation — CMYK->RGB is not a simple 1:1 channel mapping, so RGB-
+// space inversion of a CMYK image gives a different, inconsistent result
+// from a CCITTFax-encoded version of the exact same image would.
 function rgbaFromCMYKBpc(width, height, rawBytes, bpc) {
   const { samples, maxVal } = unpackComponents(rawBytes, width, height, 4, bpc);
   const rgba = new Uint8ClampedArray(width * height * 4);
   let s = 0;
   for (let p = 0; p < width * height; p++) {
-    const c = samples[s++] / maxVal, m = samples[s++] / maxVal, y = samples[s++] / maxVal, k = samples[s++] / maxVal;
+    const c = 1 - samples[s++] / maxVal, m = 1 - samples[s++] / maxVal, y = 1 - samples[s++] / maxVal, k = 1 - samples[s++] / maxVal;
     const [r, g, b] = cmykToRgb01(c, m, y, k);
     rgba[p * 4] = r; rgba[p * 4 + 1] = g; rgba[p * 4 + 2] = b; rgba[p * 4 + 3] = 255;
   }
-  return { data: rgba, width, height };
+  // preInverted: this data is already the inverted result (CMYK components
+  // were flipped before the CMYK->RGB conversion above), so callers must
+  // embed/emit it as-is rather than running it through invertRGBASamples
+  // again, or the second invert would cancel the first out.
+  return { data: rgba, width, height, preInverted: true };
 }
 function rgbaFromIndexed(width, height, indexSamples, colorSpace) {
   const base = colorSpace.base;
@@ -984,13 +1101,16 @@ function parseDecodeArrayText(raw) {
 function formatDecodeArrayText(nums) {
   return '[' + nums.map(n => formatNumber(n)).join(' ') + ']';
 }
-// Same idea as resolveColorSpace's named-resource lookup, but only needs the
-// component count (not the full structure) since CCITTFax images are always
-// Gray/RGB/CMYK in practice — Indexed isn't handled here.
+// Same idea as resolveColorSpace's named-resource lookup, but for inline
+// images. Returns { numComponents, defaultRanges } — defaultRanges mirrors
+// getDefaultDecodeRanges so Lab (whose default /Decode is NOT [0,1] per
+// component) and Separation/DeviceN (variable component count) come out
+// with the same correct defaults the XObject CCITTFax/JBIG2/JPX path uses,
+// not just a bare Gray/RGB/CMYK component count.
 function resolveInlineNumComponents(csRaw, doc, resources) {
-  if (csRaw === 'G' || csRaw === 'DeviceGray' || csRaw === 'CalGray') return 1;
-  if (csRaw === 'RGB' || csRaw === 'DeviceRGB' || csRaw === 'CalRGB') return 3;
-  if (csRaw === 'CMYK' || csRaw === 'DeviceCMYK') return 4;
+  if (csRaw === 'G' || csRaw === 'DeviceGray' || csRaw === 'CalGray') return { numComponents: 1, defaultRanges: [[0, 1]] };
+  if (csRaw === 'RGB' || csRaw === 'DeviceRGB' || csRaw === 'CalRGB') return { numComponents: 3, defaultRanges: [[0, 1], [0, 1], [0, 1]] };
+  if (csRaw === 'CMYK' || csRaw === 'DeviceCMYK') return { numComponents: 4, defaultRanges: [[0, 1], [0, 1], [0, 1], [0, 1]] };
   if (csRaw.startsWith('[')) return null;
   if (doc && resources) {
     try {
@@ -1000,9 +1120,13 @@ function resolveInlineNumComponents(csRaw, doc, resources) {
         if (namedObj) {
           const namedCs = resolveColorSpace(doc, namedObj);
           if (namedCs) {
-            if (namedCs.type.includes('RGB')) return 3;
-            if (namedCs.type.includes('Gray')) return 1;
-            if (namedCs.type.includes('CMYK')) return 4;
+            if (namedCs.type === 'Lab') return { numComponents: 3, defaultRanges: getDefaultDecodeRanges(namedCs) };
+            if (namedCs.type === 'Separation' || namedCs.type === 'DeviceN') {
+              return { numComponents: namedCs.numComponents || 1, defaultRanges: getDefaultDecodeRanges(namedCs) };
+            }
+            if (namedCs.type.includes('RGB')) return { numComponents: 3, defaultRanges: getDefaultDecodeRanges(namedCs) };
+            if (namedCs.type.includes('Gray')) return { numComponents: 1, defaultRanges: getDefaultDecodeRanges(namedCs) };
+            if (namedCs.type.includes('CMYK')) return { numComponents: 4, defaultRanges: getDefaultDecodeRanges(namedCs) };
           }
         }
       }
@@ -1038,10 +1162,11 @@ async function processInlineImage(dict, rawData, doc, resources) {
     // Same trick as XObject CCITTFax/JBIG2/JPX images: flip /Decode instead of
     // decoding the fax-compressed bits. The compressed data, /F, and /DP are
     // passed through byte-for-byte; only /D changes.
-    const numComponents = resolveInlineNumComponents(csRaw, doc, resources);
-    if (numComponents === null) {
+    const csInfo = resolveInlineNumComponents(csRaw, doc, resources);
+    if (csInfo === null) {
       return { error: `inline CCITTFax image with unsupported/unresolvable color space (/${csRaw})` };
     }
+    const { numComponents, defaultRanges } = csInfo;
     const dEntry = dict.D || dict.Decode;
     let pairs;
     if (dEntry) {
@@ -1051,6 +1176,8 @@ async function processInlineImage(dict, rawData, doc, resources) {
       }
       pairs = [];
       for (let i = 0; i < flat.length; i += 2) pairs.push([flat[i], flat[i + 1]]);
+    } else if (defaultRanges) {
+      pairs = defaultRanges.map(([lo, hi]) => [lo, hi]);
     } else {
       pairs = Array.from({ length: numComponents }, () => [0, 1]);
     }
@@ -1152,7 +1279,7 @@ async function processInlineImage(dict, rawData, doc, resources) {
     }
   }
 
-  const inverted = invertRGBASamples(imgData.data);
+  const inverted = imgData.preInverted ? imgData.data : invertRGBASamples(imgData.data);
   const rgbBytes = new Uint8Array(width * height * 3);
   for (let p = 0; p < width * height; p++) {
     rgbBytes[p * 3] = inverted[p * 4]; rgbBytes[p * 3 + 1] = inverted[p * 4 + 1]; rgbBytes[p * 3 + 2] = inverted[p * 4 + 2];
@@ -1325,6 +1452,21 @@ async function invertImageXObjectsInResources(doc, resources, report, pIdx, stat
       if (filter && filter.includes('DCTDecode')) {
         imgData = await rgbaFromJpegBlob(new Blob([obj.contents], { type: 'image/jpeg' }), width, height);
       } else if (!filter || filter.includes('FlateDecode')) {
+        // Stencil masks (/ImageMask true) carry no /ColorSpace at all — each
+        // sample is just 0 or 1 selecting "paint" vs "transparent" per
+        // /Decode (default [0 1]). Checking for this has to happen before
+        // resolveColorSpace(csObj) runs, or csObj is undefined, cs comes
+        // back null, and the mask is reported as "missing color space"
+        // instead of being inverted. Same /Decode-flip trick already used
+        // for CCITTFax/JBIG2/JPX stencil masks below applies here too — we
+        // never need to touch the decompressed bits themselves.
+        const imageMaskObj = obj.dict.get(PDFLib.PDFName.of('ImageMask'));
+        const isImageMask = imageMaskObj && imageMaskObj.toString() === 'true';
+        if (isImageMask) {
+          invertDecodeArrayInPlace(doc, obj, 1, [[0, 1]]);
+          report.stencilMasksInverted = (report.stencilMasksInverted || 0) + 1;
+          continue;
+        }
         const decodedSamples = filter ? PDFLib.decodePDFRawStream(obj).decode() : obj.contents;
         let cs = null;
         try { cs = resolveColorSpace(doc, csObj); } catch (e) { skipReason = `could not resolve color space (${e.message})`; }
@@ -1364,7 +1506,16 @@ async function invertImageXObjectsInResources(doc, resources, report, pIdx, stat
         const imageMaskObj = obj.dict.get(PDFLib.PDFName.of('ImageMask'));
         const isImageMask = imageMaskObj && imageMaskObj.toString() === 'true';
         if (isImageMask) {
-          skipReason = `unsupported filter for stencil mask (filter=${filter})`;
+          // A stencil mask has no color space of its own — each sample is
+          // just 0 or 1, and /Decode (default [0 1]) says which of the two
+          // means "paint with the current fill color" vs "leave
+          // transparent". We never touch the compressed bits themselves;
+          // flipping [0 1] <-> [1 0] inverts which pixels are masked in
+          // exactly the same way a Gray/RGB/CMYK image's /Decode flip does,
+          // without needing to understand CCITTFax/JBIG2/JPX at all.
+          invertDecodeArrayInPlace(doc, obj, 1, [[0, 1]]);
+          report.stencilMasksInverted = (report.stencilMasksInverted || 0) + 1;
+          continue;
         } else {
           let cs = null;
           try { cs = resolveColorSpace(doc, csObj); } catch (e) { /* fall through to skip */ }
@@ -1408,7 +1559,7 @@ async function invertImageXObjectsInResources(doc, resources, report, pIdx, stat
 
       if (skipReason) { report.imagesSkipped.push({ page: pIdx, name: key.toString(), reason: skipReason }); continue; }
 
-      const invertedRGBA = invertRGBASamples(imgData.data);
+      const invertedRGBA = imgData.preInverted ? imgData.data : invertRGBASamples(imgData.data);
       const invertedImgData = new ImageData(new Uint8ClampedArray(invertedRGBA), imgData.width, imgData.height);
       const pngBytes = await canvasToPngBytes(invertedImgData);
       const embedded = await doc.embedPng(pngBytes);
@@ -1452,7 +1603,7 @@ async function invertColoredTilingPatterns(doc, resources, report, pIdx, state) 
 
       const filterObj = obj.dict.get(PDFLib.PDFName.of('Filter'));
       const decoded = filterObj ? PDFLib.decodePDFRawStream(obj).decode() : obj.contents;
-      const { bytes: inverted, inlineInverted, inlineSkipped, colorOpsSkipped } = await invertContentStreamColors(decoded, doc, inlineResources);
+      const { bytes: inverted, inlineInverted, inlineSkipped, colorOpsSkipped, patternColorsInverted } = await invertContentStreamColors(decoded, doc, inlineResources);
 
       obj.contents = inverted;
       obj.dict.delete(PDFLib.PDFName.of('Filter'));
@@ -1461,6 +1612,7 @@ async function invertColoredTilingPatterns(doc, resources, report, pIdx, state) 
 
       report.patternsInverted = (report.patternsInverted || 0) + 1;
       report.imagesInverted += inlineInverted;
+      report.uncoloredPatternColorsInverted = (report.uncoloredPatternColorsInverted || 0) + patternColorsInverted;
       for (const reason of inlineSkipped) report.imagesSkipped.push({ page: pIdx, name: `pattern ${key.toString()} (inline image)`, reason });
       report.colorOpsSkipped = report.colorOpsSkipped || [];
       for (const reason of colorOpsSkipped) report.colorOpsSkipped.push({ page: pIdx, name: `pattern ${key.toString()}`, reason });
@@ -1493,7 +1645,7 @@ async function invertFormXObject(doc, ref, obj, report, pIdx, state, parentResou
 
     const filterObj = obj.dict.get(PDFLib.PDFName.of('Filter'));
     const decoded = filterObj ? PDFLib.decodePDFRawStream(obj).decode() : obj.contents;
-    const { bytes: inverted, inlineInverted, inlineSkipped, colorOpsSkipped } = await invertContentStreamColors(decoded, doc, inlineResources);
+    const { bytes: inverted, inlineInverted, inlineSkipped, colorOpsSkipped, patternColorsInverted } = await invertContentStreamColors(decoded, doc, inlineResources);
 
     obj.contents = inverted;
     obj.dict.delete(PDFLib.PDFName.of('Filter'));
@@ -1502,6 +1654,7 @@ async function invertFormXObject(doc, ref, obj, report, pIdx, state, parentResou
 
     report.formsInverted = (report.formsInverted || 0) + 1;
     report.imagesInverted += inlineInverted;
+    report.uncoloredPatternColorsInverted = (report.uncoloredPatternColorsInverted || 0) + patternColorsInverted;
     for (const reason of inlineSkipped) report.imagesSkipped.push({ page: pIdx, name: `form ${refId} (inline image)`, reason });
     report.colorOpsSkipped = report.colorOpsSkipped || [];
     for (const reason of colorOpsSkipped) report.colorOpsSkipped.push({ page: pIdx, name: `form ${refId}`, reason });
@@ -1563,12 +1716,13 @@ async function invertPdfDocument(pdfBytes, pageIndices, password) {
       const contentsRef = node.Contents();
       if (contentsRef) {
         const decoded = await decodeContentBytes(doc, contentsRef);
-        const { bytes: inverted, inlineInverted, inlineSkipped, colorOpsSkipped } = await invertContentStreamColors(decoded, doc, resources);
+        const { bytes: inverted, inlineInverted, inlineSkipped, colorOpsSkipped, patternColorsInverted } = await invertContentStreamColors(decoded, doc, resources);
         const newStream = doc.context.flateStream(inverted, {});
         const newRef = doc.context.register(newStream);
         node.set(PDFLib.PDFName.Contents, newRef);
         report.pagesInverted++;
         report.imagesInverted += inlineInverted;
+        report.uncoloredPatternColorsInverted = (report.uncoloredPatternColorsInverted || 0) + patternColorsInverted;
         for (const reason of inlineSkipped) report.imagesSkipped.push({ page: pIdx, name: '(inline image)', reason });
         report.colorOpsSkipped = report.colorOpsSkipped || [];
         for (const reason of colorOpsSkipped) report.colorOpsSkipped.push({ page: pIdx, name: '(page content)', reason });
@@ -1724,7 +1878,7 @@ invertBtn.addEventListener('click', async () => {
   statusEl.textContent = 'Inverting colors…';
   try {
     const { bytes, report } = await invertPdfDocument(currentBytes, Array.from(selectedPages).sort((a,b)=>a-b), currentPassword);
-    let msg = `Done. ${report.pagesInverted} page(s) processed, ${report.imagesInverted} image(s) inverted${report.patternsInverted ? `, ${report.patternsInverted} tiling pattern(s) inverted` : ''}${report.formsInverted ? `, ${report.formsInverted} form XObject(s) inverted (headers/footers/watermarks etc.)` : ''}.`;
+    let msg = `Done. ${report.pagesInverted} page(s) processed, ${report.imagesInverted} image(s) inverted${report.stencilMasksInverted ? `, ${report.stencilMasksInverted} stencil mask(s) inverted` : ''}${report.patternsInverted ? `, ${report.patternsInverted} tiling pattern(s) inverted` : ''}${report.uncoloredPatternColorsInverted ? `, ${report.uncoloredPatternColorsInverted} uncolored pattern color(s) inverted` : ''}${report.formsInverted ? `, ${report.formsInverted} form XObject(s) inverted (headers/footers/watermarks etc.)` : ''}.`;
     if (report.assumptions && report.assumptions.length) {
       msg += `\n${report.assumptions.length} item(s) inverted using a best-guess / limited assumption:\n`;
       msg += report.assumptions.map(a => `  page ${a.page + 1}, ${a.name}: ${a.note}`).join('\n');
