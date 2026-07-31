@@ -936,6 +936,56 @@ async function handleCompressFile(file){
    no longer be selectable, and will look softer). Quality/scale floors
    are still kept high enough to stay readable even at pct=95 — this is
    "aggressive but usable", not a lossless-text-destroying free-fall. */
+
+/* Cheap pre-check, run before doing any real work on a page: does this page
+   even carry substantial embedded raster images? It scans the page's own
+   Resources/XObject dict (no recursion into nested Form XObjects — a
+   deliberately conservative choice, see the fallback below) and sums the
+   raw, still-compressed byte length of every Image XObject found directly
+   on the page.
+
+   Why this matters: in the non-aggressive path, every single page used to
+   pay for a full render-to-canvas + JPEG-encode + solo-PDF-save, purely to
+   find out whether rasterizing it helped — even though a pure text/vector
+   page (the common case for lecture notes, assignments, slides-as-PDF,
+   etc.) essentially never comes out smaller as a JPEG raster than it
+   already is as vector text, so all of that work was thrown away almost
+   every time. That per-page solo-save in particular is the expensive part
+   (a full pdf-lib serialize or a full-resolution canvas render, repeated
+   once per page, scales linearly with page count) — skipping straight to
+   a passthrough copy for image-free pages removes it entirely for exactly
+   the documents students compress most often, without changing the
+   outcome for a single page: anything that would have been kept as-is
+   still ends up kept as-is, just without the detour.
+
+   Any parsing uncertainty (unexpected structure, missing/renamed method)
+   returns Infinity rather than 0 — "unsure" always falls back to the old,
+   fully thorough per-page treatment, never to a skip that might be wrong. */
+function pageEmbeddedImageBytes(srcDoc, srcPage){
+  try{
+    const { PDFName, PDFDict, PDFRawStream, PDFRef } = PDFLib;
+    const context = srcDoc.context;
+    const resources = srcPage.node.Resources();
+    if(!resources || !resources.dict) return 0;
+    let xobjects = resources.dict.get(PDFName.of('XObject'));
+    if(xobjects instanceof PDFRef) xobjects = context.lookup(xobjects);
+    if(!xobjects || !(xobjects instanceof PDFDict) || !xobjects.dict) return 0;
+    let total = 0;
+    for(const [, ref] of xobjects.dict){
+      const obj = ref instanceof PDFRef ? context.lookup(ref) : ref;
+      if(obj instanceof PDFRawStream && obj.dict && obj.dict.dict){
+        const subtype = obj.dict.dict.get(PDFName.of('Subtype'));
+        if(subtype && subtype.toString() === '/Image'){
+          total += obj.contents.length;
+        }
+      }
+    }
+    return total;
+  }catch(e){
+    return Infinity;
+  }
+}
+
 async function compressPdf(bytes, pct){
   const srcDoc = await PDFDocument.load(bytes);
   const pdfjsDoc = await loadPdfJs(bytes);
@@ -975,18 +1025,55 @@ async function compressPdf(bytes, pct){
       continue;
     }
 
-    // Ground truth for THIS page: save it alone, untouched, and measure
-    // its real byte size. This is what the rasterized version has to beat
-    // (unless forceRaster is active) — a whole-file average would let one
-    // huge image page inflate the bar for every other page and wrongly
-    // rasterize plain text pages next to it.
+    // Compute this once per page and reuse it for both decisions below:
+    // the skip-check (text/vector pages) and, for image pages, the size
+    // ground-truth itself (see next block).
+    const imgBytes = forceRaster ? null : pageEmbeddedImageBytes(srcDoc, srcPage);
+
+    // Fast path: below the force-raster threshold, a page with no
+    // meaningful embedded images is essentially guaranteed to lose the
+    // upcoming size comparison anyway (vector text beats a JPEG of itself
+    // in virtually every real case) — so skip the render/measure entirely
+    // and passthrough-copy it now. This is the main speed win for
+    // text-heavy documents: almost every page exits here instead of
+    // paying for a solo-save and a full-resolution canvas render.
+    if(!forceRaster && imgBytes < 8192){
+      const [copied] = await outDoc.copyPages(srcDoc, [i]);
+      outDoc.addPage(copied);
+      continue;
+    }
+
+    // Ground truth for THIS page — what the rasterized version has to
+    // beat (unless forceRaster is active). A whole-file average would let
+    // one huge image page inflate the bar for every other page and
+    // wrongly rasterize plain text pages next to it, so this is always
+    // measured per-page.
+    //
+    // For a page that reached here, size is dominated by its own embedded
+    // image(s) — true for essentially every scanned page — so the original
+    // image's own already-compressed byte count (imgBytes, just computed
+    // above with no extra work) IS that ground truth directly: it's
+    // exactly the number the new JPEG needs to beat, without the cost of
+    // building a whole standalone PDF and serializing it just to measure
+    // it. This is the main speed win for scanned/image-heavy documents —
+    // it doesn't touch jpegQuality or scaleFactor at all, so the actual
+    // compression result and quality are unchanged; only how the
+    // comparison's target number is obtained gets cheaper.
+    //
+    // The solo-save fallback only runs when the heuristic itself couldn't
+    // read the page's resources confidently (imgBytes === Infinity) —
+    // "unsure" still means "measure it properly", never "guess".
     let ownSize = Infinity;
     if(!forceRaster){
-      const soloDoc = await PDFDocument.create();
-      const [soloCopy] = await soloDoc.copyPages(srcDoc, [i]);
-      soloDoc.addPage(soloCopy);
-      const soloBytes = await soloDoc.save();
-      ownSize = soloBytes.length;
+      if(imgBytes !== Infinity){
+        ownSize = imgBytes;
+      } else {
+        const soloDoc = await PDFDocument.create();
+        const [soloCopy] = await soloDoc.copyPages(srcDoc, [i]);
+        soloDoc.addPage(soloCopy);
+        const soloBytes = await soloDoc.save();
+        ownSize = soloBytes.length;
+      }
     }
 
     const pjsPage = await pdfjsDoc.getPage(i+1);

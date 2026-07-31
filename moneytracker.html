@@ -589,7 +589,7 @@
   .insight-good { color: var(--accent2); font-weight: 700; }
   .insight-bad { color: var(--danger); font-weight: 700; }
 
-  /* ── RECEIPT ATTACH ─────────────────────────────────────────── */
+  /* ── RECEIPT BUTTON + BADGE ────────────────────────────────── */
   .receipt-btn {
     background: transparent; border: none;
     font-size: 0.92rem; line-height: 1; padding: 5px 6px;
@@ -597,49 +597,52 @@
     opacity: 0.32; transition: var(--trans);
   }
   .receipt-btn:hover { opacity: 0.75; background: var(--surface); }
-  .receipt-btn.has-receipt { opacity: 1; background: var(--surface); color: var(--accent); }
-  .receipt-preview:empty { display: none; }
-  .receipt-preview { margin-top: 8px; }
-  .receipt-thumb-wrap { position: relative; display: inline-block; }
-  .receipt-thumb {
-    width: 60px; height: 60px; object-fit: cover; border-radius: 10px;
-    border: 1px solid var(--card-border); cursor: pointer; display: block;
-  }
-  .receipt-remove {
-    position: absolute; top: -6px; right: -6px;
-    width: 20px; height: 20px; border-radius: 50%;
-    background: var(--danger); color: #fff; border: none;
-    font-size: 0.62rem; cursor: pointer; line-height: 1;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  }
+  .receipt-btn.has-receipt { opacity: 1; background: var(--surface); }
+  .recur-badge { font-size: 0.72rem; margin-left: 5px; opacity: 0.8; }
 
-  /* ── SEARCH ──────────────────────────────────────────────────── */
-  .search-input-box {
-    width: 100%; background: var(--surface);
-    border: 1px solid var(--card-border); border-radius: 12px;
-    padding: 10px 14px; margin-bottom: 12px;
-    font-family: var(--font); font-size: 0.85rem; color: var(--text-main);
-    outline: none; transition: var(--trans);
+  /* ── RECURRING SETTINGS ────────────────────────────────────── */
+  .recur-row { padding: 9px 0; border-bottom: 1px solid var(--card-border); }
+  .recur-row:last-child { border-bottom: none; }
+  .recur-check { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: var(--text-main); cursor: pointer; }
+  .recur-check input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; flex-shrink: 0; }
+  .recur-fields { display: flex; gap: 8px; margin-top: 8px; padding-left: 24px; transition: var(--trans); }
+  .recur-fields.disabled { opacity: 0.4; pointer-events: none; }
+  .recur-fields input {
+    background: var(--surface); border: 1px solid var(--card-border); border-radius: 8px;
+    padding: 6px 9px; font-size: 0.78rem; color: var(--text-main); font-family: var(--font); outline: none;
   }
-  .search-input-box:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
-  .search-hint { text-align: center; color: var(--text-soft); font-size: 0.8rem; padding: 18px 10px; }
-  .search-result-row {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px 12px; background: var(--card-bg);
-    border: 1px solid var(--card-border); border-radius: 12px;
-    margin-bottom: 6px; cursor: pointer; transition: var(--trans);
+  .recur-fields input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+  .recur-fields input.recur-amount { flex: 1; min-width: 0; }
+  .recur-fields input.recur-day { flex: 0 0 62px; text-align: center; }
+
+  /* ── SEARCH ────────────────────────────────────────────────── */
+  .search-input {
+    width: 100%; background: var(--surface); border: 1px solid var(--card-border);
+    border-radius: 10px; padding: 10px 14px; font-size: 0.85rem; color: var(--text-main);
+    font-family: var(--font); outline: none; margin-bottom: 12px; transition: var(--trans);
   }
-  .search-result-row:hover { border-color: var(--accent); background: var(--surface); transform: translateX(2px); }
-  .sr-icon { font-size: 1.05rem; flex-shrink: 0; }
-  .sr-main { flex: 1; min-width: 0; }
-  .sr-label-line { font-size: 0.82rem; font-weight: 600; color: var(--text-main); display: flex; justify-content: space-between; gap: 8px; }
-  .sr-amt { font-weight: 700; flex-shrink: 0; }
-  .sr-amt.exp { color: var(--danger); }
-  .sr-amt.inc { color: var(--accent2); }
-  .sr-note { font-size: 0.74rem; color: var(--text-soft); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .sr-date { font-size: 0.68rem; color: var(--text-soft); margin-top: 2px; }
-  .sr-thumb { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; border: 1px solid var(--card-border); flex-shrink: 0; }
+  .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+  .search-result {
+    background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px;
+    padding: 10px 13px; margin-bottom: 8px; cursor: pointer; transition: var(--trans);
+  }
+  .search-result:hover { border-color: var(--accent); }
+  .search-result-date { font-size: 0.72rem; font-weight: 700; color: var(--text-soft); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .search-cat-line { display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--text-main); padding: 2px 0; }
+  .search-note { font-size: 0.76rem; color: var(--text-soft); padding: 2px 0 4px; font-style: italic; }
+
+  /* ── RECEIPT VIEWER ────────────────────────────────────────── */
+  .receipt-body { text-align: center; }
+  .receipt-body img { max-width: 100%; max-height: 60vh; border-radius: 12px; border: 1px solid var(--card-border); }
+  .receipt-actions { display: flex; gap: 10px; margin-top: 14px; }
+  .btn-secondary, .btn-danger-outline {
+    flex: 1; padding: 10px; border-radius: 10px; font-family: var(--font); font-size: 0.8rem;
+    font-weight: 600; cursor: pointer; transition: var(--trans);
+  }
+  .btn-secondary { background: var(--surface); border: 1px solid var(--card-border); color: var(--text-main); }
+  .btn-secondary:hover { border-color: var(--accent); }
+  .btn-danger-outline { background: transparent; border: 1px solid var(--danger); color: var(--danger); }
+  .btn-danger-outline:hover { background: rgba(220,38,38,0.1); }
 </style>
 </head>
 <body>
@@ -758,8 +761,8 @@
     </div>
     <div class="modal-tabs">
       <button class="modal-tab active" data-tab="categories" onclick="showSettingsTab('categories')">Categories</button>
-      <button class="modal-tab" data-tab="recurring" onclick="showSettingsTab('recurring')">Recurring</button>
       <button class="modal-tab" data-tab="budgets" onclick="showSettingsTab('budgets')">Budgets</button>
+      <button class="modal-tab" data-tab="recurring" onclick="showSettingsTab('recurring')">Recurring</button>
       <button class="modal-tab" data-tab="goal" onclick="showSettingsTab('goal')">Goal</button>
     </div>
     <div class="modal-body">
@@ -779,13 +782,13 @@
           <button class="cat-add-btn" onclick="addCategory('income')" title="Add">➕</button>
         </div>
       </div>
-      <div class="settings-pane" id="pane-recurring">
-        <div class="settings-sub">🔁 Auto-fill every month — great for Rent, Mobile bill, etc. Set Amount to 0 to turn off.</div>
-        <div id="recurringList"></div>
-      </div>
       <div class="settings-pane" id="pane-budgets">
         <div class="settings-sub">Set a monthly limit per category (৳0 = no limit)</div>
         <div id="budgetList"></div>
+      </div>
+      <div class="settings-pane" id="pane-recurring">
+        <div class="settings-sub">Auto-fill a fixed amount every month (e.g. Rent, Mobile bill) — applied the moment you open that month</div>
+        <div id="recurringList"></div>
       </div>
       <div class="settings-pane" id="pane-goal">
         <div class="settings-sub">Set a savings target — progress tracks your all-time net balance across every recorded month</div>
@@ -802,28 +805,30 @@
       <h3>🔍 Search</h3>
       <button class="modal-close" onclick="closeSearch()">✕</button>
     </div>
-    <div class="modal-body">
-      <input type="text" id="searchInput" class="search-input-box" placeholder="Search notes, categories…" oninput="performSearch()">
-      <div id="searchResults"><div class="search-hint">Type to search your notes and transactions…</div></div>
+    <div class="modal-body" style="padding-top:12px">
+      <input type="text" id="searchInput" class="search-input" placeholder="Search notes or category names…" oninput="onSearchInput()">
+      <div id="searchResults"></div>
     </div>
   </div>
 </div>
 
 <div class="modal-overlay" id="receiptViewerModal">
-  <div class="modal-box" style="max-width:420px">
+  <div class="modal-box receipt-box">
     <div class="modal-header">
-      <h3>🧾 Receipt</h3>
+      <h3 id="receiptViewerTitle">Receipt</h3>
       <button class="modal-close" onclick="closeReceiptViewer()">✕</button>
     </div>
-    <div class="modal-body" style="text-align:center">
-      <img id="receiptViewerImg" style="max-width:100%;border-radius:12px;margin-bottom:12px" alt="Receipt">
-      <div style="display:flex;gap:8px">
-        <button class="btn-outline" style="margin-bottom:0" onclick="replaceReceiptFromViewer()">🔄 Replace</button>
-        <button class="btn-outline" style="margin-bottom:0;background:rgba(220,38,38,0.06);color:var(--danger);border-color:var(--expense-border)" onclick="removeReceiptFromViewer()">🗑 Remove</button>
+    <div class="modal-body receipt-body">
+      <img id="receiptViewerImg" src="" alt="Receipt">
+      <div class="receipt-actions">
+        <button class="btn-secondary" onclick="replaceReceipt()">🔄 Replace</button>
+        <button class="btn-danger-outline" onclick="removeReceipt()">🗑 Remove</button>
       </div>
     </div>
   </div>
 </div>
+
+<input type="file" id="receiptFileInput" accept="image/*" style="display:none">
 
 <div class="bottom-nav">
   <button class="bnav-btn active" id="bnav-day" onclick="switchView('day')"><span class="icon">📝</span>Daily</button>
@@ -938,8 +943,9 @@ async function loadSettingsRemote(){
 }
 
 let currentDay=1, navOffset=0;
+let currentDayReceipts={}; // {categoryId: base64 dataURL} for whichever day is currently open
+let pendingReceiptCategoryId=null;
 let curYear=new Date().getFullYear(), curMonth=new Date().getMonth();
-let currentReceipts={}; // receipt-photo data URLs for the currently loaded day, keyed by field id
 
 function isLeap(y){return (y%4===0&&y%100!==0)||y%400===0;}
 function daysInMonth(y,m){return m===1&&isLeap(y)?29:DAYS_IN_MONTH[m];}
@@ -1026,10 +1032,36 @@ async function onMonthChange(){
   if(document.getElementById('yearlySection').classList.contains('active')) renderYearly();
 }
 
+// ── RECURRING EXPENSES ────────────────────────────────────────
+// Fills a recurring category's amount into its configured day for the given
+// month, once — the moment that month is opened (not necessarily on the
+// literal calendar date). A per-month flag stops it from re-applying after
+// someone deliberately clears the value.
+async function applyRecurringForMonth(y,m){
+  const flagKey=`mt_recurring_applied_${y}_${m}`;
+  let applied=[];
+  try{ applied=JSON.parse(localStorage.getItem(flagKey))||[]; }catch{ applied=[]; }
+  const newlyFilled=[];
+  for(const f of EXPENSE_FIELDS){
+    if(!f.recurring||!f.recurring.enabled) continue;
+    if(applied.includes(f.id)) continue;
+    const day=Math.min(Math.max(1,f.recurring.day||1), daysInMonth(y,m));
+    const data=getDay(y,m,day);
+    if(!data[f.id]){
+      data[f.id]=f.recurring.amount||0;
+      await setDay(y,m,day,data);
+      newlyFilled.push(f.label);
+    }
+    applied.push(f.id);
+  }
+  if(applied.length) localStorage.setItem(flagKey, JSON.stringify(applied));
+  if(newlyFilled.length) showToast(`🔁 Auto-filled: ${newlyFilled.join(', ')}`);
+}
+
 // ─── DYNAMIC FIELD ROWS (built from EXPENSE_FIELDS / INCOME_FIELDS) ──────────
 function fieldRowHTML(f,isIncome){
-  const recurBadge=f.recurringAmount>0?' <span title="Recurring" style="opacity:.6;font-size:.7rem">🔁</span>':'';
-  return `<div class="field-row"><span class="field-icon">${f.icon}</span><span class="field-label">${escHtml(f.label)}${recurBadge}</span><input class="field-input${isIncome?' income-inp':''}" type="text" inputmode="decimal" autocomplete="off" placeholder="0" id="f_${f.id}"><button class="receipt-btn" type="button" onclick="triggerReceipt('${f.id}')" id="rbtn_${f.id}" title="Attach receipt photo">📎</button><button class="note-btn" type="button" onclick="toggleNote('${f.id}')" id="nbtn_${f.id}" title="Add note">📝</button><input type="file" accept="image/*" style="display:none" id="rfile_${f.id}" onchange="onReceiptFileChosen('${f.id}',this.files[0])"></div><div class="note-row" id="noterow_${f.id}"><input class="note-input" type="text" placeholder="Note (optional)" id="note_${f.id}" maxlength="200"><div class="receipt-preview" id="rprev_${f.id}"></div></div>`;
+  const recurBadge=(!isIncome&&f.recurring&&f.recurring.enabled)?'<span class="recur-badge" title="Recurring every month">🔁</span>':'';
+  return `<div class="field-row"><span class="field-icon">${f.icon}</span><span class="field-label">${escHtml(f.label)}${recurBadge}</span><input class="field-input${isIncome?' income-inp':''}" type="text" inputmode="decimal" placeholder="0" id="f_${f.id}" autocomplete="off"><button class="note-btn" type="button" onclick="toggleNote('${f.id}')" id="nbtn_${f.id}" title="Add note">📝</button><button class="receipt-btn" type="button" onclick="onReceiptBtnClick('${f.id}')" id="rbtn_${f.id}" title="Attach receipt">📷</button></div><div class="note-row" id="noterow_${f.id}"><input class="note-input" type="text" placeholder="Note (optional)" id="note_${f.id}" maxlength="200"></div>`;
 }
 
 function renderFieldRows(){
@@ -1045,13 +1077,21 @@ function attachFieldListeners(){
     const el=document.getElementById('f_'+f.id);
     if(el){
       el.addEventListener('input',()=>{
-        el.value=el.value.replace(/[^0-9+\-*/.() ]/g,'');
-        if(el.value!==''&&!/[+\-*/]/.test(el.value.replace(/^-/,''))&&parseFloat(el.value)<0) el.value=0;
+        const cleaned=el.value.replace(/[^0-9+\-*/.\s]/g,'');
+        if(cleaned!==el.value) el.value=cleaned;
+        // Only clamp negatives for a plain number — mid-expression text like "100-" isn't one yet
+        if(el.value!==''&&/^-?\d*\.?\d*$/.test(el.value)&&parseFloat(el.value)<0) el.value=0;
         updateTotals();
         scheduleAutoSave();
       });
-      el.addEventListener('blur',()=>resolveAmountExpr(el));
-      el.addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ e.preventDefault(); el.blur(); } });
+      el.addEventListener('blur',()=>{
+        const evaluated=evalQuickMath(el.value);
+        if(evaluated!==null){
+          el.value=evaluated;
+          updateTotals();
+          scheduleAutoSave();
+        }
+      });
     }
     const noteEl=document.getElementById('note_'+f.id);
     if(noteEl) noteEl.addEventListener('input',()=>{
@@ -1061,25 +1101,18 @@ function attachFieldListeners(){
   });
 }
 
-// ─── QUICK CALCULATOR INPUT (type "100+50" in an amount field) ──────────────
-function evalAmountExpr(str){
-  const cleaned=String(str==null?'':str).replace(/,/g,'').trim();
-  if(!cleaned) return null;
-  if(!/^[0-9+\-*/().\s]+$/.test(cleaned)) return null;
-  if(!/[+\-*/]/.test(cleaned.replace(/^-/,''))) return null; // needs an operator to be worth evaluating
+// Quick calculator — lets someone type "100+50" straight into an amount field.
+// Only ever evaluates a whitelisted arithmetic character set; anything else is left alone.
+function evalQuickMath(str){
+  const s=String(str).trim();
+  if(!s) return null;
+  if(!/^[0-9+\-*/.\s]+$/.test(s)) return null;
+  if(!/[+\-*/]/.test(s)) return null; // already a plain number, nothing to compute
   try{
-    const result=Function('"use strict";return ('+cleaned+')')();
-    if(typeof result!=='number'||!isFinite(result)) return null;
-    return Math.max(0,Math.round(result*100)/100);
-  }catch{ return null; }
-}
-function resolveAmountExpr(el){
-  const result=evalAmountExpr(el.value);
-  if(result!==null){
-    el.value=result;
-    updateTotals();
-    scheduleAutoSave();
-  }
+    const result=Function('"use strict";return ('+s+')')();
+    if(typeof result==='number'&&isFinite(result)) return Math.round(Math.max(0,result)*100)/100;
+  }catch{}
+  return null;
 }
 
 // ─── CATEGORY MANAGEMENT (add / edit / delete) ───────────────────────────────
@@ -1148,63 +1181,34 @@ function budgetRowHTML(f){
   return `<div class="cat-row"><span class="field-icon">${f.icon}</span><span class="field-label">${escHtml(f.label)}</span><input class="field-input" type="number" min="0" placeholder="0" value="${val}" onchange="updateCategoryField('${f.id}','budget',this.value)"></div>`;
 }
 function recurringRowHTML(f){
-  return `<div class="cat-row"><span class="field-icon">${f.icon}</span><span class="field-label" style="flex:1;min-width:60px">${escHtml(f.label)}</span><input class="field-input" type="number" min="0" placeholder="Amount" style="width:76px" value="${f.recurringAmount||''}" onchange="updateRecurringField('${f.id}','amount',this.value)"><input class="field-input" type="number" min="1" max="31" placeholder="Day" title="Day of month" style="width:50px" value="${f.recurringDay||1}" onchange="updateRecurringField('${f.id}','day',this.value)"></div>`;
+  const r=f.recurring||{enabled:false,amount:0,day:1};
+  return `<div class="recur-row">
+    <label class="recur-check"><input type="checkbox" ${r.enabled?'checked':''} onchange="updateRecurring('${f.id}','enabled',this.checked)"><span>${f.icon} ${escHtml(f.label)}</span></label>
+    <div class="recur-fields${r.enabled?'':' disabled'}" id="recurfields_${f.id}">
+      <input class="recur-amount" type="number" min="0" placeholder="Amount" value="${r.amount||''}" onchange="updateRecurring('${f.id}','amount',this.value)">
+      <input class="recur-day" type="number" min="1" max="28" placeholder="Day" value="${r.day||1}" onchange="updateRecurring('${f.id}','day',this.value)">
+    </div>
+  </div>`;
+}
+function updateRecurring(id,key,value){
+  const f=EXPENSE_FIELDS.find(x=>x.id===id);
+  if(!f) return;
+  if(!f.recurring) f.recurring={enabled:false,amount:0,day:1};
+  if(key==='enabled') f.recurring.enabled=!!value;
+  else if(key==='amount') f.recurring.amount=Math.max(0,parseFloat(value)||0);
+  else if(key==='day') f.recurring.day=Math.min(28,Math.max(1,parseInt(value)||1));
+  saveSettingsRemote();
+  const fieldsEl=document.getElementById('recurfields_'+id);
+  if(fieldsEl) fieldsEl.classList.toggle('disabled', !f.recurring.enabled);
+  refreshAfterCategoryChange(); // rebuilds day-view rows so the 🔁 badge stays in sync
 }
 function renderSettingsLists(){
-  const ce=document.getElementById('catListExpense'), ci=document.getElementById('catListIncome'), bl=document.getElementById('budgetList'), gi=document.getElementById('goalInput'), rl=document.getElementById('recurringList');
+  const ce=document.getElementById('catListExpense'), ci=document.getElementById('catListIncome'), bl=document.getElementById('budgetList'), rl=document.getElementById('recurringList'), gi=document.getElementById('goalInput');
   if(ce) ce.innerHTML=EXPENSE_FIELDS.map(catRowHTML).join('');
   if(ci) ci.innerHTML=INCOME_FIELDS.map(catRowHTML).join('');
   if(bl) bl.innerHTML=EXPENSE_FIELDS.map(budgetRowHTML).join('')||'<div style="color:var(--muted);text-align:center;padding:14px;font-size:0.82rem">No expense categories yet</div>';
+  if(rl) rl.innerHTML=EXPENSE_FIELDS.map(recurringRowHTML).join('')||'<div style="color:var(--muted);text-align:center;padding:14px;font-size:0.82rem">No expense categories yet</div>';
   if(gi) gi.value=SAVINGS_GOAL||'';
-  if(rl) rl.innerHTML=ALL_FIELDS.map(recurringRowHTML).join('')||'<div style="color:var(--muted);text-align:center;padding:14px;font-size:0.82rem">No categories yet</div>';
-}
-async function updateRecurringField(id,key,value){
-  const f=EXPENSE_FIELDS.find(x=>x.id===id)||INCOME_FIELDS.find(x=>x.id===id);
-  if(!f) return;
-  if(key==='amount'){
-    f.recurringAmount=Math.max(0,parseFloat(value)||0);
-  }else if(key==='day'){
-    f.recurringDay=Math.min(31,Math.max(1,parseInt(value)||1));
-  }
-  saveSettingsRemote();
-  renderFieldRows(); // refresh the 🔁 badge in the day view
-  loadDay(currentDay);
-  await applyRecurringForMonth(curYear,curMonth);
-  showToast('Recurring settings saved ✓');
-}
-
-// ─── RECURRING EXPENSES (auto-fill Rent, Mobile bill, etc. each month) ───────
-function loadRecurringApplied(){
-  try{ return JSON.parse(localStorage.getItem('mt_recurring_applied_v1'))||{}; }catch{ return {}; }
-}
-function saveRecurringApplied(obj){ localStorage.setItem('mt_recurring_applied_v1', JSON.stringify(obj)); }
-
-// For the given month, fills in any recurring category that hasn't been applied yet
-// (only into a day that doesn't already have a value for it, so it never overwrites
-// something the user already entered/edited/zeroed-out that month).
-async function applyRecurringForMonth(y,m){
-  const monthKey=`${y}_${m}`;
-  const applied=loadRecurringApplied();
-  const done=new Set(applied[monthKey]||[]);
-  let touchedDay=null;
-  for(const f of ALL_FIELDS){
-    if(!(f.recurringAmount>0)) continue;
-    if(done.has(f.id)) continue;
-    const day=Math.min(f.recurringDay||1, daysInMonth(y,m));
-    const data=getDay(y,m,day);
-    if(!data[f.id]){
-      data[f.id]=f.recurringAmount;
-      await setDay(y,m,day,data);
-      touchedDay=day;
-    }
-    done.add(f.id);
-  }
-  applied[monthKey]=Array.from(done);
-  saveRecurringApplied(applied);
-  if(touchedDay!==null&&y===curYear&&m===curMonth){
-    renderDayBtns();
-    if(touchedDay===currentDay) loadDay(currentDay);
-  }
 }
 function openSettings(tab){
   renderSettingsLists();
@@ -1223,26 +1227,95 @@ function saveGoal(){
   if(document.getElementById('summarySection').classList.contains('active')) renderSummary();
 }
 
+// ─── SEARCH (notes + categories, across every cached month) ──────────────────
+function openSearch(){
+  document.getElementById('searchModal').classList.add('open');
+  const input=document.getElementById('searchInput');
+  input.value='';
+  renderSearchResults('');
+  setTimeout(()=>input.focus(),100);
+}
+function closeSearch(){ document.getElementById('searchModal').classList.remove('open'); }
+
+let searchDebounce=null;
+function onSearchInput(){
+  clearTimeout(searchDebounce);
+  const q=document.getElementById('searchInput').value;
+  searchDebounce=setTimeout(()=>renderSearchResults(q),200);
+}
+
+function performSearch(query){
+  const q=query.trim().toLowerCase();
+  if(!q) return [];
+  const results=[];
+  for(let i=0;i<localStorage.length;i++){
+    const key=localStorage.key(i);
+    const m=key&&key.match(/^mt_(\d{4})_(\d{1,2})_(\d{1,2})$/);
+    if(!m) continue;
+    const y=parseInt(m[1]), mo=parseInt(m[2])-1, d=parseInt(m[3]);
+    let data;
+    try{ data=JSON.parse(localStorage.getItem(key)); }catch{ continue; }
+    if(!data||typeof data!=='object') continue;
+    const matches=[];
+    ALL_FIELDS.forEach(f=>{
+      const amt=data[f.id]||0;
+      const note=data['note_'+f.id]||'';
+      const labelMatch=amt>0&&f.label.toLowerCase().includes(q);
+      const noteMatch=note.toLowerCase().includes(q);
+      if(labelMatch||noteMatch) matches.push({f,amt,note,noteMatch});
+    });
+    if(matches.length) results.push({y,mo,d,matches});
+  }
+  results.sort((a,b)=>new Date(b.y,b.mo,b.d)-new Date(a.y,a.mo,a.d));
+  return results;
+}
+
+function renderSearchResults(query){
+  const container=document.getElementById('searchResults');
+  const q=query.trim();
+  if(!q){ container.innerHTML='<div style="color:var(--muted);text-align:center;padding:16px;font-size:0.82rem">Type to search notes and category names — this looks across every month you\'ve opened before</div>'; return; }
+  const results=performSearch(q);
+  if(!results.length){ container.innerHTML='<div style="color:var(--muted);text-align:center;padding:16px;font-size:0.82rem">No matches found</div>'; return; }
+  container.innerHTML=results.slice(0,50).map(r=>{
+    const dateStr=new Date(r.y,r.mo,r.d).toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'});
+    const lines=r.matches.map(mm=>{
+      const noteSnippet=mm.noteMatch?`<div class="search-note">📝 ${escHtml(mm.note)}</div>`:'';
+      return `<div class="search-cat-line"><span>${mm.f.icon} ${escHtml(mm.f.label)}</span><span>${fmt(mm.amt)}</span></div>${noteSnippet}`;
+    }).join('');
+    return `<div class="search-result" onclick="goToSearchResult(${r.y},${r.mo},${r.d})">
+      <div class="search-result-date">${dateStr}</div>
+      ${lines}
+    </div>`;
+  }).join('');
+}
+
+function goToSearchResult(y,mo,d){
+  curYear=y; curMonth=mo;
+  initSelectors(); // regenerates year/month dropdowns so an older year is selectable too
+  closeSearch();
+  switchView('day');
+  selectDay(d);
+}
+
 // ─── DAY LOGIC ───────────────────────────────────────────────────────────────
 function loadDay(d){
   const data=getDay(curYear,curMonth,d);
-  currentReceipts={};
+  currentDayReceipts={};
   ALL_FIELDS.forEach(f=>{
     const el=document.getElementById('f_'+f.id);
     if(el) el.value=data[f.id]||'';
     const noteEl=document.getElementById('note_'+f.id);
-    const noteVal=data['note_'+f.id]||'';
-    if(noteEl) noteEl.value=noteVal;
-    currentReceipts[f.id]=data['receipt_'+f.id]||null;
-    renderReceiptPreview(f.id);
-    const hasReceipt=!!currentReceipts[f.id];
-    const row=document.getElementById('noterow_'+f.id);
-    const frow=document.getElementById('nbtn_'+f.id)?.closest('.field-row');
-    const showRow=!!noteVal||hasReceipt;
-    if(row) row.classList.toggle('open', showRow);
-    if(frow) frow.classList.toggle('note-open', showRow);
-    updateNoteIndicator(f.id, !!noteVal);
-    updateReceiptIndicator(f.id, hasReceipt);
+    if(noteEl){
+      const noteVal=data['note_'+f.id]||'';
+      noteEl.value=noteVal;
+      const row=document.getElementById('noterow_'+f.id);
+      const frow=document.getElementById('nbtn_'+f.id)?.closest('.field-row');
+      if(row) row.classList.toggle('open', !!noteVal);
+      if(frow) frow.classList.toggle('note-open', !!noteVal);
+      updateNoteIndicator(f.id, !!noteVal);
+    }
+    if(data['receipt_'+f.id]) currentDayReceipts[f.id]=data['receipt_'+f.id];
+    updateReceiptIndicator(f.id, !!data['receipt_'+f.id]);
   });
   updateTotals();
 }
@@ -1262,107 +1335,83 @@ function updateNoteIndicator(id,hasNote){
   document.getElementById('nbtn_'+id)?.classList.toggle('has-note', hasNote);
 }
 
-// ── RECEIPT PHOTOS (per item, Day section only) ──────────────
+// ── RECEIPTS (per item, Day section only) ────────────────────
 function updateReceiptIndicator(id,hasReceipt){
   document.getElementById('rbtn_'+id)?.classList.toggle('has-receipt', hasReceipt);
 }
 
-function renderReceiptPreview(id){
-  const c=document.getElementById('rprev_'+id);
-  if(!c) return;
-  const url=currentReceipts[id];
-  c.innerHTML=url?`<div class="receipt-thumb-wrap"><img src="${url}" class="receipt-thumb" onclick="openReceiptViewer('${id}')" alt="Receipt"><button type="button" class="receipt-remove" onclick="event.stopPropagation();removeReceipt('${id}')" title="Remove">✕</button></div>`:'';
+function onReceiptBtnClick(id){
+  if(currentDayReceipts[id]){
+    openReceiptViewer(id);
+  } else {
+    pendingReceiptCategoryId=id;
+    document.getElementById('receiptFileInput').click();
+  }
 }
 
-function triggerReceipt(id){
-  if(currentReceipts[id]){ openReceiptViewer(id); return; }
-  document.getElementById('rfile_'+id)?.click();
-}
-
-// Resizes + compresses the chosen photo client-side (canvas → JPEG) so it stays
-// small enough to fit comfortably in a Firestore document alongside everything else.
-function compressImageFile(file){
+// Resize + compress to a JPEG data URL so a photo doesn't blow past localStorage/Firestore limits
+function compressImageFile(file,maxDim=800,quality=0.6){
   return new Promise((resolve,reject)=>{
-    if(!file||!file.type||!file.type.startsWith('image/')){ reject(new Error('Not an image')); return; }
     const reader=new FileReader();
-    reader.onerror=()=>reject(new Error('Read failed'));
-    reader.onload=()=>{
+    reader.onload=e=>{
       const img=new Image();
-      img.onerror=()=>reject(new Error('Image load failed'));
       img.onload=()=>{
-        const maxDim=700;
-        let{width,height}=img;
-        if(width>height&&width>maxDim){ height=Math.round(height*maxDim/width); width=maxDim; }
-        else if(height>=width&&height>maxDim){ width=Math.round(width*maxDim/height); height=maxDim; }
+        let w=img.width, h=img.height;
+        if(w>h){ if(w>maxDim){ h=Math.round(h*maxDim/w); w=maxDim; } }
+        else { if(h>maxDim){ w=Math.round(w*maxDim/h); h=maxDim; } }
         const canvas=document.createElement('canvas');
-        canvas.width=width; canvas.height=height;
-        canvas.getContext('2d').drawImage(img,0,0,width,height);
-        let quality=0.55, dataUrl=canvas.toDataURL('image/jpeg',quality);
-        while(dataUrl.length>150000&&quality>0.25){ quality-=0.08; dataUrl=canvas.toDataURL('image/jpeg',quality); }
-        resolve(dataUrl);
+        canvas.width=w; canvas.height=h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        resolve(canvas.toDataURL('image/jpeg',quality));
       };
-      img.src=reader.result;
+      img.onerror=()=>reject(new Error('Could not read image'));
+      img.src=e.target.result;
     };
+    reader.onerror=()=>reject(new Error('Could not read file'));
     reader.readAsDataURL(file);
   });
 }
 
-async function onReceiptFileChosen(id,file){
-  if(!file) return;
-  const fileInput=document.getElementById('rfile_'+id);
-  showToast('Processing photo…');
+document.getElementById('receiptFileInput').addEventListener('change',async(e)=>{
+  const id=pendingReceiptCategoryId;
+  const file=e.target.files&&e.target.files[0];
+  e.target.value='';
+  if(!id||!file) return;
+  if(!file.type.startsWith('image/')){ showToast('Please choose an image file','error'); return; }
   try{
+    showToast('Processing photo…');
     const dataUrl=await compressImageFile(file);
-    currentReceipts[id]=dataUrl;
-    renderReceiptPreview(id);
-    const row=document.getElementById('noterow_'+id);
-    const frow=document.getElementById('nbtn_'+id)?.closest('.field-row');
-    if(row) row.classList.add('open');
-    if(frow) frow.classList.add('note-open');
+    currentDayReceipts[id]=dataUrl;
     updateReceiptIndicator(id,true);
     scheduleAutoSave();
     showToast('Receipt attached ✓');
-  }catch(e){
-    console.error('Receipt processing failed:',e);
-    showToast('Could not use that photo','error');
-  }finally{
-    if(fileInput) fileInput.value='';
+  }catch(err){
+    console.error(err);
+    showToast('Could not process that photo','error');
   }
-}
+});
 
-function removeReceipt(id){
-  delete currentReceipts[id];
-  renderReceiptPreview(id);
-  updateReceiptIndicator(id,false);
-  const noteEl=document.getElementById('note_'+id);
-  const hasNote=noteEl&&noteEl.value.trim().length>0;
-  if(!hasNote){
-    const row=document.getElementById('noterow_'+id);
-    const frow=document.getElementById('nbtn_'+id)?.closest('.field-row');
-    if(row) row.classList.remove('open');
-    if(frow) frow.classList.remove('note-open');
-  }
-  scheduleAutoSave();
-  showToast('Receipt removed');
-}
-
+let viewerReceiptId=null;
 function openReceiptViewer(id){
-  const url=currentReceipts[id];
-  if(!url) return;
-  document.getElementById('receiptViewerImg').src=url;
-  window._receiptViewerId=id;
+  viewerReceiptId=id;
+  const f=ALL_FIELDS.find(x=>x.id===id);
+  document.getElementById('receiptViewerTitle').textContent=(f?f.icon+' '+f.label:'Receipt');
+  document.getElementById('receiptViewerImg').src=currentDayReceipts[id]||'';
   document.getElementById('receiptViewerModal').classList.add('open');
 }
 function closeReceiptViewer(){ document.getElementById('receiptViewerModal').classList.remove('open'); }
-function replaceReceiptFromViewer(){
-  const id=window._receiptViewerId;
+function replaceReceipt(){
+  pendingReceiptCategoryId=viewerReceiptId;
   closeReceiptViewer();
-  document.getElementById('rfile_'+id)?.click();
+  document.getElementById('receiptFileInput').click();
 }
-function removeReceiptFromViewer(){
-  const id=window._receiptViewerId;
+function removeReceipt(){
+  if(!viewerReceiptId) return;
+  delete currentDayReceipts[viewerReceiptId];
+  updateReceiptIndicator(viewerReceiptId,false);
+  scheduleAutoSave();
   closeReceiptViewer();
-  if(id) removeReceipt(id);
+  showToast('Receipt removed');
 }
 
 function getVal(id){return parseFloat(document.getElementById(id)?.value)||0;}
@@ -1386,18 +1435,12 @@ function updateTotals(){
 function collectDayData(){
   const data={};
   ALL_FIELDS.forEach(f=>{
-    const el=document.getElementById('f_'+f.id);
-    if(el){
-      const resolved=evalAmountExpr(el.value); // in case a "100+50"-style entry wasn't blurred yet
-      if(resolved!==null) el.value=resolved;
-    }
-    data[f.id]=parseFloat(el?.value)||0;
+    data[f.id]=parseFloat(document.getElementById('f_'+f.id)?.value)||0;
     const noteEl=document.getElementById('note_'+f.id);
     const noteVal=noteEl?noteEl.value.trim():'';
     if(noteVal) data['note_'+f.id]=noteVal;
-    if(currentReceipts[f.id]) data['receipt_'+f.id]=currentReceipts[f.id];
+    if(currentDayReceipts[f.id]) data['receipt_'+f.id]=currentDayReceipts[f.id];
   });
-  updateTotals();
   return data;
 }
 
@@ -1464,82 +1507,6 @@ function switchView(view){
   });
   if(view==='summary') renderSummary();
   if(view==='yearly') renderYearly();
-}
-
-// ─── SEARCH (notes + transactions across every saved day) ───────────────────
-function openSearch(){
-  document.getElementById('searchModal').classList.add('open');
-  const input=document.getElementById('searchInput');
-  input.value='';
-  document.getElementById('searchResults').innerHTML='<div class="search-hint">Type to search your notes and transactions…</div>';
-  setTimeout(()=>input.focus(),50);
-}
-function closeSearch(){ document.getElementById('searchModal').classList.remove('open'); }
-
-function searchAllTransactions(query){
-  const q=query.trim().toLowerCase();
-  if(!q) return [];
-  const results=[];
-  for(let i=0;i<localStorage.length;i++){
-    const key=localStorage.key(i);
-    const m=key&&key.match(/^mt_(\d+)_(\d+)_(\d+)$/);
-    if(!m) continue;
-    const y=+m[1], mo=+m[2]-1, d=+m[3];
-    let data;
-    try{ data=JSON.parse(localStorage.getItem(key)); }catch{ continue; }
-    if(!data) continue;
-    ALL_FIELDS.forEach(f=>{
-      const amt=data[f.id]||0;
-      const note=data['note_'+f.id]||'';
-      if(amt<=0&&!note) return;
-      const haystack=(f.label+' '+note).toLowerCase();
-      if(haystack.includes(q)){
-        results.push({y,mo,d,field:f,amount:amt,note,receipt:data['receipt_'+f.id]||null,isIncome:INCOME_FIELDS.some(x=>x.id===f.id)});
-      }
-    });
-  }
-  results.sort((a,b)=>(b.y-a.y)||(b.mo-a.mo)||(b.d-a.d));
-  return results.slice(0,150);
-}
-
-function performSearch(){
-  const q=document.getElementById('searchInput').value;
-  const box=document.getElementById('searchResults');
-  if(!q.trim()){
-    box.innerHTML='<div class="search-hint">Type to search your notes and transactions…</div>';
-    return;
-  }
-  const results=searchAllTransactions(q);
-  if(!results.length){
-    box.innerHTML='<div class="search-hint">No matches found</div>';
-    return;
-  }
-  box.innerHTML=results.map(r=>{
-    const dateStr=new Date(r.y,r.mo,r.d).toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'});
-    const amtClass=r.isIncome?'inc':'exp';
-    const thumb=r.receipt?`<img src="${r.receipt}" class="sr-thumb" alt="">`:'';
-    return `<div class="search-result-row" onclick="jumpToSearchResult(${r.y},${r.mo},${r.d})">
-      <span class="sr-icon">${r.field.icon}</span>
-      <div class="sr-main">
-        <div class="sr-label-line"><span>${escHtml(r.field.label)}</span><span class="sr-amt ${amtClass}">${fmt(r.amount)}</span></div>
-        ${r.note?`<div class="sr-note">📝 ${escHtml(r.note)}</div>`:''}
-        <div class="sr-date">${dateStr}</div>
-      </div>
-      ${thumb}
-    </div>`;
-  }).join('');
-}
-
-async function jumpToSearchResult(y,mo,d){
-  closeSearch();
-  curYear=y; curMonth=mo;
-  initSelectors();
-  switchView('day');
-  showToast('Loading…');
-  await loadMonthFromFirestore(curYear,curMonth);
-  await applyRecurringForMonth(curYear,curMonth);
-  navOffset=Math.max(0,d-4);
-  await selectDay(d);
 }
 
 // ─── CALC MONTH ───────────────────────────────────────────────────────────────
@@ -2136,8 +2103,8 @@ async function initApp(){
       await loadMonthFromFirestore(curYear,curMonth);
       await loadSettingsRemote();
       renderFieldRows();
-      initSelectors();
       await applyRecurringForMonth(curYear,curMonth);
+      initSelectors();
       const today=new Date();
       const startDay=curYear===today.getFullYear()&&curMonth===today.getMonth()?today.getDate():1;
       navOffset=Math.max(0,startDay-4);
