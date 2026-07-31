@@ -59,6 +59,14 @@
     color: #fff;
     white-space: nowrap; letter-spacing: -0.02em;
   }
+  .topbar-right { display: flex; align-items: center; gap: 8px; }
+  .settings-btn {
+    background: var(--card-bg); border: 1px solid var(--card-border);
+    border-radius: 8px; color: var(--text-soft);
+    font-size: 0.95rem; cursor: pointer; padding: 6px 9px; flex-shrink: 0;
+    backdrop-filter: blur(8px); transition: var(--trans);
+  }
+  .settings-btn:hover { border-color: var(--accent); color: var(--accent); transform: rotate(20deg); }
   .month-selector { display: flex; align-items: center; gap: 6px; }
   .month-selector select {
     background: var(--card-bg);
@@ -446,15 +454,205 @@
     background: var(--danger);
     box-shadow: 0 4px 18px var(--danger-glow);
   }
+
+  /* ── ADD-CATEGORY LINK (inside day sections) ──────────────── */
+  .add-cat-link {
+    text-align: center; padding: 9px 16px; font-size: 0.74rem;
+    color: var(--accent); cursor: pointer; opacity: 0.85;
+    border-bottom: 1px solid var(--card-border);
+    transition: var(--trans);
+  }
+  .add-cat-link:hover { opacity: 1; background: var(--surface); }
+
+  /* ── SETTINGS MODAL ─────────────────────────────────────────── */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+    z-index: 300; display: none; align-items: flex-end; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: var(--card-bg); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--card-border); border-bottom: none;
+    border-radius: 20px 20px 0 0; width: 100%; max-width: 500px; max-height: 85vh;
+    display: flex; flex-direction: column;
+    box-shadow: 0 -8px 40px rgba(0,0,0,0.25);
+    animation: modalUp 0.25s ease;
+  }
+  @keyframes modalUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; border-bottom: 1px solid var(--card-border); flex-shrink: 0;
+  }
+  .modal-header h3 { font-size: 0.95rem; font-weight: 700; color: var(--text-main); }
+  .modal-close {
+    background: transparent; border: none; font-size: 1.05rem; color: var(--text-soft);
+    cursor: pointer; padding: 4px 9px; border-radius: 8px; transition: var(--trans);
+  }
+  .modal-close:hover { background: var(--surface); color: var(--danger); }
+  .modal-tabs { display: flex; border-bottom: 1px solid var(--card-border); flex-shrink: 0; }
+  .modal-tab {
+    flex: 1; padding: 10px 4px; background: transparent; border: none;
+    font-family: var(--font); font-size: 0.74rem; font-weight: 600; color: var(--text-soft);
+    cursor: pointer; border-bottom: 2px solid transparent; transition: var(--trans);
+  }
+  .modal-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .modal-body { padding: 14px 16px 22px; overflow-y: auto; }
+  .settings-pane { display: none; }
+  .settings-pane.active { display: block; }
+  .settings-sub {
+    font-size: 0.7rem; font-weight: 700; color: var(--text-soft);
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 9px;
+  }
+
+  .cat-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--card-border); }
+  .cat-row:last-child { border-bottom: none; }
+  .cat-icon-input {
+    width: 42px; text-align: center; background: var(--surface);
+    border: 1px solid var(--card-border); border-radius: 8px; padding: 7px 4px;
+    font-size: 0.9rem; color: var(--text-main); outline: none; font-family: var(--font); flex-shrink: 0;
+  }
+  .cat-label-input {
+    flex: 1; min-width: 0; background: var(--surface);
+    border: 1px solid var(--card-border); border-radius: 8px; padding: 7px 10px;
+    font-size: 0.8rem; color: var(--text-main); outline: none; font-family: var(--font);
+  }
+  .cat-icon-input:focus, .cat-label-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+  .cat-del-btn {
+    background: transparent; border: none; font-size: 0.9rem; cursor: pointer;
+    opacity: 0.5; padding: 5px 7px; border-radius: 8px; flex-shrink: 0; transition: var(--trans);
+  }
+  .cat-del-btn:hover { opacity: 1; background: rgba(220,38,38,0.12); }
+  .add-cat-row { display: flex; gap: 8px; margin-top: 9px; }
+  .cat-add-btn {
+    background: var(--accent); color: #fff; border: none; border-radius: 8px;
+    width: 38px; font-size: 0.9rem; cursor: pointer; flex-shrink: 0; transition: var(--trans);
+  }
+  .cat-add-btn:hover { filter: brightness(1.1); }
+
+  /* ── SAVINGS GOAL CARD ─────────────────────────────────────── */
+  .goal-card {
+    border-radius: var(--card-radius); border: 1px solid var(--card-border);
+    background: var(--card-bg); backdrop-filter: blur(16px);
+    padding: 14px 16px; margin-bottom: 12px;
+  }
+  .goal-card.empty { text-align: center; cursor: pointer; color: var(--text-soft); font-size: 0.8rem; padding: 18px 16px; transition: var(--trans); }
+  .goal-card.empty:hover { border-color: var(--accent); color: var(--accent); }
+  .goal-head {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.72rem; font-weight: 700; color: var(--text-soft);
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 9px;
+  }
+  .goal-edit { cursor: pointer; opacity: 0.6; transition: var(--trans); }
+  .goal-edit:hover { opacity: 1; }
+  .goal-amounts { display: flex; align-items: baseline; gap: 7px; margin-bottom: 9px; flex-wrap: wrap; }
+  .goal-saved { font-size: 1.3rem; font-weight: 800; color: var(--accent2); }
+  .goal-saved.neg { color: var(--danger); }
+  .goal-of { font-size: 0.76rem; color: var(--text-soft); }
+  .goal-bar-track { height: 8px; border-radius: 6px; background: var(--surface); overflow: hidden; margin-bottom: 6px; }
+  .goal-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 6px; transition: width 0.5s ease; }
+  .goal-pct { font-size: 0.72rem; color: var(--text-soft); text-align: right; }
+
+  /* ── BUDGET ROWS ───────────────────────────────────────────── */
+  .budget-row {
+    background: var(--card-bg); border: 1px solid var(--card-border);
+    border-radius: 10px; padding: 10px 13px; margin-bottom: 6px; backdrop-filter: blur(8px);
+  }
+  .budget-row-top { display: flex; justify-content: space-between; font-size: 0.78rem; margin-bottom: 7px; color: var(--text-main); }
+  .budget-row-top .over-text { color: var(--danger); font-weight: 700; }
+  .budget-bar-track { height: 6px; border-radius: 4px; background: var(--surface); overflow: hidden; }
+  .budget-bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+  .budget-bar-fill.ok { background: var(--accent2); }
+  .budget-bar-fill.warn { background: #d97706; }
+  .budget-bar-fill.over { background: var(--danger); }
+
+  /* ── INSIGHTS ─────────────────────────────────────────────── */
+  .top-cat-card {
+    background: linear-gradient(135deg, rgba(217,119,6,0.1), rgba(217,119,6,0.03));
+    border: 1px solid rgba(217,119,6,0.3); border-radius: var(--card-radius);
+    padding: 14px 16px; margin-bottom: 10px;
+  }
+  .top-cat-label { font-size: 0.66rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #d97706; margin-bottom: 9px; }
+  .top-cat-main { display: flex; align-items: center; gap: 9px; margin-bottom: 4px; }
+  .top-cat-icon { font-size: 1.3rem; }
+  .top-cat-name { flex: 1; font-weight: 600; font-size: 0.88rem; color: var(--text-main); }
+  .top-cat-amt { font-weight: 800; font-size: 0.92rem; color: #d97706; }
+  .top-cat-share { font-size: 0.72rem; color: var(--text-soft); }
+  [data-theme="dark"] .top-cat-label, [data-theme="dark"] .top-cat-amt { color: #fbbf24; }
+
+  .insight-row {
+    display: flex; align-items: center; gap: 9px;
+    background: var(--card-bg); border: 1px solid var(--card-border);
+    border-radius: 10px; padding: 9px 13px; margin-bottom: 5px; font-size: 0.8rem;
+    backdrop-filter: blur(8px); color: var(--text-main);
+  }
+  .insight-icon { font-size: 1rem; }
+  .insight-good { color: var(--accent2); font-weight: 700; }
+  .insight-bad { color: var(--danger); font-weight: 700; }
+
+  /* ── RECEIPT ATTACH ─────────────────────────────────────────── */
+  .receipt-btn {
+    background: transparent; border: none;
+    font-size: 0.92rem; line-height: 1; padding: 5px 6px;
+    border-radius: 8px; cursor: pointer; flex-shrink: 0;
+    opacity: 0.32; transition: var(--trans);
+  }
+  .receipt-btn:hover { opacity: 0.75; background: var(--surface); }
+  .receipt-btn.has-receipt { opacity: 1; background: var(--surface); color: var(--accent); }
+  .receipt-preview:empty { display: none; }
+  .receipt-preview { margin-top: 8px; }
+  .receipt-thumb-wrap { position: relative; display: inline-block; }
+  .receipt-thumb {
+    width: 60px; height: 60px; object-fit: cover; border-radius: 10px;
+    border: 1px solid var(--card-border); cursor: pointer; display: block;
+  }
+  .receipt-remove {
+    position: absolute; top: -6px; right: -6px;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--danger); color: #fff; border: none;
+    font-size: 0.62rem; cursor: pointer; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  }
+
+  /* ── SEARCH ──────────────────────────────────────────────────── */
+  .search-input-box {
+    width: 100%; background: var(--surface);
+    border: 1px solid var(--card-border); border-radius: 12px;
+    padding: 10px 14px; margin-bottom: 12px;
+    font-family: var(--font); font-size: 0.85rem; color: var(--text-main);
+    outline: none; transition: var(--trans);
+  }
+  .search-input-box:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+  .search-hint { text-align: center; color: var(--text-soft); font-size: 0.8rem; padding: 18px 10px; }
+  .search-result-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; background: var(--card-bg);
+    border: 1px solid var(--card-border); border-radius: 12px;
+    margin-bottom: 6px; cursor: pointer; transition: var(--trans);
+  }
+  .search-result-row:hover { border-color: var(--accent); background: var(--surface); transform: translateX(2px); }
+  .sr-icon { font-size: 1.05rem; flex-shrink: 0; }
+  .sr-main { flex: 1; min-width: 0; }
+  .sr-label-line { font-size: 0.82rem; font-weight: 600; color: var(--text-main); display: flex; justify-content: space-between; gap: 8px; }
+  .sr-amt { font-weight: 700; flex-shrink: 0; }
+  .sr-amt.exp { color: var(--danger); }
+  .sr-amt.inc { color: var(--accent2); }
+  .sr-note { font-size: 0.74rem; color: var(--text-soft); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sr-date { font-size: 0.68rem; color: var(--text-soft); margin-top: 2px; }
+  .sr-thumb { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; border: 1px solid var(--card-border); flex-shrink: 0; }
 </style>
 </head>
 <body>
 
 <div class="topbar">
   <div class="topbar-title">💰 Money Tracker</div>
-  <div class="month-selector">
-    <select id="yearSel" onchange="onMonthChange()"></select>
-    <select id="monthSel" onchange="onMonthChange()"></select>
+  <div class="topbar-right">
+    <button class="settings-btn" onclick="openSearch()" title="Search">🔍</button>
+    <button class="settings-btn" onclick="openSettings()" title="Settings">⚙️</button>
+    <div class="month-selector">
+      <select id="yearSel" onchange="onMonthChange()"></select>
+      <select id="monthSel" onchange="onMonthChange()"></select>
+    </div>
   </div>
 </div>
 
@@ -472,31 +670,14 @@
     </div>
     <div class="section-card">
       <div class="section-head expense">💸 EXPENSES</div>
-      <div class="field-row"><span class="field-icon">🍳</span><span class="field-label">Nasta</span><input class="field-input" type="number" placeholder="0" id="f_nasta" min="0"><button class="note-btn" type="button" onclick="toggleNote('nasta')" id="nbtn_nasta" title="Add note">📝</button></div><div class="note-row" id="noterow_nasta"><input class="note-input" type="text" placeholder="Note (optional)" id="note_nasta" maxlength="200"></div>
-      <div class="field-row"><span class="field-icon">🍛</span><span class="field-label">Lunch</span><input class="field-input" type="number" placeholder="0" id="f_lunch" min="0"><button class="note-btn" type="button" onclick="toggleNote('lunch')" id="nbtn_lunch" title="Add note">📝</button></div><div class="note-row" id="noterow_lunch"><input class="note-input" type="text" placeholder="Note (optional)" id="note_lunch" maxlength="200"></div>
-      <div class="field-row"><span class="field-icon">🍽️</span><span class="field-label">Dinner</span><input class="field-input" type="number" placeholder="0" id="f_dinner" min="0"><button class="note-btn" type="button" onclick="toggleNote('dinner')" id="nbtn_dinner" title="Add note">📝</button></div><div class="note-row" id="noterow_dinner"><input class="note-input" type="text" placeholder="Note (optional)" id="note_dinner" maxlength="200"></div>
-      <div class="field-row"><span class="field-icon">🥡</span><span class="field-label">Extra Food</span><input class="field-input" type="number" placeholder="0" id="f_extrafood" min="0"><button class="note-btn" type="button" onclick="toggleNote('extrafood')" id="nbtn_extrafood" title="Add note">📝</button></div><div class="note-row" id="noterow_extrafood"><input class="note-input" type="text" placeholder="Note (optional)" id="note_extrafood" maxlength="200"></div>
-      <div class="field-row"><span class="field-icon">🚌</span><span class="field-label">Transportation</span><input class="field-input" type="number" placeholder="0" id="f_transport" min="0"><button class="note-btn" type="button" onclick="toggleNote('transport')" id="nbtn_transport" title="Add note">📝</button></div><div class="note-row" id="noterow_transport"><input class="note-input" type="text" placeholder="Note (optional)" id="note_transport" maxlength="200"></div>
-      <div class="field-row"><span class="field-icon">➕</span><span class="field-label">Extra</span><input class="field-input" type="number" placeholder="0" id="f_extra" min="0"><button class="note-btn" type="button" onclick="toggleNote('extra')" id="nbtn_extra" title="Add note">📝</button></div><div class="note-row" id="noterow_extra"><input class="note-input" type="text" placeholder="Note (optional)" id="note_extra" maxlength="200"></div>
-      <div class="field-row"><span class="field-icon">🎓</span><span class="field-label">University Fee</span><input class="field-input" type="number" placeholder="0" id="f_unifee" min="0"><button class="note-btn" type="button" onclick="toggleNote('unifee')" id="nbtn_unifee" title="Add note">📝</button></div><div class="note-row" id="noterow_unifee"><input class="note-input" type="text" placeholder="Note (optional)" id="note_unifee" maxlength="200"></div>
-      <div class="field-row"><span class="field-icon">🏠</span><span class="field-label">Home Rent</span><input class="field-input" type="number" placeholder="0" id="f_rent" min="0"><button class="note-btn" type="button" onclick="toggleNote('rent')" id="nbtn_rent" title="Add note">📝</button></div><div class="note-row" id="noterow_rent"><input class="note-input" type="text" placeholder="Note (optional)" id="note_rent" maxlength="200"></div>
-      <div class="field-row"><span class="field-icon">📱</span><span class="field-label">Mobile</span><input class="field-input" type="number" placeholder="0" id="f_mobile" min="0"><button class="note-btn" type="button" onclick="toggleNote('mobile')" id="nbtn_mobile" title="Add note">📝</button></div><div class="note-row" id="noterow_mobile"><input class="note-input" type="text" placeholder="Note (optional)" id="note_mobile" maxlength="200"></div>
-      <div class="field-row"><span class="field-icon">🏦</span><span class="field-label">Bank DP</span><input class="field-input" type="number" placeholder="0" id="f_bankdp" min="0"><button class="note-btn" type="button" onclick="toggleNote('bankdp')" id="nbtn_bankdp" title="Add note">📝</button></div><div class="note-row" id="noterow_bankdp"><input class="note-input" type="text" placeholder="Note (optional)" id="note_bankdp" maxlength="200"></div>
-      <div class="field-row"><span class="field-icon">📝</span><span class="field-label">Stationary</span><input class="field-input" type="number" placeholder="0" id="f_stationary" min="0"><button class="note-btn" type="button" onclick="toggleNote('stationary')" id="nbtn_stationary" title="Add note">📝</button></div><div class="note-row" id="noterow_stationary"><input class="note-input" type="text" placeholder="Note (optional)" id="note_stationary" maxlength="200"></div>
-      <div class="field-row"><span class="field-icon">🛍️</span><span class="field-label">Shopping</span><input class="field-input" type="number" placeholder="0" id="f_shopping" min="0"><button class="note-btn" type="button" onclick="toggleNote('shopping')" id="nbtn_shopping" title="Add note">📝</button></div><div class="note-row" id="noterow_shopping"><input class="note-input" type="text" placeholder="Note (optional)" id="note_shopping" maxlength="200"></div>
-      <div class="field-row"><span class="field-icon">💄</span><span class="field-label">Beauty</span><input class="field-input" type="number" placeholder="0" id="f_beauty" min="0"><button class="note-btn" type="button" onclick="toggleNote('beauty')" id="nbtn_beauty" title="Add note">📝</button></div><div class="note-row" id="noterow_beauty"><input class="note-input" type="text" placeholder="Note (optional)" id="note_beauty" maxlength="200"></div>
-      <div class="field-row"><span class="field-icon">📟</span><span class="field-label">Gadget</span><input class="field-input" type="number" placeholder="0" id="f_gadget" min="0"><button class="note-btn" type="button" onclick="toggleNote('gadget')" id="nbtn_gadget" title="Add note">📝</button></div><div class="note-row" id="noterow_gadget"><input class="note-input" type="text" placeholder="Note (optional)" id="note_gadget" maxlength="200"></div>
-      <div class="field-row"><span class="field-icon">🎁</span><span class="field-label">Gift</span><input class="field-input" type="number" placeholder="0" id="f_gift" min="0"><button class="note-btn" type="button" onclick="toggleNote('gift')" id="nbtn_gift" title="Add note">📝</button></div><div class="note-row" id="noterow_gift"><input class="note-input" type="text" placeholder="Note (optional)" id="note_gift" maxlength="200"></div>
-      <div class="field-row"><span class="field-icon">👥</span><span class="field-label">Social</span><input class="field-input" type="number" placeholder="0" id="f_social" min="0"><button class="note-btn" type="button" onclick="toggleNote('social')" id="nbtn_social" title="Add note">📝</button></div><div class="note-row" id="noterow_social"><input class="note-input" type="text" placeholder="Note (optional)" id="note_social" maxlength="200"></div>
-      <div class="field-row"><span class="field-icon">🧳</span><span class="field-label">Tour</span><input class="field-input" type="number" placeholder="0" id="f_tour" min="0"><button class="note-btn" type="button" onclick="toggleNote('tour')" id="nbtn_tour" title="Add note">📝</button></div><div class="note-row" id="noterow_tour"><input class="note-input" type="text" placeholder="Note (optional)" id="note_tour" maxlength="200"></div>
-      <div class="field-row"><span class="field-icon">🧾</span><span class="field-label">Necessary</span><input class="field-input" type="number" placeholder="0" id="f_necessary" min="0"><button class="note-btn" type="button" onclick="toggleNote('necessary')" id="nbtn_necessary" title="Add note">📝</button></div><div class="note-row" id="noterow_necessary"><input class="note-input" type="text" placeholder="Note (optional)" id="note_necessary" maxlength="200"></div>
-      <div class="field-row"><span class="field-icon">💊</span><span class="field-label">Medicine</span><input class="field-input" type="number" placeholder="0" id="f_medicine" min="0"><button class="note-btn" type="button" onclick="toggleNote('medicine')" id="nbtn_medicine" title="Add note">📝</button></div><div class="note-row" id="noterow_medicine"><input class="note-input" type="text" placeholder="Note (optional)" id="note_medicine" maxlength="200"></div>
+      <div id="expenseFieldsContainer"></div>
+      <div class="add-cat-link" onclick="openSettings('categories')">➕ Add / manage categories</div>
       <div class="total-row exp"><span>Total Expense</span><span id="totalExp">৳ 0</span></div>
     </div>
     <div class="section-card">
       <div class="section-head income">💵 INCOME</div>
-      <div class="field-row"><span class="field-icon">👨‍👩‍👧</span><span class="field-label">Family Income</span><input class="field-input income-inp" type="number" placeholder="0" id="f_family" min="0"><button class="note-btn" type="button" onclick="toggleNote('family')" id="nbtn_family" title="Add note">📝</button></div><div class="note-row" id="noterow_family"><input class="note-input" type="text" placeholder="Note (optional)" id="note_family" maxlength="200"></div>
-      <div class="field-row"><span class="field-icon">💼</span><span class="field-label">Self Income</span><input class="field-input income-inp" type="number" placeholder="0" id="f_self" min="0"><button class="note-btn" type="button" onclick="toggleNote('self')" id="nbtn_self" title="Add note">📝</button></div><div class="note-row" id="noterow_self"><input class="note-input" type="text" placeholder="Note (optional)" id="note_self" maxlength="200"></div>
+      <div id="incomeFieldsContainer"></div>
+      <div class="add-cat-link" onclick="openSettings('categories')">➕ Add / manage income sources</div>
       <div class="total-row inc"><span>Total Income</span><span id="totalInc">৳ 0</span></div>
     </div>
     <div class="net-card positive" id="netCard">
@@ -520,10 +701,15 @@
       <div class="sum-card inc-card"><div class="sc-label">Total Income</div><div class="sc-val" id="sumTotalInc">৳ 0</div></div>
       <div class="sum-card full"><div class="sc-label">Net Balance</div><div class="sc-val" id="sumNet">৳ 0</div></div>
     </div>
+    <div id="goalCardContainer"></div>
     <div class="export-row">
       <button class="btn-excel" onclick="exportMonthExcel()">📊 Excel</button>
       <button class="btn-pdf" onclick="exportMonthPDF()">📄 PDF</button>
     </div>
+    <div class="section-title">Insights</div>
+    <div id="topCategoryCard"></div>
+    <div id="insightList"></div>
+    <div class="chart-card"><canvas id="comparisonChart"></canvas></div>
     <div class="section-title">Daily Trend</div>
     <div class="chart-card"><canvas id="dailyBarChart"></canvas></div>
     <div class="section-title">Expense Curve</div>
@@ -531,6 +717,8 @@
     <div class="section-title">Category Breakdown</div>
     <div class="chart-card"><canvas id="categoryPieChart"></canvas></div>
     <div id="breakdownList"></div>
+    <div class="section-title">Budgets</div>
+    <div id="budgetListSummary"></div>
     <div class="section-title">Day by Day</div>
     <div id="dailyList"></div>
   </div>
@@ -562,6 +750,81 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>⚙️ Settings</h3>
+      <button class="modal-close" onclick="closeSettings()">✕</button>
+    </div>
+    <div class="modal-tabs">
+      <button class="modal-tab active" data-tab="categories" onclick="showSettingsTab('categories')">Categories</button>
+      <button class="modal-tab" data-tab="recurring" onclick="showSettingsTab('recurring')">Recurring</button>
+      <button class="modal-tab" data-tab="budgets" onclick="showSettingsTab('budgets')">Budgets</button>
+      <button class="modal-tab" data-tab="goal" onclick="showSettingsTab('goal')">Goal</button>
+    </div>
+    <div class="modal-body">
+      <div class="settings-pane active" id="pane-categories">
+        <div class="settings-sub">💸 Expense Categories</div>
+        <div id="catListExpense"></div>
+        <div class="add-cat-row">
+          <input type="text" id="newExpIcon" class="cat-icon-input" placeholder="🎯" maxlength="4">
+          <input type="text" id="newExpLabel" class="cat-label-input" placeholder="New category name" maxlength="30">
+          <button class="cat-add-btn" onclick="addCategory('expense')" title="Add">➕</button>
+        </div>
+        <div class="settings-sub" style="margin-top:18px">💵 Income Sources</div>
+        <div id="catListIncome"></div>
+        <div class="add-cat-row">
+          <input type="text" id="newIncIcon" class="cat-icon-input" placeholder="🎯" maxlength="4">
+          <input type="text" id="newIncLabel" class="cat-label-input" placeholder="New income source" maxlength="30">
+          <button class="cat-add-btn" onclick="addCategory('income')" title="Add">➕</button>
+        </div>
+      </div>
+      <div class="settings-pane" id="pane-recurring">
+        <div class="settings-sub">🔁 Auto-fill every month — great for Rent, Mobile bill, etc. Set Amount to 0 to turn off.</div>
+        <div id="recurringList"></div>
+      </div>
+      <div class="settings-pane" id="pane-budgets">
+        <div class="settings-sub">Set a monthly limit per category (৳0 = no limit)</div>
+        <div id="budgetList"></div>
+      </div>
+      <div class="settings-pane" id="pane-goal">
+        <div class="settings-sub">Set a savings target — progress tracks your all-time net balance across every recorded month</div>
+        <div class="field-row"><span class="field-label">Target Amount</span><input class="field-input" type="number" id="goalInput" min="0" placeholder="0"></div>
+        <button class="btn-primary" style="margin-top:10px" onclick="saveGoal()">💾 Save Goal</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="searchModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>🔍 Search</h3>
+      <button class="modal-close" onclick="closeSearch()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="text" id="searchInput" class="search-input-box" placeholder="Search notes, categories…" oninput="performSearch()">
+      <div id="searchResults"><div class="search-hint">Type to search your notes and transactions…</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="receiptViewerModal">
+  <div class="modal-box" style="max-width:420px">
+    <div class="modal-header">
+      <h3>🧾 Receipt</h3>
+      <button class="modal-close" onclick="closeReceiptViewer()">✕</button>
+    </div>
+    <div class="modal-body" style="text-align:center">
+      <img id="receiptViewerImg" style="max-width:100%;border-radius:12px;margin-bottom:12px" alt="Receipt">
+      <div style="display:flex;gap:8px">
+        <button class="btn-outline" style="margin-bottom:0" onclick="replaceReceiptFromViewer()">🔄 Replace</button>
+        <button class="btn-outline" style="margin-bottom:0;background:rgba(220,38,38,0.06);color:var(--danger);border-color:var(--expense-border)" onclick="removeReceiptFromViewer()">🗑 Remove</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="bottom-nav">
   <button class="bnav-btn active" id="bnav-day" onclick="switchView('day')"><span class="icon">📝</span>Daily</button>
   <button class="bnav-btn" id="bnav-summary" onclick="switchView('summary')"><span class="icon">📊</span>Monthly</button>
@@ -580,36 +843,103 @@ if (localStorage.getItem('theme') === 'dark') {
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DAYS_IN_MONTH = [31,28,31,30,31,30,31,31,30,31,30,31];
 
-const EXPENSE_FIELDS = [
-  {id:'nasta',label:'Nasta',icon:'🍳'},
-  {id:'lunch',label:'Lunch',icon:'🍛'},
-  {id:'dinner',label:'Dinner',icon:'🍽️'},
-  {id:'extrafood',label:'Extra Food',icon:'🥡'},
-  {id:'transport',label:'Transportation',icon:'🚌'},
-  {id:'extra',label:'Extra',icon:'➕'},
-  {id:'unifee',label:'University Fee',icon:'🎓'},
-  {id:'rent',label:'Home Rent',icon:'🏠'},
-  {id:'mobile',label:'Mobile',icon:'📱'},
-  {id:'stationary',label:'Stationary',icon:'📝'},
+// Built-in defaults — used the first time the app runs, or if a user resets.
+// Categories are no longer hardcoded in the DOM: they're data now, so users
+// can add/rename/remove them from Settings without touching any code.
+const DEFAULT_EXPENSE_FIELDS = [
+  {id:'nasta',label:'Nasta',icon:'🍳',budget:0},
+  {id:'lunch',label:'Lunch',icon:'🍛',budget:0},
+  {id:'dinner',label:'Dinner',icon:'🍽️',budget:0},
+  {id:'extrafood',label:'Extra Food',icon:'🥡',budget:0},
+  {id:'transport',label:'Transportation',icon:'🚌',budget:0},
+  {id:'extra',label:'Extra',icon:'➕',budget:0},
+  {id:'unifee',label:'University Fee',icon:'🎓',budget:0},
+  {id:'rent',label:'Home Rent',icon:'🏠',budget:0},
+  {id:'mobile',label:'Mobile',icon:'📱',budget:0},
+  {id:'stationary',label:'Stationary',icon:'📝',budget:0},
 
-  {id:'bankdp',label:'Bank DP',icon:'🏦'},
-  {id:'shopping',label:'Shopping',icon:'🛍️'},
-  {id:'beauty',label:'Beauty',icon:'💄'},
-  {id:'gadget',label:'Gadget',icon:'📟'},
-  {id:'gift',label:'Gift',icon:'🎁'},
-  {id:'social',label:'Social',icon:'👥'},
-  {id:'tour',label:'Tour',icon:'🧳'},
-  {id:'necessary',label:'Necessary',icon:'🧾'},
-  {id:'medicine',label:'Medicine',icon:'💊'},
+  {id:'bankdp',label:'Bank DP',icon:'🏦',budget:0},
+  {id:'shopping',label:'Shopping',icon:'🛍️',budget:0},
+  {id:'beauty',label:'Beauty',icon:'💄',budget:0},
+  {id:'gadget',label:'Gadget',icon:'📟',budget:0},
+  {id:'gift',label:'Gift',icon:'🎁',budget:0},
+  {id:'social',label:'Social',icon:'👥',budget:0},
+  {id:'tour',label:'Tour',icon:'🧳',budget:0},
+  {id:'necessary',label:'Necessary',icon:'🧾',budget:0},
+  {id:'medicine',label:'Medicine',icon:'💊',budget:0},
 ];
-const INCOME_FIELDS = [
+const DEFAULT_INCOME_FIELDS = [
   {id:'family',label:'Family Income',icon:'👨‍👩‍👧'},
   {id:'self',label:'Self Income',icon:'💼'},
 ];
-const ALL_FIELDS = [...EXPENSE_FIELDS,...INCOME_FIELDS];
+
+// Live, editable category lists (loaded from localStorage/Firestore in initApp)
+let EXPENSE_FIELDS = [];
+let INCOME_FIELDS = [];
+let ALL_FIELDS = [];
+let SAVINGS_GOAL = 0;
+
+function rebuildAllFields(){ ALL_FIELDS = [...EXPENSE_FIELDS, ...INCOME_FIELDS]; }
+
+function escHtml(s){
+  return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── CATEGORY + GOAL PERSISTENCE (local) ──────────────────────
+function loadCategoriesLocal(){
+  try{
+    const raw=localStorage.getItem('mt_categories_v1');
+    const parsed=raw?JSON.parse(raw):null;
+    EXPENSE_FIELDS=(parsed&&Array.isArray(parsed.expense)&&parsed.expense.length)?parsed.expense:DEFAULT_EXPENSE_FIELDS.map(f=>({...f}));
+    INCOME_FIELDS=(parsed&&Array.isArray(parsed.income)&&parsed.income.length)?parsed.income:DEFAULT_INCOME_FIELDS.map(f=>({...f}));
+  }catch{
+    EXPENSE_FIELDS=DEFAULT_EXPENSE_FIELDS.map(f=>({...f}));
+    INCOME_FIELDS=DEFAULT_INCOME_FIELDS.map(f=>({...f}));
+  }
+  rebuildAllFields();
+}
+function saveCategoriesLocal(){
+  localStorage.setItem('mt_categories_v1', JSON.stringify({expense:EXPENSE_FIELDS, income:INCOME_FIELDS}));
+}
+function loadGoalLocal(){ SAVINGS_GOAL=parseFloat(localStorage.getItem('mt_savings_goal_v1'))||0; }
+function saveGoalLocalOnly(){ localStorage.setItem('mt_savings_goal_v1', String(SAVINGS_GOAL)); }
+
+// ── CATEGORY + GOAL PERSISTENCE (Firestore, one combined doc) ─
+async function saveSettingsRemote(){
+  saveCategoriesLocal();
+  saveGoalLocalOnly();
+  if(!window._mtAuth||!window._mtDb) return;
+  const uid=window._mtAuth.currentUser?.uid;
+  if(!uid) return;
+  try{
+    const {doc,setDoc}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    await setDoc(doc(window._mtDb,"users",uid,"moneytracker_meta","settings"),{expense:EXPENSE_FIELDS,income:INCOME_FIELDS,goal:SAVINGS_GOAL});
+  }catch(e){console.error("Settings save failed:",e);}
+}
+async function loadSettingsRemote(){
+  if(!window._mtAuth||!window._mtDb) return false;
+  const uid=window._mtAuth.currentUser?.uid;
+  if(!uid) return false;
+  try{
+    const {doc,getDoc}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const snap=await getDoc(doc(window._mtDb,"users",uid,"moneytracker_meta","settings"));
+    if(snap.exists()){
+      const data=snap.data();
+      if(Array.isArray(data.expense)&&data.expense.length) EXPENSE_FIELDS=data.expense;
+      if(Array.isArray(data.income)&&data.income.length) INCOME_FIELDS=data.income;
+      SAVINGS_GOAL=typeof data.goal==='number'?data.goal:SAVINGS_GOAL;
+      rebuildAllFields();
+      saveCategoriesLocal();
+      saveGoalLocalOnly();
+      return true;
+    }
+  }catch(e){console.error("Settings load failed:",e);}
+  return false;
+}
 
 let currentDay=1, navOffset=0;
 let curYear=new Date().getFullYear(), curMonth=new Date().getMonth();
+let currentReceipts={}; // receipt-photo data URLs for the currently loaded day, keyed by field id
 
 function isLeap(y){return (y%4===0&&y%100!==0)||y%400===0;}
 function daysInMonth(y,m){return m===1&&isLeap(y)?29:DAYS_IN_MONTH[m];}
@@ -690,27 +1020,229 @@ async function onMonthChange(){
   navOffset=0;
   showToast('Loading…');
   await loadMonthFromFirestore(curYear,curMonth);
+  await applyRecurringForMonth(curYear,curMonth);
   await selectDay(currentDay);
   if(document.getElementById('summarySection').classList.contains('active')) renderSummary();
   if(document.getElementById('yearlySection').classList.contains('active')) renderYearly();
 }
 
+// ─── DYNAMIC FIELD ROWS (built from EXPENSE_FIELDS / INCOME_FIELDS) ──────────
+function fieldRowHTML(f,isIncome){
+  const recurBadge=f.recurringAmount>0?' <span title="Recurring" style="opacity:.6;font-size:.7rem">🔁</span>':'';
+  return `<div class="field-row"><span class="field-icon">${f.icon}</span><span class="field-label">${escHtml(f.label)}${recurBadge}</span><input class="field-input${isIncome?' income-inp':''}" type="text" inputmode="decimal" autocomplete="off" placeholder="0" id="f_${f.id}"><button class="receipt-btn" type="button" onclick="triggerReceipt('${f.id}')" id="rbtn_${f.id}" title="Attach receipt photo">📎</button><button class="note-btn" type="button" onclick="toggleNote('${f.id}')" id="nbtn_${f.id}" title="Add note">📝</button><input type="file" accept="image/*" style="display:none" id="rfile_${f.id}" onchange="onReceiptFileChosen('${f.id}',this.files[0])"></div><div class="note-row" id="noterow_${f.id}"><input class="note-input" type="text" placeholder="Note (optional)" id="note_${f.id}" maxlength="200"><div class="receipt-preview" id="rprev_${f.id}"></div></div>`;
+}
+
+function renderFieldRows(){
+  const expC=document.getElementById('expenseFieldsContainer');
+  const incC=document.getElementById('incomeFieldsContainer');
+  if(expC) expC.innerHTML=EXPENSE_FIELDS.map(f=>fieldRowHTML(f,false)).join('');
+  if(incC) incC.innerHTML=INCOME_FIELDS.map(f=>fieldRowHTML(f,true)).join('');
+  attachFieldListeners();
+}
+
+function attachFieldListeners(){
+  ALL_FIELDS.forEach(f=>{
+    const el=document.getElementById('f_'+f.id);
+    if(el){
+      el.addEventListener('input',()=>{
+        el.value=el.value.replace(/[^0-9+\-*/.() ]/g,'');
+        if(el.value!==''&&!/[+\-*/]/.test(el.value.replace(/^-/,''))&&parseFloat(el.value)<0) el.value=0;
+        updateTotals();
+        scheduleAutoSave();
+      });
+      el.addEventListener('blur',()=>resolveAmountExpr(el));
+      el.addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ e.preventDefault(); el.blur(); } });
+    }
+    const noteEl=document.getElementById('note_'+f.id);
+    if(noteEl) noteEl.addEventListener('input',()=>{
+      updateNoteIndicator(f.id, noteEl.value.trim().length>0);
+      scheduleAutoSave();
+    });
+  });
+}
+
+// ─── QUICK CALCULATOR INPUT (type "100+50" in an amount field) ──────────────
+function evalAmountExpr(str){
+  const cleaned=String(str==null?'':str).replace(/,/g,'').trim();
+  if(!cleaned) return null;
+  if(!/^[0-9+\-*/().\s]+$/.test(cleaned)) return null;
+  if(!/[+\-*/]/.test(cleaned.replace(/^-/,''))) return null; // needs an operator to be worth evaluating
+  try{
+    const result=Function('"use strict";return ('+cleaned+')')();
+    if(typeof result!=='number'||!isFinite(result)) return null;
+    return Math.max(0,Math.round(result*100)/100);
+  }catch{ return null; }
+}
+function resolveAmountExpr(el){
+  const result=evalAmountExpr(el.value);
+  if(result!==null){
+    el.value=result;
+    updateTotals();
+    scheduleAutoSave();
+  }
+}
+
+// ─── CATEGORY MANAGEMENT (add / edit / delete) ───────────────────────────────
+function refreshAfterCategoryChange(){
+  // Persist whatever's currently in the inputs before we tear down and rebuild the DOM
+  setDayLocal(curYear,curMonth,currentDay,collectDayData());
+  renderFieldRows();
+  loadDay(currentDay);
+  if(document.getElementById('summarySection').classList.contains('active')) renderSummary();
+  if(document.getElementById('yearlySection').classList.contains('active')) renderYearly();
+}
+
+function updateCategoryField(id,key,value){
+  const f=EXPENSE_FIELDS.find(x=>x.id===id)||INCOME_FIELDS.find(x=>x.id===id);
+  if(!f) return;
+  if(key==='label'){
+    const v=String(value).trim();
+    if(!v) return; // ignore empty label, keep old one
+    f.label=v;
+  } else if(key==='icon'){
+    f.icon=String(value).trim()||f.icon;
+  } else if(key==='budget'){
+    f.budget=Math.max(0,parseFloat(value)||0);
+  }
+  saveSettingsRemote();
+  refreshAfterCategoryChange();
+}
+
+function addCategory(type){
+  const iconEl=document.getElementById(type==='expense'?'newExpIcon':'newIncIcon');
+  const labelEl=document.getElementById(type==='expense'?'newExpLabel':'newIncLabel');
+  const icon=iconEl.value.trim()||'🔖';
+  const label=labelEl.value.trim();
+  if(!label){ showToast('Enter a category name','error'); return; }
+  const id='c'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  const newField=type==='expense'?{id,label,icon,budget:0}:{id,label,icon};
+  if(type==='expense') EXPENSE_FIELDS.push(newField); else INCOME_FIELDS.push(newField);
+  rebuildAllFields();
+  saveSettingsRemote();
+  iconEl.value=''; labelEl.value='';
+  refreshAfterCategoryChange();
+  renderSettingsLists();
+  showToast('Category added ✓');
+}
+
+function deleteCategory(id){
+  const isExp=EXPENSE_FIELDS.some(f=>f.id===id);
+  if(isExp && EXPENSE_FIELDS.length<=1){ showToast('At least one expense category is required','error'); return; }
+  if(!isExp && INCOME_FIELDS.length<=1){ showToast('At least one income source is required','error'); return; }
+  if(!confirm('Delete this category? Numbers already saved under it stay in storage but will no longer count in totals.')) return;
+  if(isExp) EXPENSE_FIELDS=EXPENSE_FIELDS.filter(f=>f.id!==id);
+  else INCOME_FIELDS=INCOME_FIELDS.filter(f=>f.id!==id);
+  rebuildAllFields();
+  saveSettingsRemote();
+  refreshAfterCategoryChange();
+  renderSettingsLists();
+  showToast('Category deleted');
+}
+
+// ─── SETTINGS MODAL ───────────────────────────────────────────────────────────
+function catRowHTML(f){
+  return `<div class="cat-row"><input class="cat-icon-input" value="${escHtml(f.icon)}" onchange="updateCategoryField('${f.id}','icon',this.value)"><input class="cat-label-input" value="${escHtml(f.label)}" onchange="updateCategoryField('${f.id}','label',this.value)"><button class="cat-del-btn" onclick="deleteCategory('${f.id}')" title="Delete">🗑</button></div>`;
+}
+function budgetRowHTML(f){
+  const val=f.budget||'';
+  return `<div class="cat-row"><span class="field-icon">${f.icon}</span><span class="field-label">${escHtml(f.label)}</span><input class="field-input" type="number" min="0" placeholder="0" value="${val}" onchange="updateCategoryField('${f.id}','budget',this.value)"></div>`;
+}
+function recurringRowHTML(f){
+  return `<div class="cat-row"><span class="field-icon">${f.icon}</span><span class="field-label" style="flex:1;min-width:60px">${escHtml(f.label)}</span><input class="field-input" type="number" min="0" placeholder="Amount" style="width:76px" value="${f.recurringAmount||''}" onchange="updateRecurringField('${f.id}','amount',this.value)"><input class="field-input" type="number" min="1" max="31" placeholder="Day" title="Day of month" style="width:50px" value="${f.recurringDay||1}" onchange="updateRecurringField('${f.id}','day',this.value)"></div>`;
+}
+function renderSettingsLists(){
+  const ce=document.getElementById('catListExpense'), ci=document.getElementById('catListIncome'), bl=document.getElementById('budgetList'), gi=document.getElementById('goalInput'), rl=document.getElementById('recurringList');
+  if(ce) ce.innerHTML=EXPENSE_FIELDS.map(catRowHTML).join('');
+  if(ci) ci.innerHTML=INCOME_FIELDS.map(catRowHTML).join('');
+  if(bl) bl.innerHTML=EXPENSE_FIELDS.map(budgetRowHTML).join('')||'<div style="color:var(--muted);text-align:center;padding:14px;font-size:0.82rem">No expense categories yet</div>';
+  if(gi) gi.value=SAVINGS_GOAL||'';
+  if(rl) rl.innerHTML=ALL_FIELDS.map(recurringRowHTML).join('')||'<div style="color:var(--muted);text-align:center;padding:14px;font-size:0.82rem">No categories yet</div>';
+}
+async function updateRecurringField(id,key,value){
+  const f=EXPENSE_FIELDS.find(x=>x.id===id)||INCOME_FIELDS.find(x=>x.id===id);
+  if(!f) return;
+  if(key==='amount'){
+    f.recurringAmount=Math.max(0,parseFloat(value)||0);
+  }else if(key==='day'){
+    f.recurringDay=Math.min(31,Math.max(1,parseInt(value)||1));
+  }
+  saveSettingsRemote();
+  renderFieldRows(); // refresh the 🔁 badge in the day view
+  loadDay(currentDay);
+  await applyRecurringForMonth(curYear,curMonth);
+  showToast('Recurring settings saved ✓');
+}
+
+// ─── RECURRING EXPENSES (auto-fill Rent, Mobile bill, etc. each month) ───────
+function loadRecurringApplied(){
+  try{ return JSON.parse(localStorage.getItem('mt_recurring_applied_v1'))||{}; }catch{ return {}; }
+}
+function saveRecurringApplied(obj){ localStorage.setItem('mt_recurring_applied_v1', JSON.stringify(obj)); }
+
+// For the given month, fills in any recurring category that hasn't been applied yet
+// (only into a day that doesn't already have a value for it, so it never overwrites
+// something the user already entered/edited/zeroed-out that month).
+async function applyRecurringForMonth(y,m){
+  const monthKey=`${y}_${m}`;
+  const applied=loadRecurringApplied();
+  const done=new Set(applied[monthKey]||[]);
+  let touchedDay=null;
+  for(const f of ALL_FIELDS){
+    if(!(f.recurringAmount>0)) continue;
+    if(done.has(f.id)) continue;
+    const day=Math.min(f.recurringDay||1, daysInMonth(y,m));
+    const data=getDay(y,m,day);
+    if(!data[f.id]){
+      data[f.id]=f.recurringAmount;
+      await setDay(y,m,day,data);
+      touchedDay=day;
+    }
+    done.add(f.id);
+  }
+  applied[monthKey]=Array.from(done);
+  saveRecurringApplied(applied);
+  if(touchedDay!==null&&y===curYear&&m===curMonth){
+    renderDayBtns();
+    if(touchedDay===currentDay) loadDay(currentDay);
+  }
+}
+function openSettings(tab){
+  renderSettingsLists();
+  document.getElementById('settingsModal').classList.add('open');
+  showSettingsTab(tab||'categories');
+}
+function closeSettings(){ document.getElementById('settingsModal').classList.remove('open'); }
+function showSettingsTab(tab){
+  document.querySelectorAll('.modal-tab').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  document.querySelectorAll('.settings-pane').forEach(p=>p.classList.toggle('active', p.id==='pane-'+tab));
+}
+function saveGoal(){
+  SAVINGS_GOAL=Math.max(0,parseFloat(document.getElementById('goalInput').value)||0);
+  saveSettingsRemote();
+  showToast('Goal saved ✓');
+  if(document.getElementById('summarySection').classList.contains('active')) renderSummary();
+}
+
 // ─── DAY LOGIC ───────────────────────────────────────────────────────────────
 function loadDay(d){
   const data=getDay(curYear,curMonth,d);
+  currentReceipts={};
   ALL_FIELDS.forEach(f=>{
     const el=document.getElementById('f_'+f.id);
     if(el) el.value=data[f.id]||'';
     const noteEl=document.getElementById('note_'+f.id);
-    if(noteEl){
-      const noteVal=data['note_'+f.id]||'';
-      noteEl.value=noteVal;
-      const row=document.getElementById('noterow_'+f.id);
-      const frow=document.getElementById('nbtn_'+f.id)?.closest('.field-row');
-      if(row) row.classList.toggle('open', !!noteVal);
-      if(frow) frow.classList.toggle('note-open', !!noteVal);
-      updateNoteIndicator(f.id, !!noteVal);
-    }
+    const noteVal=data['note_'+f.id]||'';
+    if(noteEl) noteEl.value=noteVal;
+    currentReceipts[f.id]=data['receipt_'+f.id]||null;
+    renderReceiptPreview(f.id);
+    const hasReceipt=!!currentReceipts[f.id];
+    const row=document.getElementById('noterow_'+f.id);
+    const frow=document.getElementById('nbtn_'+f.id)?.closest('.field-row');
+    const showRow=!!noteVal||hasReceipt;
+    if(row) row.classList.toggle('open', showRow);
+    if(frow) frow.classList.toggle('note-open', showRow);
+    updateNoteIndicator(f.id, !!noteVal);
+    updateReceiptIndicator(f.id, hasReceipt);
   });
   updateTotals();
 }
@@ -728,6 +1260,109 @@ function toggleNote(id){
 
 function updateNoteIndicator(id,hasNote){
   document.getElementById('nbtn_'+id)?.classList.toggle('has-note', hasNote);
+}
+
+// ── RECEIPT PHOTOS (per item, Day section only) ──────────────
+function updateReceiptIndicator(id,hasReceipt){
+  document.getElementById('rbtn_'+id)?.classList.toggle('has-receipt', hasReceipt);
+}
+
+function renderReceiptPreview(id){
+  const c=document.getElementById('rprev_'+id);
+  if(!c) return;
+  const url=currentReceipts[id];
+  c.innerHTML=url?`<div class="receipt-thumb-wrap"><img src="${url}" class="receipt-thumb" onclick="openReceiptViewer('${id}')" alt="Receipt"><button type="button" class="receipt-remove" onclick="event.stopPropagation();removeReceipt('${id}')" title="Remove">✕</button></div>`:'';
+}
+
+function triggerReceipt(id){
+  if(currentReceipts[id]){ openReceiptViewer(id); return; }
+  document.getElementById('rfile_'+id)?.click();
+}
+
+// Resizes + compresses the chosen photo client-side (canvas → JPEG) so it stays
+// small enough to fit comfortably in a Firestore document alongside everything else.
+function compressImageFile(file){
+  return new Promise((resolve,reject)=>{
+    if(!file||!file.type||!file.type.startsWith('image/')){ reject(new Error('Not an image')); return; }
+    const reader=new FileReader();
+    reader.onerror=()=>reject(new Error('Read failed'));
+    reader.onload=()=>{
+      const img=new Image();
+      img.onerror=()=>reject(new Error('Image load failed'));
+      img.onload=()=>{
+        const maxDim=700;
+        let{width,height}=img;
+        if(width>height&&width>maxDim){ height=Math.round(height*maxDim/width); width=maxDim; }
+        else if(height>=width&&height>maxDim){ width=Math.round(width*maxDim/height); height=maxDim; }
+        const canvas=document.createElement('canvas');
+        canvas.width=width; canvas.height=height;
+        canvas.getContext('2d').drawImage(img,0,0,width,height);
+        let quality=0.55, dataUrl=canvas.toDataURL('image/jpeg',quality);
+        while(dataUrl.length>150000&&quality>0.25){ quality-=0.08; dataUrl=canvas.toDataURL('image/jpeg',quality); }
+        resolve(dataUrl);
+      };
+      img.src=reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function onReceiptFileChosen(id,file){
+  if(!file) return;
+  const fileInput=document.getElementById('rfile_'+id);
+  showToast('Processing photo…');
+  try{
+    const dataUrl=await compressImageFile(file);
+    currentReceipts[id]=dataUrl;
+    renderReceiptPreview(id);
+    const row=document.getElementById('noterow_'+id);
+    const frow=document.getElementById('nbtn_'+id)?.closest('.field-row');
+    if(row) row.classList.add('open');
+    if(frow) frow.classList.add('note-open');
+    updateReceiptIndicator(id,true);
+    scheduleAutoSave();
+    showToast('Receipt attached ✓');
+  }catch(e){
+    console.error('Receipt processing failed:',e);
+    showToast('Could not use that photo','error');
+  }finally{
+    if(fileInput) fileInput.value='';
+  }
+}
+
+function removeReceipt(id){
+  delete currentReceipts[id];
+  renderReceiptPreview(id);
+  updateReceiptIndicator(id,false);
+  const noteEl=document.getElementById('note_'+id);
+  const hasNote=noteEl&&noteEl.value.trim().length>0;
+  if(!hasNote){
+    const row=document.getElementById('noterow_'+id);
+    const frow=document.getElementById('nbtn_'+id)?.closest('.field-row');
+    if(row) row.classList.remove('open');
+    if(frow) frow.classList.remove('note-open');
+  }
+  scheduleAutoSave();
+  showToast('Receipt removed');
+}
+
+function openReceiptViewer(id){
+  const url=currentReceipts[id];
+  if(!url) return;
+  document.getElementById('receiptViewerImg').src=url;
+  window._receiptViewerId=id;
+  document.getElementById('receiptViewerModal').classList.add('open');
+}
+function closeReceiptViewer(){ document.getElementById('receiptViewerModal').classList.remove('open'); }
+function replaceReceiptFromViewer(){
+  const id=window._receiptViewerId;
+  closeReceiptViewer();
+  document.getElementById('rfile_'+id)?.click();
+}
+function removeReceiptFromViewer(){
+  const id=window._receiptViewerId;
+  closeReceiptViewer();
+  if(id) removeReceipt(id);
 }
 
 function getVal(id){return parseFloat(document.getElementById(id)?.value)||0;}
@@ -751,11 +1386,18 @@ function updateTotals(){
 function collectDayData(){
   const data={};
   ALL_FIELDS.forEach(f=>{
-    data[f.id]=parseFloat(document.getElementById('f_'+f.id)?.value)||0;
+    const el=document.getElementById('f_'+f.id);
+    if(el){
+      const resolved=evalAmountExpr(el.value); // in case a "100+50"-style entry wasn't blurred yet
+      if(resolved!==null) el.value=resolved;
+    }
+    data[f.id]=parseFloat(el?.value)||0;
     const noteEl=document.getElementById('note_'+f.id);
     const noteVal=noteEl?noteEl.value.trim():'';
     if(noteVal) data['note_'+f.id]=noteVal;
+    if(currentReceipts[f.id]) data['receipt_'+f.id]=currentReceipts[f.id];
   });
+  updateTotals();
   return data;
 }
 
@@ -822,6 +1464,82 @@ function switchView(view){
   });
   if(view==='summary') renderSummary();
   if(view==='yearly') renderYearly();
+}
+
+// ─── SEARCH (notes + transactions across every saved day) ───────────────────
+function openSearch(){
+  document.getElementById('searchModal').classList.add('open');
+  const input=document.getElementById('searchInput');
+  input.value='';
+  document.getElementById('searchResults').innerHTML='<div class="search-hint">Type to search your notes and transactions…</div>';
+  setTimeout(()=>input.focus(),50);
+}
+function closeSearch(){ document.getElementById('searchModal').classList.remove('open'); }
+
+function searchAllTransactions(query){
+  const q=query.trim().toLowerCase();
+  if(!q) return [];
+  const results=[];
+  for(let i=0;i<localStorage.length;i++){
+    const key=localStorage.key(i);
+    const m=key&&key.match(/^mt_(\d+)_(\d+)_(\d+)$/);
+    if(!m) continue;
+    const y=+m[1], mo=+m[2]-1, d=+m[3];
+    let data;
+    try{ data=JSON.parse(localStorage.getItem(key)); }catch{ continue; }
+    if(!data) continue;
+    ALL_FIELDS.forEach(f=>{
+      const amt=data[f.id]||0;
+      const note=data['note_'+f.id]||'';
+      if(amt<=0&&!note) return;
+      const haystack=(f.label+' '+note).toLowerCase();
+      if(haystack.includes(q)){
+        results.push({y,mo,d,field:f,amount:amt,note,receipt:data['receipt_'+f.id]||null,isIncome:INCOME_FIELDS.some(x=>x.id===f.id)});
+      }
+    });
+  }
+  results.sort((a,b)=>(b.y-a.y)||(b.mo-a.mo)||(b.d-a.d));
+  return results.slice(0,150);
+}
+
+function performSearch(){
+  const q=document.getElementById('searchInput').value;
+  const box=document.getElementById('searchResults');
+  if(!q.trim()){
+    box.innerHTML='<div class="search-hint">Type to search your notes and transactions…</div>';
+    return;
+  }
+  const results=searchAllTransactions(q);
+  if(!results.length){
+    box.innerHTML='<div class="search-hint">No matches found</div>';
+    return;
+  }
+  box.innerHTML=results.map(r=>{
+    const dateStr=new Date(r.y,r.mo,r.d).toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'});
+    const amtClass=r.isIncome?'inc':'exp';
+    const thumb=r.receipt?`<img src="${r.receipt}" class="sr-thumb" alt="">`:'';
+    return `<div class="search-result-row" onclick="jumpToSearchResult(${r.y},${r.mo},${r.d})">
+      <span class="sr-icon">${r.field.icon}</span>
+      <div class="sr-main">
+        <div class="sr-label-line"><span>${escHtml(r.field.label)}</span><span class="sr-amt ${amtClass}">${fmt(r.amount)}</span></div>
+        ${r.note?`<div class="sr-note">📝 ${escHtml(r.note)}</div>`:''}
+        <div class="sr-date">${dateStr}</div>
+      </div>
+      ${thumb}
+    </div>`;
+  }).join('');
+}
+
+async function jumpToSearchResult(y,mo,d){
+  closeSearch();
+  curYear=y; curMonth=mo;
+  initSelectors();
+  switchView('day');
+  showToast('Loading…');
+  await loadMonthFromFirestore(curYear,curMonth);
+  await applyRecurringForMonth(curYear,curMonth);
+  navOffset=Math.max(0,d-4);
+  await selectDay(d);
 }
 
 // ─── CALC MONTH ───────────────────────────────────────────────────────────────
@@ -976,7 +1694,7 @@ function renderSummary(){
     const isInc=INCOME_FIELDS.some(x=>x.id===f.id);
     const row=document.createElement('div');
     row.className='breakdown-row';
-    row.innerHTML=`<span class="br-left"><span>${f.icon}</span><span>${f.label}</span></span><span class="br-val ${isInc?'inc':'exp'}">${fmt(catTotals[f.id])}</span>`;
+    row.innerHTML=`<span class="br-left"><span>${f.icon}</span><span>${escHtml(f.label)}</span></span><span class="br-val ${isInc?'inc':'exp'}">${fmt(catTotals[f.id])}</span>`;
     bl.appendChild(row);
   });
   if(!bl.innerHTML) bl.innerHTML='<div style="color:var(--muted);text-align:center;padding:14px;font-size:0.82rem">No data yet</div>';
@@ -991,6 +1709,147 @@ function renderSummary(){
     dl.appendChild(row);
   });
   if(!dl.innerHTML) dl.innerHTML='<div style="color:var(--muted);text-align:center;padding:14px;font-size:0.82rem">No data yet</div>';
+
+  renderSavingsGoalCard();
+  renderBudgets(catTotals);
+  renderInsights(catTotals,totalExp);
+}
+
+// ─── SAVINGS GOAL ─────────────────────────────────────────────────────────────
+// "Saved" = all-time net balance (income − expense) across every month ever
+// recorded, computed from the categories currently in use.
+function calcAllTimeNet(){
+  const years=new Set();
+  for(let i=0;i<localStorage.length;i++){
+    const key=localStorage.key(i);
+    const m=key&&key.match(/^mt_(\d{4})_\d{1,2}_\d{1,2}$/);
+    if(m) years.add(parseInt(m[1]));
+  }
+  let net=0;
+  years.forEach(y=>{
+    for(let mo=0;mo<12;mo++){
+      const{totalExp,totalInc}=calcMonth(y,mo);
+      net+=(totalInc-totalExp);
+    }
+  });
+  return net;
+}
+
+function renderSavingsGoalCard(){
+  const container=document.getElementById('goalCardContainer');
+  if(!container) return;
+  if(!SAVINGS_GOAL||SAVINGS_GOAL<=0){
+    container.innerHTML=`<div class="goal-card empty" onclick="openSettings('goal')">🎯 No savings goal set yet — tap to create one</div>`;
+    return;
+  }
+  const saved=calcAllTimeNet();
+  const pct=Math.max(0,Math.min(100,(saved/SAVINGS_GOAL)*100));
+  container.innerHTML=`<div class="goal-card">
+    <div class="goal-head"><span>🎯 Savings Goal</span><span class="goal-edit" onclick="openSettings('goal')" title="Edit goal">✏️</span></div>
+    <div class="goal-amounts"><span class="goal-saved${saved<0?' neg':''}">${fmt(saved)}</span><span class="goal-of">of ${fmt(SAVINGS_GOAL)} target</span></div>
+    <div class="goal-bar-track"><div class="goal-bar-fill" style="width:${pct}%"></div></div>
+    <div class="goal-pct">${pct.toFixed(0)}% reached</div>
+  </div>`;
+}
+
+// ─── BUDGETS ──────────────────────────────────────────────────────────────────
+function renderBudgets(catTotals){
+  const container=document.getElementById('budgetListSummary');
+  if(!container) return;
+  const withBudget=EXPENSE_FIELDS.filter(f=>f.budget>0);
+  if(!withBudget.length){
+    container.innerHTML='<div style="color:var(--muted);text-align:center;padding:14px;font-size:0.82rem">No budgets set yet — add one in ⚙️ Settings → Budgets</div>';
+    return;
+  }
+  container.innerHTML=withBudget.map(f=>{
+    const used=catTotals[f.id]||0;
+    const pct=Math.min(100,(used/f.budget)*100);
+    const over=used>f.budget;
+    const cls=over?'over':pct>=80?'warn':'ok';
+    return `<div class="budget-row">
+      <div class="budget-row-top"><span>${f.icon} ${escHtml(f.label)}</span><span class="${over?'over-text':''}">${fmt(used)} / ${fmt(f.budget)}</span></div>
+      <div class="budget-bar-track"><div class="budget-bar-fill ${cls}" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+// ─── INSIGHTS (month-over-month) ─────────────────────────────────────────────
+function getPrevMonth(y,m){ return m===0?{y:y-1,m:11}:{y,m:m-1}; }
+
+function renderComparisonChart(id,labels,curVals,prevVals,curLabel,prevLabel){
+  const ctx=document.getElementById(id);
+  destroyChart(id);
+  if(!ctx) return;
+  if(typeof Chart==='undefined'){ setChartEmpty(id,true,'⚠️ Chart library failed to load — check your internet connection'); return; }
+  if(!labels.length){ setChartEmpty(id,true,'Not enough data yet to compare months'); return; }
+  setChartEmpty(id,false);
+  const c=chartColors();
+  chartInstances[id]=new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:prevLabel,data:prevVals,backgroundColor:c.grid,borderRadius:4,maxBarThickness:16},
+      {label:curLabel,data:curVals,backgroundColor:c.exp,borderRadius:4,maxBarThickness:16}
+    ]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,labels:{color:c.text,font:{size:10}}}},
+      scales:{
+        x:{ticks:{color:c.text,font:{size:9}},grid:{display:false}},
+        y:{beginAtZero:true,ticks:{color:c.text,font:{size:10}},grid:{color:c.grid}}
+      }
+    }
+  });
+}
+
+function renderInsights(catTotals,totalExp){
+  const{y:py,m:pm}=getPrevMonth(curYear,curMonth);
+  const prev=calcMonth(py,pm);
+
+  // Top spending category card
+  const topCard=document.getElementById('topCategoryCard');
+  const topEntries=EXPENSE_FIELDS.map(f=>({f,val:catTotals[f.id]||0})).filter(e=>e.val>0).sort((a,b)=>b.val-a.val);
+  if(topEntries.length){
+    const top=topEntries[0];
+    const share=totalExp>0?((top.val/totalExp)*100).toFixed(0):0;
+    topCard.innerHTML=`<div class="top-cat-card">
+      <div class="top-cat-label">🔥 Top Spending Category</div>
+      <div class="top-cat-main"><span class="top-cat-icon">${top.f.icon}</span><span class="top-cat-name">${escHtml(top.f.label)}</span><span class="top-cat-amt">${fmt(top.val)}</span></div>
+      <div class="top-cat-share">${share}% of this month's expense</div>
+    </div>`;
+  } else {
+    topCard.innerHTML='';
+  }
+
+  // Month-over-month % change per category, top 3 by magnitude
+  const changes=[];
+  ALL_FIELDS.forEach(f=>{
+    const isInc=INCOME_FIELDS.some(x=>x.id===f.id);
+    const cur=catTotals[f.id]||0;
+    const prevVal=prev.catTotals[f.id]||0;
+    if(cur===0&&prevVal===0) return;
+    if(prevVal===0) return; // "new this month" — skip a % claim, nothing to compare against
+    const pct=((cur-prevVal)/prevVal)*100;
+    if(Math.abs(pct)<1) return;
+    changes.push({f,isInc,pct});
+  });
+  changes.sort((a,b)=>Math.abs(b.pct)-Math.abs(a.pct));
+  const il=document.getElementById('insightList');
+  if(!changes.length){
+    il.innerHTML='<div style="color:var(--muted);text-align:center;padding:10px;font-size:0.8rem">Not enough history yet to compare with last month</div>';
+  } else {
+    il.innerHTML=changes.slice(0,3).map(c=>{
+      const up=c.pct>0;
+      const goodDirection=c.isInc?up:!up; // expense down = good, income up = good
+      const arrow=up?'▲':'▼';
+      return `<div class="insight-row"><span class="insight-icon">${c.f.icon}</span><span class="insight-text">${escHtml(c.f.label)} <span class="${goodDirection?'insight-good':'insight-bad'}">${arrow} ${Math.abs(c.pct).toFixed(0)}%</span> vs last month</span></div>`;
+    }).join('');
+  }
+
+  // Comparison chart — top categories by combined current+previous expense
+  const combined=EXPENSE_FIELDS.map(f=>({f,cur:catTotals[f.id]||0,prevVal:prev.catTotals[f.id]||0})).filter(e=>e.cur>0||e.prevVal>0);
+  combined.sort((a,b)=>(b.cur+b.prevVal)-(a.cur+a.prevVal));
+  const top6=combined.slice(0,6);
+  renderComparisonChart('comparisonChart', top6.map(e=>e.f.label), top6.map(e=>e.cur), top6.map(e=>e.prevVal), MONTHS[curMonth].slice(0,3), MONTHS[pm].slice(0,3));
 }
 
 // ─── RENDER YEARLY ────────────────────────────────────────────────────────────
@@ -1043,7 +1902,7 @@ function renderYearly(){
     const isInc=INCOME_FIELDS.some(x=>x.id===f.id);
     const row=document.createElement('div');
     row.className='breakdown-row';
-    row.innerHTML=`<span class="br-left"><span>${f.icon}</span><span>${f.label}</span></span><span class="br-val ${isInc?'inc':'exp'}">${fmt(yrCat[f.id])}</span>`;
+    row.innerHTML=`<span class="br-left"><span>${f.icon}</span><span>${escHtml(f.label)}</span></span><span class="br-val ${isInc?'inc':'exp'}">${fmt(yrCat[f.id])}</span>`;
     cb.appendChild(row);
   });
   if(!cb.innerHTML) cb.innerHTML='<div style="color:var(--muted);text-align:center;padding:14px;font-size:0.82rem">No data yet</div>';
@@ -1068,13 +1927,13 @@ function exportDayPDF(){
   EXPENSE_FIELDS.forEach(f=>{
     const v=data[f.id]||0;
     const note=data['note_'+f.id]||'';
-    if(v) rows+=`<tr><td>${f.icon} ${f.label}</td><td>Expense</td><td class="num exp">${v.toLocaleString('en-IN')}</td><td>${esc(note)}</td></tr>`;
+    if(v) rows+=`<tr><td>${f.icon} ${escHtml(f.label)}</td><td>Expense</td><td class="num exp">${v.toLocaleString('en-IN')}</td><td>${esc(note)}</td></tr>`;
   });
   rows+=`<tr class="subtotal"><td colspan="2">Total Expense</td><td class="num exp">${exp.toLocaleString('en-IN')}</td><td></td></tr>`;
   INCOME_FIELDS.forEach(f=>{
     const v=data[f.id]||0;
     const note=data['note_'+f.id]||'';
-    if(v) rows+=`<tr><td>${f.icon} ${f.label}</td><td>Income</td><td class="num inc">${v.toLocaleString('en-IN')}</td><td>${esc(note)}</td></tr>`;
+    if(v) rows+=`<tr><td>${f.icon} ${escHtml(f.label)}</td><td>Income</td><td class="num inc">${v.toLocaleString('en-IN')}</td><td>${esc(note)}</td></tr>`;
   });
   rows+=`<tr class="subtotal"><td colspan="2">Total Income</td><td class="num inc">${inc.toLocaleString('en-IN')}</td><td></td></tr>`;
   rows+=`<tr class="grand"><td colspan="2">Net Balance</td><td class="num ${net>=0?'inc':'exp'}">${net.toLocaleString('en-IN')}</td><td></td></tr>`;
@@ -1086,8 +1945,8 @@ function exportDayPDF(){
 function exportMonthPDF(){
   const{totalExp,totalInc,net,catTotals,daily}=calcMonth(curYear,curMonth);
   let catRows='',dayRows='';
-  EXPENSE_FIELDS.forEach(f=>{if(catTotals[f.id]) catRows+=`<tr><td>${f.icon} ${f.label}</td><td>Expense</td><td class="num exp">${catTotals[f.id].toLocaleString('en-IN')}</td></tr>`;});
-  INCOME_FIELDS.forEach(f=>{if(catTotals[f.id]) catRows+=`<tr><td>${f.icon} ${f.label}</td><td>Income</td><td class="num inc">${catTotals[f.id].toLocaleString('en-IN')}</td></tr>`;});
+  EXPENSE_FIELDS.forEach(f=>{if(catTotals[f.id]) catRows+=`<tr><td>${f.icon} ${escHtml(f.label)}</td><td>Expense</td><td class="num exp">${catTotals[f.id].toLocaleString('en-IN')}</td></tr>`;});
+  INCOME_FIELDS.forEach(f=>{if(catTotals[f.id]) catRows+=`<tr><td>${f.icon} ${escHtml(f.label)}</td><td>Income</td><td class="num inc">${catTotals[f.id].toLocaleString('en-IN')}</td></tr>`;});
   daily.forEach(({day,exp,inc,net:n})=>{
     dayRows+=`<tr><td>Day ${day}</td><td class="num exp">${exp.toLocaleString('en-IN')}</td><td class="num inc">${inc.toLocaleString('en-IN')}</td><td class="num ${n>=0?'inc':'exp'}">${n.toLocaleString('en-IN')}</td></tr>`;
   });
@@ -1121,8 +1980,8 @@ function exportYearPDF(){
     }
   }
   const yrNet=yrInc-yrExp;
-  EXPENSE_FIELDS.forEach(f=>{if(yrCat[f.id]) catRows+=`<tr><td>${f.icon} ${f.label}</td><td>Expense</td><td class="num exp">${yrCat[f.id].toLocaleString('en-IN')}</td></tr>`;});
-  INCOME_FIELDS.forEach(f=>{if(yrCat[f.id]) catRows+=`<tr><td>${f.icon} ${f.label}</td><td>Income</td><td class="num inc">${yrCat[f.id].toLocaleString('en-IN')}</td></tr>`;});
+  EXPENSE_FIELDS.forEach(f=>{if(yrCat[f.id]) catRows+=`<tr><td>${f.icon} ${escHtml(f.label)}</td><td>Expense</td><td class="num exp">${yrCat[f.id].toLocaleString('en-IN')}</td></tr>`;});
+  INCOME_FIELDS.forEach(f=>{if(yrCat[f.id]) catRows+=`<tr><td>${f.icon} ${escHtml(f.label)}</td><td>Income</td><td class="num inc">${yrCat[f.id].toLocaleString('en-IN')}</td></tr>`;});
   printHTML(pdfStyle()+`
     <h1>💰 Money Tracker — ${curYear} Annual Report</h1>
     <div class="sub">Generated: ${new Date().toLocaleDateString('en-US',{day:'numeric',month:'long',year:'numeric'})}</div>
@@ -1240,23 +2099,17 @@ function printHTML(body){
   w.onload=()=>w.print();
 }
 
-// Input listeners — live totals + clamp negative values + debounced autosave
-ALL_FIELDS.forEach(f=>{
-  const el=document.getElementById('f_'+f.id);
-  if(el) el.addEventListener('input',()=>{
-    if(el.value!==''&&parseFloat(el.value)<0) el.value=0;
-    updateTotals();
-    scheduleAutoSave();
-  });
-  const noteEl=document.getElementById('note_'+f.id);
-  if(noteEl) noteEl.addEventListener('input',()=>{
-    updateNoteIndicator(f.id, noteEl.value.trim().length>0);
-    scheduleAutoSave();
-  });
-});
+// Note: per-field input/note listeners are attached inside attachFieldListeners(),
+// called every time renderFieldRows() (re)builds the category rows.
 
 // ── FIREBASE INIT + AUTH CHECK ──────────────────────────────
 async function initApp(){
+  // Render immediately with whatever's cached locally (defaults on first run)
+  // so the UI isn't blank while Firebase spins up.
+  loadCategoriesLocal();
+  loadGoalLocal();
+  renderFieldRows();
+
   try {
     const {initializeApp}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
     const {getAuth,onAuthStateChanged}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
@@ -1278,10 +2131,13 @@ async function initApp(){
         window.location.href="login.html";
         return;
       }
-      // Load current month from Firestore then init UI
+      // Load current month + categories/budgets/goal from Firestore, then init UI
       showToast('Loading data…');
       await loadMonthFromFirestore(curYear,curMonth);
+      await loadSettingsRemote();
+      renderFieldRows();
       initSelectors();
+      await applyRecurringForMonth(curYear,curMonth);
       const today=new Date();
       const startDay=curYear===today.getFullYear()&&curMonth===today.getMonth()?today.getDate():1;
       navOffset=Math.max(0,startDay-4);
@@ -1291,6 +2147,7 @@ async function initApp(){
     console.error("Firebase init failed:",e);
     // Fallback: run without Firebase
     initSelectors();
+    await applyRecurringForMonth(curYear,curMonth);
     const today=new Date();
     const startDay=curYear===today.getFullYear()&&curMonth===today.getMonth()?today.getDate():1;
     navOffset=Math.max(0,startDay-4);
