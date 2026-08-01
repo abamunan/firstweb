@@ -556,6 +556,56 @@
   .day-add-btn:hover { background: var(--accent-glow); border-color: var(--accent); }
   .day-remove-btn { color: var(--danger); }
   .day-remove-btn:hover { background: var(--danger-glow); border-color: var(--danger); }
+
+  /* ── DEBTS / LOANS ─────────────────────────────────────────── */
+  .debt-summary-card {
+    border-radius: var(--card-radius); border: 1px solid var(--card-border);
+    background: var(--card-bg); padding: 12px 14px; cursor: pointer; transition: var(--trans);
+  }
+  .debt-summary-card:hover { border-color: var(--accent); }
+  .debt-summary-row { display: flex; justify-content: space-between; align-items: center; padding: 3px 0; font-size: 0.85rem; }
+  .debt-summary-label { color: var(--text-soft); }
+  .debt-summary-val { font-weight: 700; }
+  .debt-summary-val.owe, .debt-summary-label.owe { color: var(--danger); }
+  .debt-summary-val.receive, .debt-summary-label.receive { color: var(--accent2); }
+  .debt-summary-strip { display: flex; gap: 10px; padding: 12px 16px 0; }
+  .debt-sum-box {
+    flex: 1; border-radius: 10px; border: 1px solid var(--card-border);
+    background: var(--surface); padding: 10px 12px; text-align: center;
+  }
+  .debt-sum-label { display: block; font-size: 0.68rem; color: var(--text-soft); margin-bottom: 2px; }
+  .debt-sum-val { display: block; font-size: 1rem; font-weight: 700; }
+  .debt-sum-box.owe .debt-sum-val { color: var(--danger); }
+  .debt-sum-box.receive .debt-sum-val { color: var(--accent2); }
+  .debt-tab {
+    flex: 1; background: none; border: none; padding: 12px 8px; font-family: var(--font);
+    font-size: 0.82rem; font-weight: 600; color: var(--text-soft); cursor: pointer;
+    border-bottom: 2px solid transparent; transition: var(--trans);
+  }
+  .debt-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .debt-pane { display: none; }
+  .debt-pane.active { display: block; }
+  .debt-add-form { display: flex; flex-direction: column; gap: 8px; margin: 10px 0 16px; }
+  .debt-add-row { display: flex; gap: 8px; }
+  .debt-input {
+    flex: 1; min-width: 0; background: var(--surface);
+    border: 1px solid var(--card-border); border-radius: 8px; padding: 7px 10px;
+    font-size: 0.8rem; color: var(--text-main); outline: none; font-family: var(--font);
+  }
+  .debt-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+  .debt-row {
+    background: var(--surface); border: 1px solid var(--card-border); border-radius: 10px;
+    padding: 10px 12px; margin-bottom: 8px; transition: var(--trans);
+  }
+  .debt-row.settled { opacity: 0.55; }
+  .debt-row.settled .debt-person, .debt-row.settled .debt-amount { text-decoration: line-through; }
+  .debt-row-main { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .debt-person { font-size: 0.85rem; font-weight: 600; color: var(--text-main); }
+  .debt-amount { font-size: 0.9rem; font-weight: 700; color: var(--accent); }
+  .debt-row-sub { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 4px; font-size: 0.7rem; color: var(--text-soft); }
+  .debt-row-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+  .debt-check { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: var(--text-main); cursor: pointer; }
+  .debt-check input { width: 15px; height: 15px; cursor: pointer; accent-color: var(--accent); }
   .add-cat-row { display: flex; gap: 8px; margin-top: 9px; }
   .cat-add-btn {
     background: var(--accent); color: #fff; border: none; border-radius: 8px;
@@ -802,6 +852,8 @@
     <div id="goalCardContainer"></div>
     <div class="section-title">Accounts</div>
     <div id="accountListSummary"></div>
+    <div class="section-title">Debts / Loans</div>
+    <div id="debtsSummary"></div>
     <div class="export-row">
       <button class="btn-excel" onclick="exportMonthExcel()">📊 Excel</button>
       <button class="btn-pdf" onclick="exportMonthPDF()">📄 PDF</button>
@@ -836,6 +888,10 @@
       <div class="yr-card inc-c"><div class="yc-label">Total Income</div><div class="yc-val" id="yrTotalInc">৳ 0</div></div>
       <div class="yr-card full"><div class="yc-label">Net Balance</div><div class="yc-val" id="yrNet">৳ 0</div></div>
     </div>
+    <div class="section-title">Accounts</div>
+    <div id="accountListSummaryYear"></div>
+    <div class="section-title">Debts / Loans</div>
+    <div id="debtsSummaryYear"></div>
     <div class="export-row">
       <button class="btn-excel" onclick="exportYearExcel()">📊 Excel</button>
       <button class="btn-pdf" onclick="exportYearPDF()">📄 PDF</button>
@@ -928,6 +984,49 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="debtsModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>🤝 Debts &amp; Loans</h3>
+      <button class="modal-close" onclick="closeDebtsModal()">✕</button>
+    </div>
+    <div class="debt-summary-strip">
+      <div class="debt-sum-box owe"><span class="debt-sum-label">You Owe</span><span class="debt-sum-val" id="debtSumOwe">৳ 0</span></div>
+      <div class="debt-sum-box receive"><span class="debt-sum-label">You'll Receive</span><span class="debt-sum-val" id="debtSumReceive">৳ 0</span></div>
+    </div>
+    <div class="modal-tabs">
+      <button class="debt-tab active" data-debttab="borrowed" onclick="showDebtsTab('borrowed')">I Borrowed</button>
+      <button class="debt-tab" data-debttab="lent" onclick="showDebtsTab('lent')">I Lent</button>
+    </div>
+    <div class="modal-body">
+      <div class="debt-pane active" id="debtpane-borrowed">
+        <div class="settings-sub">Money you took from someone — tick "Repaid" once you've paid it back</div>
+        <div class="debt-add-form">
+          <input type="text" id="newDebtPersonB" class="cat-label-input" placeholder="Person's name" maxlength="40">
+          <div class="debt-add-row">
+            <input type="number" id="newDebtAmountB" class="debt-input" placeholder="Amount" min="0" inputmode="decimal">
+            <input type="date" id="newDebtDateB" class="debt-input">
+            <button class="cat-add-btn" onclick="addDebt('borrowed')" title="Add">➕</button>
+          </div>
+        </div>
+        <div id="debtListBorrowed"></div>
+      </div>
+      <div class="debt-pane" id="debtpane-lent">
+        <div class="settings-sub">Money you gave to someone — tick "Received" once they've paid you back</div>
+        <div class="debt-add-form">
+          <input type="text" id="newDebtPersonL" class="cat-label-input" placeholder="Person's name" maxlength="40">
+          <div class="debt-add-row">
+            <input type="number" id="newDebtAmountL" class="debt-input" placeholder="Amount" min="0" inputmode="decimal">
+            <input type="date" id="newDebtDateL" class="debt-input">
+            <button class="cat-add-btn" onclick="addDebt('lent')" title="Add">➕</button>
+          </div>
+        </div>
+        <div id="debtListLent"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="receiptViewerModal">
   <div class="modal-box" style="max-width:420px">
     <div class="modal-header">
@@ -1012,6 +1111,7 @@ let ALL_FIELDS = [];
 let SAVINGS_GOAL = 0;
 let ACCOUNTS = [];
 let LEDGER = []; // manual account events: {id, ts, type:'add'|'transfer', accountId?, fromId?, toId?, amount, note?}
+let DEBTS = []; // {id, type:'borrowed'|'lent', person, amount, date, note?, settled, settledDate?}
 // Non-pinned category ids currently displayed in the Day view for whichever day is
 // loaded right now — recomputed whenever the day changes, extended when the user
 // manually adds one from the "+ Add category" picker.
@@ -1173,6 +1273,44 @@ async function loadLedgerRemote(){
       return true;
     }
   }catch(e){console.error("Ledger load failed:",e);}
+  return false;
+}
+
+// ── DEBTS / LOANS (money borrowed from or lent to people) ────
+function loadDebtsLocal(){
+  try{
+    const raw=localStorage.getItem('mt_debts_v1');
+    const parsed=raw?JSON.parse(raw):null;
+    DEBTS=Array.isArray(parsed)?parsed:[];
+  }catch{ DEBTS=[]; }
+}
+function saveDebtsLocal(){
+  localStorage.setItem('mt_debts_v1', JSON.stringify(DEBTS));
+}
+async function saveDebtsRemote(){
+  saveDebtsLocal();
+  if(!window._mtAuth||!window._mtDb) return;
+  const uid=window._mtAuth.currentUser?.uid;
+  if(!uid) return;
+  try{
+    const {doc,setDoc}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    await setDoc(doc(window._mtDb,"users",uid,"moneytracker_meta","debts"),{items:DEBTS});
+  }catch(e){console.error("Debts save failed:",e);}
+}
+async function loadDebtsRemote(){
+  if(!window._mtAuth||!window._mtDb) return false;
+  const uid=window._mtAuth.currentUser?.uid;
+  if(!uid) return false;
+  try{
+    const {doc,getDoc}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const snap=await getDoc(doc(window._mtDb,"users",uid,"moneytracker_meta","debts"));
+    if(snap.exists()){
+      const data=snap.data();
+      if(Array.isArray(data.items)) DEBTS=data.items;
+      saveDebtsLocal();
+      return true;
+    }
+  }catch(e){console.error("Debts load failed:",e);}
   return false;
 }
 
@@ -2105,6 +2243,7 @@ function renderSummary(){
 
   renderSavingsGoalCard(catTotals);
   renderAccountListSummary();
+  renderDebtsSummary('debtsSummary');
   renderBudgets(catTotals);
   renderInsights(catTotals,totalExp);
 }
@@ -2137,25 +2276,29 @@ function renderSavingsGoalCard(catTotals){
 // Dynamic, lifetime-running balances (Cash / bKash / Card / Bank, etc).
 // Computed from: opening balance + income credited to the account + manual
 // "Add" entries + transfers in − expenses (default: Cash) − transfers out.
-function renderAccountListSummary(){
-  const container=document.getElementById('accountListSummary');
+function renderAccountListSummary(containerId){
+  containerId = containerId || 'accountListSummary';
+  const container=document.getElementById(containerId);
   if(!container) return;
   if(!ACCOUNTS.length){
     container.innerHTML='<div style="color:var(--muted);text-align:center;padding:14px;font-size:0.82rem">No accounts yet — add one in ⚙️ Settings → Accounts</div>';
     return;
   }
   const balances=computeAccountBalances();
+  // Only the Monthly copy gets interactive Add/Transfer controls — a second
+  // interactive copy in the Yearly view would collide on the same panel IDs.
+  const interactive=containerId==='accountListSummary';
   const rows=ACCOUNTS.map(a=>{
     const bal=balances[a.id]||0;
+    const actions=interactive?`<button class="acct-mini-btn" onclick="toggleAcctPanel('${a.id}','add')" title="Add balance">➕</button><button class="acct-mini-btn" onclick="toggleAcctPanel('${a.id}','transfer')" title="Transfer">⇄</button>`:'';
+    const panel=interactive?`<div class="acct-panel" id="acctpanel_${a.id}"></div>`:'';
     return `<div class="account-row">
       <span class="acct-left"><span class="acct-icon">${a.icon}</span><span class="acct-label">${escHtml(a.label)}</span></span>
       <span class="acct-right">
         <span class="acct-balance-val${bal<0?' neg':''}">${fmt(bal)}</span>
-        <button class="acct-mini-btn" onclick="toggleAcctPanel('${a.id}','add')" title="Add balance">➕</button>
-        <button class="acct-mini-btn" onclick="toggleAcctPanel('${a.id}','transfer')" title="Transfer">⇄</button>
+        ${actions}
       </span>
-    </div>
-    <div class="acct-panel" id="acctpanel_${a.id}"></div>`;
+    </div>${panel}`;
   }).join('');
   const total=ACCOUNTS.reduce((s,a)=>s+(balances[a.id]||0),0);
   container.innerHTML=rows+`<div class="account-row account-total"><span class="acct-left"><span class="acct-label">Total Balance</span></span><span class="acct-total-val${total<0?' neg':''}">${fmt(total)}</span></div>`;
@@ -2202,6 +2345,109 @@ function confirmTransfer(id){
   closeAcctPanel(id);
   renderAccountListSummary();
   showToast('Transferred ✓');
+}
+
+// ─── DEBTS / LOANS ──────────────────────────────────────────────────────────────
+// Tracks money borrowed from people (you owe them) and lent to people (they owe
+// you). Purely a personal ledger — doesn't touch Account balances.
+function computeDebtTotals(){
+  let owe=0, receive=0;
+  DEBTS.forEach(d=>{
+    if(d.settled) return;
+    if(d.type==='borrowed') owe+=d.amount; else receive+=d.amount;
+  });
+  return {owe, receive};
+}
+function renderDebtsSummary(containerId){
+  const container=document.getElementById(containerId);
+  if(!container) return;
+  if(!DEBTS.length){
+    container.innerHTML=`<div class="debt-summary-card" onclick="openDebtsModal()">🤝 No debts or loans yet — tap to add one</div>`;
+    return;
+  }
+  const {owe,receive}=computeDebtTotals();
+  container.innerHTML=`<div class="debt-summary-card" onclick="openDebtsModal()">
+    <div class="debt-summary-row"><span class="debt-summary-label owe">You Owe</span><span class="debt-summary-val owe">${fmt(owe)}</span></div>
+    <div class="debt-summary-row"><span class="debt-summary-label receive">You'll Receive</span><span class="debt-summary-val receive">${fmt(receive)}</span></div>
+  </div>`;
+}
+function openDebtsModal(){
+  const today=new Date().toISOString().slice(0,10);
+  const dB=document.getElementById('newDebtDateB'); if(dB&&!dB.value) dB.value=today;
+  const dL=document.getElementById('newDebtDateL'); if(dL&&!dL.value) dL.value=today;
+  renderDebtLists();
+  document.getElementById('debtsModal').classList.add('open');
+}
+function closeDebtsModal(){ document.getElementById('debtsModal').classList.remove('open'); }
+function showDebtsTab(tab){
+  document.querySelectorAll('#debtsModal .debt-tab').forEach(b=>b.classList.toggle('active', b.dataset.debttab===tab));
+  document.querySelectorAll('#debtsModal .debt-pane').forEach(p=>p.classList.toggle('active', p.id==='debtpane-'+tab));
+}
+function debtSortFn(a,b){
+  if(a.settled!==b.settled) return a.settled?1:-1; // unsettled first
+  return (b.date||'').localeCompare(a.date||''); // then newest first
+}
+function debtRowHTML(d){
+  const dateStr=d.date?new Date(d.date+'T00:00:00').toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'}):'';
+  const checkLabel=d.type==='borrowed'?'Repaid':'Received';
+  return `<div class="debt-row${d.settled?' settled':''}">
+    <div class="debt-row-main"><span class="debt-person">${escHtml(d.person)}</span><span class="debt-amount">${fmt(d.amount)}</span></div>
+    <div class="debt-row-sub"><span class="debt-date">${dateStr}</span>${d.note?`<span class="debt-note">📝 ${escHtml(d.note)}</span>`:''}</div>
+    <div class="debt-row-actions">
+      <label class="debt-check"><input type="checkbox" ${d.settled?'checked':''} onchange="toggleDebtSettled('${d.id}')">${checkLabel}</label>
+      <button class="cat-del-btn" onclick="deleteDebt('${d.id}')" title="Delete">🗑</button>
+    </div>
+  </div>`;
+}
+function renderDebtLists(){
+  const {owe,receive}=computeDebtTotals();
+  const oweEl=document.getElementById('debtSumOwe'); if(oweEl) oweEl.textContent=fmt(owe);
+  const recEl=document.getElementById('debtSumReceive'); if(recEl) recEl.textContent=fmt(receive);
+  const bList=DEBTS.filter(d=>d.type==='borrowed').sort(debtSortFn);
+  const lList=DEBTS.filter(d=>d.type==='lent').sort(debtSortFn);
+  const bC=document.getElementById('debtListBorrowed');
+  const lC=document.getElementById('debtListLent');
+  const emptyMsg=t=>`<div style="color:var(--muted);text-align:center;padding:14px;font-size:0.82rem">No ${t} entries yet</div>`;
+  if(bC) bC.innerHTML=bList.length?bList.map(debtRowHTML).join(''):emptyMsg('borrowed');
+  if(lC) lC.innerHTML=lList.length?lList.map(debtRowHTML).join(''):emptyMsg('lent');
+}
+function debtId(){ return 'dt'+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+function refreshDebtDisplays(){
+  renderDebtLists();
+  renderDebtsSummary('debtsSummary');
+  renderDebtsSummary('debtsSummaryYear');
+}
+function addDebt(type){
+  const suf=type==='borrowed'?'B':'L';
+  const personEl=document.getElementById('newDebtPerson'+suf);
+  const amountEl=document.getElementById('newDebtAmount'+suf);
+  const dateEl=document.getElementById('newDebtDate'+suf);
+  const person=personEl?.value.trim();
+  const amount=Math.max(0,parseFloat(amountEl?.value)||0);
+  const date=dateEl?.value||new Date().toISOString().slice(0,10);
+  if(!person){ showToast('Enter a name','error'); return; }
+  if(amount<=0){ showToast('Enter a valid amount','error'); return; }
+  DEBTS.push({id:debtId(),type,person,amount,date,settled:false});
+  saveDebtsRemote();
+  if(personEl) personEl.value='';
+  if(amountEl) amountEl.value='';
+  refreshDebtDisplays();
+  showToast(type==='borrowed'?'Added — you owe this ✓':'Added — they owe you ✓');
+}
+function toggleDebtSettled(id){
+  const d=DEBTS.find(x=>x.id===id);
+  if(!d) return;
+  d.settled=!d.settled;
+  d.settledDate=d.settled?new Date().toISOString().slice(0,10):null;
+  saveDebtsRemote();
+  refreshDebtDisplays();
+}
+function deleteDebt(id){
+  if(!confirm('Delete this entry?')) return;
+  DEBTS=DEBTS.filter(x=>x.id!==id);
+  saveDebtsRemote();
+  refreshDebtDisplays();
+  showToast('Deleted');
 }
 
 // ─── BUDGETS ──────────────────────────────────────────────────────────────────
@@ -2326,6 +2572,9 @@ function renderYearly(){
   yrNetEl.textContent=fmt(yrNet);
   yrNetEl.style.color=yrNet>=0?'var(--accent2)':'var(--danger)';
   document.getElementById('yearlySubtitle').textContent=`${monthData.length} months recorded`;
+
+  renderAccountListSummary('accountListSummaryYear');
+  renderDebtsSummary('debtsSummaryYear');
 
   renderBarChart('yearlyBarChart', monthData.map(md=>MONTHS[md.m].slice(0,3)), monthData.map(md=>md.totalExp));
   renderPieChart('yearlyPieChart', yrCat);
@@ -2802,6 +3051,7 @@ async function initApp(){
   loadGoalLocal();
   loadAccountsLocal();
   loadLedgerLocal();
+  loadDebtsLocal();
   renderFieldRows();
 
   try {
@@ -2830,6 +3080,7 @@ async function initApp(){
       await loadMonthFromFirestore(curYear,curMonth);
       await loadSettingsRemote();
       await loadLedgerRemote();
+      await loadDebtsRemote();
       renderFieldRows();
       initSelectors();
       const today=new Date();
