@@ -769,7 +769,6 @@
     </div>
     <div class="modal-tabs">
       <button class="modal-tab active" data-tab="categories" onclick="showSettingsTab('categories')">Categories</button>
-      <button class="modal-tab" data-tab="recurring" onclick="showSettingsTab('recurring')">Recurring</button>
       <button class="modal-tab" data-tab="budgets" onclick="showSettingsTab('budgets')">Budgets</button>
       <button class="modal-tab" data-tab="goal" onclick="showSettingsTab('goal')">Goal</button>
     </div>
@@ -789,10 +788,6 @@
           <input type="text" id="newIncLabel" class="cat-label-input" placeholder="New income source" maxlength="30">
           <button class="cat-add-btn" onclick="addCategory('income')" title="Add">➕</button>
         </div>
-      </div>
-      <div class="settings-pane" id="pane-recurring">
-        <div class="settings-sub">🔁 Auto-fill every month — great for Rent, Mobile bill, etc. Set Amount to 0 to turn off.</div>
-        <div id="recurringList"></div>
       </div>
       <div class="settings-pane" id="pane-budgets">
         <div class="settings-sub">Set a monthly limit per category (৳0 = no limit)</div>
@@ -1031,7 +1026,6 @@ async function onMonthChange(){
   navOffset=0;
   showToast('Loading…');
   await loadMonthFromFirestore(curYear,curMonth);
-  await applyRecurringForMonth(curYear,curMonth);
   await selectDay(currentDay);
   if(document.getElementById('summarySection').classList.contains('active')) renderSummary();
   if(document.getElementById('yearlySection').classList.contains('active')) renderYearly();
@@ -1039,8 +1033,7 @@ async function onMonthChange(){
 
 // ─── DYNAMIC FIELD ROWS (built from EXPENSE_FIELDS / INCOME_FIELDS) ──────────
 function fieldRowHTML(f,isIncome){
-  const recurBadge=f.recurringAmount>0?' <span title="Recurring" style="opacity:.6;font-size:.7rem">🔁</span>':'';
-  return `<div class="field-row"><span class="field-icon">${f.icon}</span><span class="field-label">${escHtml(f.label)}${recurBadge}</span><input class="field-input${isIncome?' income-inp':''}" type="text" inputmode="decimal" autocomplete="off" placeholder="0" id="f_${f.id}"><button class="receipt-btn" type="button" onclick="triggerReceipt('${f.id}')" id="rbtn_${f.id}" title="Attach receipt photo">📎</button><button class="note-btn" type="button" onclick="toggleNote('${f.id}')" id="nbtn_${f.id}" title="Add note">📝</button><input type="file" accept="image/*" style="display:none" id="rfile_${f.id}" onchange="onReceiptFileChosen('${f.id}',this.files[0])"></div><div class="note-row" id="noterow_${f.id}"><input class="note-input" type="text" placeholder="Note (optional)" id="note_${f.id}" maxlength="200"><div class="receipt-preview" id="rprev_${f.id}"></div></div>`;
+  return `<div class="field-row"><span class="field-icon">${f.icon}</span><span class="field-label">${escHtml(f.label)}</span><input class="field-input${isIncome?' income-inp':''}" type="text" inputmode="decimal" autocomplete="off" placeholder="0" id="f_${f.id}"><button class="receipt-btn" type="button" onclick="triggerReceipt('${f.id}')" id="rbtn_${f.id}" title="Attach receipt photo">📎</button><button class="note-btn" type="button" onclick="toggleNote('${f.id}')" id="nbtn_${f.id}" title="Add note">📝</button><input type="file" accept="image/*" style="display:none" id="rfile_${f.id}" onchange="onReceiptFileChosen('${f.id}',this.files[0])"></div><div class="note-row" id="noterow_${f.id}"><input class="note-input" type="text" placeholder="Note (optional)" id="note_${f.id}" maxlength="200"><div class="receipt-preview" id="rprev_${f.id}"></div></div>`;
 }
 
 function renderFieldRows(){
@@ -1158,67 +1151,12 @@ function budgetRowHTML(f){
   const val=f.budget||'';
   return `<div class="cat-row"><span class="field-icon">${f.icon}</span><span class="field-label">${escHtml(f.label)}</span><input class="field-input" type="number" min="0" placeholder="0" value="${val}" onchange="updateCategoryField('${f.id}','budget',this.value)"></div>`;
 }
-function recurringRowHTML(f){
-  return `<div class="cat-row"><span class="field-icon">${f.icon}</span><span class="field-label" style="flex:1;min-width:60px">${escHtml(f.label)}</span><input class="field-input" type="number" min="0" placeholder="Amount" style="width:76px" value="${f.recurringAmount||''}" onchange="updateRecurringField('${f.id}','amount',this.value)"><input class="field-input" type="number" min="1" max="31" placeholder="Day" title="Day of month" style="width:50px" value="${f.recurringDay||1}" onchange="updateRecurringField('${f.id}','day',this.value)"></div>`;
-}
 function renderSettingsLists(){
-  const ce=document.getElementById('catListExpense'), ci=document.getElementById('catListIncome'), bl=document.getElementById('budgetList'), gi=document.getElementById('goalInput'), rl=document.getElementById('recurringList');
+  const ce=document.getElementById('catListExpense'), ci=document.getElementById('catListIncome'), bl=document.getElementById('budgetList'), gi=document.getElementById('goalInput');
   if(ce) ce.innerHTML=EXPENSE_FIELDS.map(catRowHTML).join('');
   if(ci) ci.innerHTML=INCOME_FIELDS.map(catRowHTML).join('');
   if(bl) bl.innerHTML=EXPENSE_FIELDS.map(budgetRowHTML).join('')||'<div style="color:var(--muted);text-align:center;padding:14px;font-size:0.82rem">No expense categories yet</div>';
   if(gi) gi.value=SAVINGS_GOAL||'';
-  if(rl) rl.innerHTML=ALL_FIELDS.map(recurringRowHTML).join('')||'<div style="color:var(--muted);text-align:center;padding:14px;font-size:0.82rem">No categories yet</div>';
-}
-async function updateRecurringField(id,key,value){
-  const f=EXPENSE_FIELDS.find(x=>x.id===id)||INCOME_FIELDS.find(x=>x.id===id);
-  if(!f) return;
-  if(key==='amount'){
-    f.recurringAmount=Math.max(0,parseFloat(value)||0);
-  }else if(key==='day'){
-    f.recurringDay=Math.min(31,Math.max(1,parseInt(value)||1));
-  }
-  saveSettingsRemote();
-  renderFieldRows(); // refresh the 🔁 badge in the day view
-  loadDay(currentDay);
-  await applyRecurringForMonth(curYear,curMonth);
-  showToast('Recurring settings saved ✓');
-}
-
-// ─── RECURRING EXPENSES (auto-fill Rent, Mobile bill, etc. each month) ───────
-function loadRecurringApplied(){
-  try{ return JSON.parse(localStorage.getItem('mt_recurring_applied_v1'))||{}; }catch{ return {}; }
-}
-function saveRecurringApplied(obj){ localStorage.setItem('mt_recurring_applied_v1', JSON.stringify(obj)); }
-
-// For the given month, fills in any recurring category that hasn't been applied yet
-// (only into a day that doesn't already have a value for it, so it never overwrites
-// something the user already entered/edited/zeroed-out that month).
-async function applyRecurringForMonth(y,m){
-  const monthKey=`${y}_${m}`;
-  const applied=loadRecurringApplied();
-  const done=new Set(applied[monthKey]||[]);
-  let touchedDay=null;
-  const newlyFilled=[];
-  for(const f of ALL_FIELDS){
-    if(!(f.recurringAmount>0)) continue;
-    if(done.has(f.id)) continue;
-    const day=Math.min(f.recurringDay||1, daysInMonth(y,m));
-    const data=getDay(y,m,day);
-    if(!data[f.id]){
-      data[f.id]=f.recurringAmount;
-      await setDay(y,m,day,data);
-      touchedDay=day;
-      newlyFilled.push(f.label);
-    }
-    done.add(f.id);
-  }
-  applied[monthKey]=Array.from(done);
-  saveRecurringApplied(applied);
-  if(touchedDay!==null&&y===curYear&&m===curMonth){
-    renderDayBtns();
-    if(touchedDay===currentDay) loadDay(currentDay);
-  }
-  if(newlyFilled.length) showToast(`🔁 Auto-filled: ${newlyFilled.join(', ')}`);
 }
 function openSettings(tab){
   renderSettingsLists();
@@ -1553,7 +1491,6 @@ async function jumpToSearchResult(y,mo,d){
   switchView('day');
   showToast('Loading…');
   await loadMonthFromFirestore(curYear,curMonth);
-  await applyRecurringForMonth(curYear,curMonth);
   navOffset=Math.max(0,d-4);
   await selectDay(d);
 }
@@ -1729,42 +1666,24 @@ function renderSummary(){
   });
   if(!dl.innerHTML) dl.innerHTML='<div style="color:var(--muted);text-align:center;padding:14px;font-size:0.82rem">No data yet</div>';
 
-  renderSavingsGoalCard();
+  renderSavingsGoalCard(net);
   renderBudgets(catTotals);
   renderInsights(catTotals,totalExp);
 }
 
 // ─── SAVINGS GOAL ─────────────────────────────────────────────────────────────
-// "Saved" = all-time net balance (income − expense) across every month ever
-// recorded, computed from the categories currently in use.
-function calcAllTimeNet(){
-  const years=new Set();
-  for(let i=0;i<localStorage.length;i++){
-    const key=localStorage.key(i);
-    const m=key&&key.match(/^mt_(\d{4})_\d{1,2}_\d{1,2}$/);
-    if(m) years.add(parseInt(m[1]));
-  }
-  let net=0;
-  years.forEach(y=>{
-    for(let mo=0;mo<12;mo++){
-      const{totalExp,totalInc}=calcMonth(y,mo);
-      net+=(totalInc-totalExp);
-    }
-  });
-  return net;
-}
-
-function renderSavingsGoalCard(){
+// "Saved" = THIS month's net balance (income − expense), not all-time.
+function renderSavingsGoalCard(monthNet){
   const container=document.getElementById('goalCardContainer');
   if(!container) return;
   if(!SAVINGS_GOAL||SAVINGS_GOAL<=0){
     container.innerHTML=`<div class="goal-card empty" onclick="openSettings('goal')">🎯 No savings goal set yet — tap to create one</div>`;
     return;
   }
-  const saved=calcAllTimeNet();
+  const saved=monthNet;
   const pct=Math.max(0,Math.min(100,(saved/SAVINGS_GOAL)*100));
   container.innerHTML=`<div class="goal-card">
-    <div class="goal-head"><span>🎯 Savings Goal</span><span class="goal-edit" onclick="openSettings('goal')" title="Edit goal">✏️</span></div>
+    <div class="goal-head"><span>🎯 Savings Goal — ${MONTHS[curMonth]}</span><span class="goal-edit" onclick="openSettings('goal')" title="Edit goal">✏️</span></div>
     <div class="goal-amounts"><span class="goal-saved${saved<0?' neg':''}">${fmt(saved)}</span><span class="goal-of">of ${fmt(SAVINGS_GOAL)} target</span></div>
     <div class="goal-bar-track"><div class="goal-bar-fill" style="width:${pct}%"></div></div>
     <div class="goal-pct">${pct.toFixed(0)}% reached</div>
@@ -2285,7 +2204,6 @@ async function initApp(){
       await loadSettingsRemote();
       renderFieldRows();
       initSelectors();
-      await applyRecurringForMonth(curYear,curMonth);
       const today=new Date();
       const startDay=curYear===today.getFullYear()&&curMonth===today.getMonth()?today.getDate():1;
       navOffset=Math.max(0,startDay-4);
@@ -2295,7 +2213,6 @@ async function initApp(){
     console.error("Firebase init failed:",e);
     // Fallback: run without Firebase
     initSelectors();
-    await applyRecurringForMonth(curYear,curMonth);
     const today=new Date();
     const startDay=curYear===today.getFullYear()&&curMonth===today.getMonth()?today.getDate():1;
     navOffset=Math.max(0,startDay-4);
