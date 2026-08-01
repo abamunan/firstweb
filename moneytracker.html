@@ -180,7 +180,7 @@
   .field-icon { font-size: 1rem; width: 22px; text-align: center; flex-shrink: 0; }
   .field-label { font-size: 0.82rem; color: var(--text-main); flex: 1; font-weight: 400; }
   .field-input {
-    width: 112px;
+    width: 80px;
     background: var(--surface);
     border: 1px solid var(--card-border);
     border-radius: 10px;
@@ -582,6 +582,43 @@
   .account-total .acct-label { font-size: 0.82rem; }
   .acct-total-val { font-size: 0.95rem; font-weight: 800; color: var(--accent2); }
   .acct-total-val.neg { color: var(--danger); }
+  .acct-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .acct-balance-val { font-weight: 700; font-size: 0.9rem; color: var(--accent2); min-width: 64px; text-align: right; }
+  .acct-balance-val.neg { color: var(--danger); }
+  .acct-mini-btn {
+    background: var(--surface); border: 1px solid var(--card-border); border-radius: 7px;
+    width: 27px; height: 27px; font-size: 0.8rem; cursor: pointer; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; padding: 0; transition: var(--trans);
+  }
+  .acct-mini-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .acct-panel { display: none; gap: 7px; align-items: center; background: var(--surface); border: 1px solid var(--card-border); border-radius: 10px; padding: 8px 10px; margin: -2px 0 6px; }
+  .acct-panel.open { display: flex; }
+  .acct-panel-input {
+    flex: 1; min-width: 0; background: var(--card-bg); border: 1px solid var(--card-border);
+    border-radius: 7px; padding: 6px 9px; font-size: 0.8rem; color: var(--text-main);
+    outline: none; font-family: inherit;
+  }
+  .acct-panel-select {
+    flex: 1; min-width: 0; background: var(--card-bg); border: 1px solid var(--card-border);
+    border-radius: 7px; padding: 6px 7px; font-size: 0.76rem; color: var(--text-main);
+    outline: none; font-family: inherit;
+  }
+  .acct-panel-btn {
+    background: var(--accent); color: #fff; border: none; border-radius: 7px;
+    padding: 6px 12px; font-size: 0.78rem; font-weight: 600; cursor: pointer;
+    flex-shrink: 0; transition: var(--trans);
+  }
+  .acct-panel-btn:hover { filter: brightness(1.1); }
+  .acct-panel-btn.cancel { background: transparent; color: var(--text-soft); border: 1px solid var(--card-border); padding: 6px 9px; }
+
+  /* ── expense/income rows: account picker (pay-from / deposit-to) ────────── */
+  .field-row { flex-wrap: wrap; }
+  .field-acct-select {
+    width: 40px; flex-shrink: 0; background: var(--surface); border: 1px solid var(--card-border);
+    border-radius: 7px; padding: 5px 1px; font-size: 0.78rem; color: var(--text-main);
+    outline: none; font-family: inherit; text-align: center;
+  }
+  .field-acct-select:focus { border-color: var(--accent2); }
 
   /* ── BUDGET ROWS ───────────────────────────────────────────── */
   .budget-row {
@@ -621,14 +658,6 @@
   .insight-bad { color: var(--danger); font-weight: 700; }
 
   /* ── RECEIPT ATTACH ─────────────────────────────────────────── */
-  .receipt-btn {
-    background: transparent; border: none;
-    font-size: 0.92rem; line-height: 1; padding: 5px 6px;
-    border-radius: 8px; cursor: pointer; flex-shrink: 0;
-    opacity: 0.32; transition: var(--trans);
-  }
-  .receipt-btn:hover { opacity: 0.75; background: var(--surface); }
-  .receipt-btn.has-receipt { opacity: 1; background: var(--surface); color: var(--accent); }
   .receipt-preview:empty { display: none; }
   .receipt-preview { margin-top: 8px; }
   .receipt-thumb-wrap { position: relative; display: inline-block; }
@@ -817,7 +846,7 @@
         </div>
       </div>
       <div class="settings-pane" id="pane-accounts">
-        <div class="settings-sub">💳 Track balances for Cash, bKash, Card, Bank, etc. — update the balance here or directly from Monthly Summary</div>
+        <div class="settings-sub">💳 Balances are now automatic — set an Opening balance here once per account. From then on it updates itself from income and expenses (pick the account per entry — expenses default to Cash), plus Add/Transfer in Monthly Summary.</div>
         <div id="accountList"></div>
         <div class="add-cat-row">
           <input type="text" id="newAcctIcon" class="cat-icon-input" placeholder="🎯" maxlength="4">
@@ -830,7 +859,7 @@
         <div id="budgetList"></div>
       </div>
       <div class="settings-pane" id="pane-goal">
-        <div class="settings-sub">Set a savings target — progress tracks this month's net balance (income − expense)</div>
+        <div class="settings-sub">Set a savings target — progress tracks total budgeted (Budgets tab) minus what you've spent in those categories this month</div>
         <div class="field-row"><span class="field-label">Target Amount</span><input class="field-input" type="number" id="goalInput" min="0" placeholder="0"></div>
         <button class="btn-primary" style="margin-top:10px" onclick="saveGoal()">💾 Save Goal</button>
       </div>
@@ -916,9 +945,9 @@ const DEFAULT_INCOME_FIELDS = [
   {id:'self',label:'Self Income',icon:'💼'},
 ];
 const DEFAULT_ACCOUNTS = [
-  {id:'cash',label:'Cash',icon:'💵',balance:0},
-  {id:'bkash',label:'bKash',icon:'📱',balance:0},
-  {id:'card',label:'Card',icon:'💳',balance:0},
+  {id:'cash',label:'Cash',icon:'💵',opening:0},
+  {id:'bkash',label:'bKash',icon:'📱',opening:0},
+  {id:'card',label:'Card',icon:'💳',opening:0},
 ];
 
 // Live, editable category lists (loaded from localStorage/Firestore in initApp)
@@ -927,6 +956,67 @@ let INCOME_FIELDS = [];
 let ALL_FIELDS = [];
 let SAVINGS_GOAL = 0;
 let ACCOUNTS = [];
+let LEDGER = []; // manual account events: {id, ts, type:'add'|'transfer', accountId?, fromId?, toId?, amount, note?}
+
+// One-time migration: older saves stored a static "balance" number per account.
+// We now treat that number as the account's lifetime "opening" balance, and
+// everything after that point (income/expense/transfers) is computed dynamically.
+function migrateAccounts(){
+  ACCOUNTS.forEach(a=>{
+    if(typeof a.opening!=='number'){
+      a.opening = typeof a.balance==='number' ? a.balance : 0;
+    }
+  });
+}
+
+// Which account an expense debits by default (no per-entry picker for expenses).
+function defaultExpenseAccountId(){
+  if(ACCOUNTS.some(a=>a.id==='cash')) return 'cash';
+  return ACCOUNTS[0]?.id ?? null;
+}
+function defaultIncomeAccountId(){ return defaultExpenseAccountId(); }
+
+// ── ACCOUNT BALANCES (dynamic, lifetime running total) ────────
+// balance = opening + all income credited to it + manual "Add" + transfers in
+//                    − expense debited from it (default: Cash, overridable per entry) − transfers out
+// Recomputed from every saved day + the manual ledger — nothing is stored as
+// a raw balance number anymore (except each account's one-time "opening" value).
+function computeAccountBalances(){
+  const balances={};
+  ACCOUNTS.forEach(a=>{ balances[a.id]=a.opening||0; });
+  const dayKeyRe=/^mt_\d+_\d+_\d+$/;
+  const defAcct=defaultExpenseAccountId();
+  for(let i=0;i<localStorage.length;i++){
+    const key=localStorage.key(i);
+    if(!key||!dayKeyRe.test(key)) continue;
+    let data;
+    try{ data=JSON.parse(localStorage.getItem(key)); }catch{ continue; }
+    if(!data) continue;
+    EXPENSE_FIELDS.forEach(f=>{
+      const amt=data[f.id];
+      if(amt>0){
+        const acctId=data['acct_'+f.id]||defAcct;
+        if(acctId!=null) balances[acctId]=(balances[acctId]||0)-amt;
+      }
+    });
+    INCOME_FIELDS.forEach(f=>{
+      const amt=data[f.id];
+      if(amt>0){
+        const acctId=data['acct_'+f.id]||defAcct;
+        if(acctId!=null) balances[acctId]=(balances[acctId]||0)+amt;
+      }
+    });
+  }
+  LEDGER.forEach(ev=>{
+    if(ev.type==='add'){
+      balances[ev.accountId]=(balances[ev.accountId]||0)+ev.amount;
+    } else if(ev.type==='transfer'){
+      balances[ev.fromId]=(balances[ev.fromId]||0)-ev.amount;
+      balances[ev.toId]=(balances[ev.toId]||0)+ev.amount;
+    }
+  });
+  return balances;
+}
 
 function rebuildAllFields(){ ALL_FIELDS = [...EXPENSE_FIELDS, ...INCOME_FIELDS]; }
 
@@ -960,9 +1050,46 @@ function loadAccountsLocal(){
   }catch{
     ACCOUNTS=DEFAULT_ACCOUNTS.map(a=>({...a}));
   }
+  migrateAccounts();
 }
 function saveAccountsLocal(){
   localStorage.setItem('mt_accounts_v1', JSON.stringify(ACCOUNTS));
+}
+function loadLedgerLocal(){
+  try{
+    const raw=localStorage.getItem('mt_ledger_v1');
+    const parsed=raw?JSON.parse(raw):null;
+    LEDGER=Array.isArray(parsed)?parsed:[];
+  }catch{ LEDGER=[]; }
+}
+function saveLedgerLocal(){
+  localStorage.setItem('mt_ledger_v1', JSON.stringify(LEDGER));
+}
+async function saveLedgerRemote(){
+  saveLedgerLocal();
+  if(!window._mtAuth||!window._mtDb) return;
+  const uid=window._mtAuth.currentUser?.uid;
+  if(!uid) return;
+  try{
+    const {doc,setDoc}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    await setDoc(doc(window._mtDb,"users",uid,"moneytracker_meta","ledger"),{events:LEDGER});
+  }catch(e){console.error("Ledger save failed:",e);}
+}
+async function loadLedgerRemote(){
+  if(!window._mtAuth||!window._mtDb) return false;
+  const uid=window._mtAuth.currentUser?.uid;
+  if(!uid) return false;
+  try{
+    const {doc,getDoc}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const snap=await getDoc(doc(window._mtDb,"users",uid,"moneytracker_meta","ledger"));
+    if(snap.exists()){
+      const data=snap.data();
+      if(Array.isArray(data.events)) LEDGER=data.events;
+      saveLedgerLocal();
+      return true;
+    }
+  }catch(e){console.error("Ledger load failed:",e);}
+  return false;
 }
 
 // ── CATEGORY + GOAL PERSISTENCE (Firestore, one combined doc) ─
@@ -991,6 +1118,7 @@ async function loadSettingsRemote(){
       if(Array.isArray(data.income)&&data.income.length) INCOME_FIELDS=data.income;
       SAVINGS_GOAL=typeof data.goal==='number'?data.goal:SAVINGS_GOAL;
       if(Array.isArray(data.accounts)&&data.accounts.length) ACCOUNTS=data.accounts;
+      migrateAccounts();
       rebuildAllFields();
       saveCategoriesLocal();
       saveGoalLocalOnly();
@@ -1091,7 +1219,8 @@ async function onMonthChange(){
 
 // ─── DYNAMIC FIELD ROWS (built from EXPENSE_FIELDS / INCOME_FIELDS) ──────────
 function fieldRowHTML(f,isIncome){
-  return `<div class="field-row"><span class="field-icon">${f.icon}</span><span class="field-label">${escHtml(f.label)}</span><input class="field-input${isIncome?' income-inp':''}" type="text" inputmode="decimal" autocomplete="off" placeholder="0" id="f_${f.id}"><button class="receipt-btn" type="button" onclick="triggerReceipt('${f.id}')" id="rbtn_${f.id}" title="Attach receipt photo">📎</button><button class="note-btn" type="button" onclick="toggleNote('${f.id}')" id="nbtn_${f.id}" title="Add note">📝</button><input type="file" accept="image/*" style="display:none" id="rfile_${f.id}" onchange="onReceiptFileChosen('${f.id}',this.files[0])"></div><div class="note-row" id="noterow_${f.id}"><input class="note-input" type="text" placeholder="Note (optional)" id="note_${f.id}" maxlength="200"><div class="receipt-preview" id="rprev_${f.id}"></div></div>`;
+  const acctSelect=`<select class="field-acct-select" id="acct_${f.id}" title="${isIncome?'Deposit to':'Pay from'}">${ACCOUNTS.map(a=>`<option value="${a.id}">${a.icon} ${escHtml(a.label)}</option>`).join('')}</select>`;
+  return `<div class="field-row"><span class="field-icon">${f.icon}</span><span class="field-label">${escHtml(f.label)}</span><input class="field-input${isIncome?' income-inp':''}" type="text" inputmode="decimal" autocomplete="off" placeholder="0" id="f_${f.id}">${acctSelect}<button class="note-btn" type="button" onclick="toggleNote('${f.id}')" id="nbtn_${f.id}" title="Add note">📝</button><input type="file" accept="image/*" style="display:none" id="rfile_${f.id}" onchange="onReceiptFileChosen('${f.id}',this.files[0])"></div><div class="note-row" id="noterow_${f.id}"><input class="note-input" type="text" placeholder="Note (optional)" id="note_${f.id}" maxlength="200"><div class="receipt-preview" id="rprev_${f.id}"></div></div>`;
 }
 
 function renderFieldRows(){
@@ -1120,6 +1249,8 @@ function attachFieldListeners(){
       updateNoteIndicator(f.id, noteEl.value.trim().length>0);
       scheduleAutoSave();
     });
+    const acctEl=document.getElementById('acct_'+f.id);
+    if(acctEl) acctEl.addEventListener('change',()=>scheduleAutoSave());
   });
 }
 
@@ -1211,8 +1342,8 @@ function updateAccountField(id,key,value){
     a.label=v;
   } else if(key==='icon'){
     a.icon=String(value).trim()||a.icon;
-  } else if(key==='balance'){
-    a.balance=parseFloat(value)||0;
+  } else if(key==='opening'){
+    a.opening=parseFloat(value)||0;
   }
   saveSettingsRemote();
   renderSettingsLists();
@@ -1226,7 +1357,7 @@ function addAccount(){
   const label=labelEl.value.trim();
   if(!label){ showToast('Enter an account name','error'); return; }
   const id='a'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-  ACCOUNTS.push({id,label,icon,balance:0});
+  ACCOUNTS.push({id,label,icon,opening:0});
   saveSettingsRemote();
   iconEl.value=''; labelEl.value='';
   renderSettingsLists();
@@ -1251,7 +1382,7 @@ function budgetRowHTML(f){
   return `<div class="cat-row"><span class="field-icon">${f.icon}</span><span class="field-label">${escHtml(f.label)}</span><input class="field-input" type="number" min="0" placeholder="0" value="${val}" onchange="updateCategoryField('${f.id}','budget',this.value)"></div>`;
 }
 function accountRowHTML(a){
-  return `<div class="cat-row"><input class="cat-icon-input" value="${escHtml(a.icon)}" onchange="updateAccountField('${a.id}','icon',this.value)"><input class="cat-label-input" value="${escHtml(a.label)}" onchange="updateAccountField('${a.id}','label',this.value)"><input class="field-input" type="number" style="width:92px" placeholder="0" value="${a.balance||0}" onchange="updateAccountField('${a.id}','balance',this.value)"><button class="cat-del-btn" onclick="deleteAccount('${a.id}')" title="Delete">🗑</button></div>`;
+  return `<div class="cat-row"><input class="cat-icon-input" value="${escHtml(a.icon)}" onchange="updateAccountField('${a.id}','icon',this.value)"><input class="cat-label-input" value="${escHtml(a.label)}" onchange="updateAccountField('${a.id}','label',this.value)"><input class="field-input" type="number" style="width:92px" placeholder="Opening" value="${a.opening||0}" onchange="updateAccountField('${a.id}','opening',this.value)"><button class="cat-del-btn" onclick="deleteAccount('${a.id}')" title="Delete">🗑</button></div>`;
 }
 function renderSettingsLists(){
   const ce=document.getElementById('catListExpense'), ci=document.getElementById('catListIncome'), bl=document.getElementById('budgetList'), gi=document.getElementById('goalInput'), al=document.getElementById('accountList');
@@ -1298,6 +1429,8 @@ function loadDay(d){
     if(frow) frow.classList.toggle('note-open', showRow);
     updateNoteIndicator(f.id, !!noteVal);
     updateReceiptIndicator(f.id, hasReceipt);
+    const acctEl=document.getElementById('acct_'+f.id);
+    if(acctEl) acctEl.value=data['acct_'+f.id]||defaultIncomeAccountId()||'';
   });
   updateTotals();
 }
@@ -1453,6 +1586,8 @@ function collectDayData(){
     const noteVal=noteEl?noteEl.value.trim():'';
     if(noteVal) data['note_'+f.id]=noteVal;
     if(currentReceipts[f.id]) data['receipt_'+f.id]=currentReceipts[f.id];
+    const acctEl=document.getElementById('acct_'+f.id);
+    if(acctEl) data['acct_'+f.id]=acctEl.value;
   });
   updateTotals();
   return data;
@@ -1769,7 +1904,7 @@ function renderSummary(){
   });
   if(!dl.innerHTML) dl.innerHTML='<div style="color:var(--muted);text-align:center;padding:14px;font-size:0.82rem">No data yet</div>';
 
-  renderSavingsGoalCard();
+  renderSavingsGoalCard(catTotals);
   renderAccountListSummary();
   renderBudgets(catTotals);
   renderInsights(catTotals,totalExp);
@@ -1777,16 +1912,19 @@ function renderSummary(){
 
 // ─── SAVINGS GOAL ─────────────────────────────────────────────────────────────
 // Target = manually entered in Settings → Goal (SAVINGS_GOAL).
-// "Saved" = sum of every category's budget input for the current month
-// (i.e. total money you've earmarked/set aside across all categories this month).
-function renderSavingsGoalCard(){
+// "Saved" = total budgeted across categories − actual expense in those budgeted
+// categories this month (i.e. how much of your planned budget you kept unspent).
+function renderSavingsGoalCard(catTotals){
   const container=document.getElementById('goalCardContainer');
   if(!container) return;
   if(!SAVINGS_GOAL||SAVINGS_GOAL<=0){
     container.innerHTML=`<div class="goal-card empty" onclick="openSettings('goal')">🎯 No savings goal set yet — tap to create one</div>`;
     return;
   }
-  const saved=EXPENSE_FIELDS.reduce((s,f)=>s+(f.budget||0),0);
+  const budgeted=EXPENSE_FIELDS.filter(f=>f.budget>0);
+  const totalBudget=budgeted.reduce((s,f)=>s+f.budget,0);
+  const spentInBudgeted=budgeted.reduce((s,f)=>s+(catTotals[f.id]||0),0);
+  const saved=totalBudget-spentInBudgeted;
   const pct=Math.max(0,Math.min(100,(saved/SAVINGS_GOAL)*100));
   container.innerHTML=`<div class="goal-card">
     <div class="goal-head"><span>🎯 Savings Goal — ${MONTHS[curMonth]}</span><span class="goal-edit" onclick="openSettings('goal')" title="Edit goal">✏️</span></div>
@@ -1797,8 +1935,9 @@ function renderSavingsGoalCard(){
 }
 
 // ─── ACCOUNTS ─────────────────────────────────────────────────────────────────
-// Manually-tracked balances (Cash / bKash / Card / Bank, etc). Not derived from
-// transactions — the user updates the number here or in Settings whenever it changes.
+// Dynamic, lifetime-running balances (Cash / bKash / Card / Bank, etc).
+// Computed from: opening balance + income credited to the account + manual
+// "Add" entries + transfers in − expenses (default: Cash) − transfers out.
 function renderAccountListSummary(){
   const container=document.getElementById('accountListSummary');
   if(!container) return;
@@ -1806,13 +1945,64 @@ function renderAccountListSummary(){
     container.innerHTML='<div style="color:var(--muted);text-align:center;padding:14px;font-size:0.82rem">No accounts yet — add one in ⚙️ Settings → Accounts</div>';
     return;
   }
-  const rows=ACCOUNTS.map(a=>`
-    <div class="account-row">
+  const balances=computeAccountBalances();
+  const rows=ACCOUNTS.map(a=>{
+    const bal=balances[a.id]||0;
+    return `<div class="account-row">
       <span class="acct-left"><span class="acct-icon">${a.icon}</span><span class="acct-label">${escHtml(a.label)}</span></span>
-      <input class="acct-balance-input${(a.balance||0)<0?' neg':''}" type="number" inputmode="decimal" value="${a.balance||0}" onchange="updateAccountField('${a.id}','balance',this.value)">
-    </div>`).join('');
-  const total=ACCOUNTS.reduce((s,a)=>s+(a.balance||0),0);
+      <span class="acct-right">
+        <span class="acct-balance-val${bal<0?' neg':''}">${fmt(bal)}</span>
+        <button class="acct-mini-btn" onclick="toggleAcctPanel('${a.id}','add')" title="Add balance">➕</button>
+        <button class="acct-mini-btn" onclick="toggleAcctPanel('${a.id}','transfer')" title="Transfer">⇄</button>
+      </span>
+    </div>
+    <div class="acct-panel" id="acctpanel_${a.id}"></div>`;
+  }).join('');
+  const total=ACCOUNTS.reduce((s,a)=>s+(balances[a.id]||0),0);
   container.innerHTML=rows+`<div class="account-row account-total"><span class="acct-left"><span class="acct-label">Total Balance</span></span><span class="acct-total-val${total<0?' neg':''}">${fmt(total)}</span></div>`;
+}
+
+// ── Add-balance / Transfer inline panels ──────────────────────
+function toggleAcctPanel(id,mode){
+  const panel=document.getElementById('acctpanel_'+id);
+  if(!panel) return;
+  const wasOpenSameMode=panel.classList.contains('open')&&panel.dataset.mode===mode;
+  document.querySelectorAll('.acct-panel.open').forEach(p=>{ p.classList.remove('open'); p.innerHTML=''; });
+  if(wasOpenSameMode) return;
+  panel.dataset.mode=mode;
+  if(mode==='add'){
+    panel.innerHTML=`<input class="acct-panel-input" type="number" min="0" inputmode="decimal" placeholder="Amount" id="addamt_${id}"><button class="acct-panel-btn" onclick="confirmAddBalance('${id}')">Add</button><button class="acct-panel-btn cancel" onclick="closeAcctPanel('${id}')">✕</button>`;
+  } else {
+    const opts=ACCOUNTS.filter(a=>a.id!==id).map(a=>`<option value="${a.id}">${a.icon} ${escHtml(a.label)}</option>`).join('');
+    panel.innerHTML=`<select class="acct-panel-select" id="transto_${id}">${opts}</select><input class="acct-panel-input" type="number" min="0" inputmode="decimal" placeholder="Amount" id="transamt_${id}"><button class="acct-panel-btn" onclick="confirmTransfer('${id}')">Send</button><button class="acct-panel-btn cancel" onclick="closeAcctPanel('${id}')">✕</button>`;
+  }
+  panel.classList.add('open');
+  document.getElementById(mode==='add'?'addamt_'+id:'transamt_'+id)?.focus();
+}
+function closeAcctPanel(id){
+  const panel=document.getElementById('acctpanel_'+id);
+  if(panel){ panel.classList.remove('open'); panel.innerHTML=''; }
+}
+function ledgerId(){ return 'lg'+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+function confirmAddBalance(id){
+  const amt=Math.max(0,parseFloat(document.getElementById('addamt_'+id)?.value)||0);
+  if(amt<=0){ showToast('Enter a valid amount','error'); return; }
+  LEDGER.push({id:ledgerId(),ts:new Date().toISOString(),type:'add',accountId:id,amount:amt});
+  saveLedgerRemote();
+  closeAcctPanel(id);
+  renderAccountListSummary();
+  showToast('Balance added ✓');
+}
+function confirmTransfer(id){
+  const toId=document.getElementById('transto_'+id)?.value;
+  const amt=Math.max(0,parseFloat(document.getElementById('transamt_'+id)?.value)||0);
+  if(!toId){ showToast('Pick a destination account','error'); return; }
+  if(amt<=0){ showToast('Enter a valid amount','error'); return; }
+  LEDGER.push({id:ledgerId(),ts:new Date().toISOString(),type:'transfer',fromId:id,toId,amount:amt});
+  saveLedgerRemote();
+  closeAcctPanel(id);
+  renderAccountListSummary();
+  showToast('Transferred ✓');
 }
 
 // ─── BUDGETS ──────────────────────────────────────────────────────────────────
@@ -2412,6 +2602,7 @@ async function initApp(){
   loadCategoriesLocal();
   loadGoalLocal();
   loadAccountsLocal();
+  loadLedgerLocal();
   renderFieldRows();
 
   try {
@@ -2439,6 +2630,7 @@ async function initApp(){
       showToast('Loading data…');
       await loadMonthFromFirestore(curYear,curMonth);
       await loadSettingsRemote();
+      await loadLedgerRemote();
       renderFieldRows();
       initSelectors();
       const today=new Date();
