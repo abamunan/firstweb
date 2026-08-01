@@ -1969,6 +1969,71 @@ function exportMonthPDF(){
   daily.forEach(({day,exp,inc,net:n})=>{
     dayRows+=`<tr><td>Day ${day}</td><td class="num exp">${exp.toLocaleString('en-IN')}</td><td class="num inc">${inc.toLocaleString('en-IN')}</td><td class="num ${n>=0?'inc':'exp'}">${n.toLocaleString('en-IN')}</td></tr>`;
   });
+
+  // Detailed day section: every recorded day (1..30/31), one by one — only
+  // fields with a non-zero amount are listed, zero fields are skipped.
+  let dayDetailHtml='';
+  daily.forEach(({day,net:n,data})=>{
+    const dateStr=new Date(curYear,curMonth,day).toLocaleDateString('en-US',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    let dRows='';
+    EXPENSE_FIELDS.forEach(f=>{
+      const v=data[f.id]||0;
+      if(!v) return;
+      const note=data['note_'+f.id]||'';
+      dRows+=`<tr><td>${f.icon} ${escHtml(f.label)}</td><td>Expense</td><td class="num exp">${v.toLocaleString('en-IN')}</td><td>${escHtml(note)}</td></tr>`;
+    });
+    INCOME_FIELDS.forEach(f=>{
+      const v=data[f.id]||0;
+      if(!v) return;
+      const note=data['note_'+f.id]||'';
+      dRows+=`<tr><td>${f.icon} ${escHtml(f.label)}</td><td>Income</td><td class="num inc">${v.toLocaleString('en-IN')}</td><td>${escHtml(note)}</td></tr>`;
+    });
+    dRows+=`<tr class="grand"><td colspan="2">Net Balance</td><td class="num ${n>=0?'inc':'exp'}">${n.toLocaleString('en-IN')}</td><td></td></tr>`;
+    dayDetailHtml+=`<div class="day-block"><div class="day-block-head">Day ${day} · ${dateStr}</div><table><tr><th>Category</th><th>Type</th><th class="num">Amount (৳)</th><th>Note</th></tr>${dRows}</table></div>`;
+  });
+  if(!dayDetailHtml) dayDetailHtml='<div class="chart-nodata">No day-by-day data recorded yet</div>';
+
+  // Insights (top category + month-over-month changes, same logic as the on-screen Insights card)
+  const{y:py,m:pm}=getPrevMonth(curYear,curMonth);
+  const prevData=calcMonth(py,pm);
+  let insightsHtml='';
+  const topEntries=EXPENSE_FIELDS.map(f=>({f,val:catTotals[f.id]||0})).filter(e=>e.val>0).sort((a,b)=>b.val-a.val);
+  if(topEntries.length){
+    const top=topEntries[0];
+    const share=totalExp>0?((top.val/totalExp)*100).toFixed(0):0;
+    insightsHtml+=`<div class="insight-box">🔥 <strong>Top Spending Category:</strong> ${top.f.icon} ${escHtml(top.f.label)} — ${top.val.toLocaleString('en-IN')} (${share}% of this month's expense)</div>`;
+  }
+  const changes=[];
+  ALL_FIELDS.forEach(f=>{
+    const isInc=INCOME_FIELDS.some(x=>x.id===f.id);
+    const cur=catTotals[f.id]||0;
+    const prevVal=prevData.catTotals[f.id]||0;
+    if(cur===0&&prevVal===0) return;
+    if(prevVal===0) return;
+    const pct=((cur-prevVal)/prevVal)*100;
+    if(Math.abs(pct)<1) return;
+    changes.push({f,isInc,pct});
+  });
+  changes.sort((a,b)=>Math.abs(b.pct)-Math.abs(a.pct));
+  if(changes.length){
+    insightsHtml+='<ul class="insight-list">'+changes.slice(0,3).map(c=>{
+      const up=c.pct>0;
+      const goodDirection=c.isInc?up:!up;
+      const arrow=up?'▲':'▼';
+      return `<li>${c.f.icon} ${escHtml(c.f.label)} <span class="${goodDirection?'inc':'exp'}">${arrow} ${Math.abs(c.pct).toFixed(0)}%</span> vs last month (${MONTHS[pm]})</li>`;
+    }).join('')+'</ul>';
+  } else {
+    insightsHtml+='<div class="chart-nodata">Not enough history yet to compare with last month</div>';
+  }
+  if(!insightsHtml) insightsHtml='<div class="chart-nodata">No insights available yet</div>';
+
+  // Charts — captured as images from the currently rendered canvases
+  const chartsHtml=
+    canvasImg('comparisonChart','Category Comparison — This Month vs Last Month')+
+    canvasImg('dailyBarChart','Daily Trend')+
+    canvasImg('dailyAreaChart','Expense Curve')+
+    canvasImg('categoryPieChart','Category Breakdown');
+
   printHTML(pdfStyle()+`
     <h1>💰 Money Tracker — ${MONTHS[curMonth]} ${curYear}</h1>
     <div class="sub">Monthly Report | Generated: ${new Date().toLocaleDateString('en-US',{day:'numeric',month:'long',year:'numeric'})}</div>
@@ -1977,10 +2042,15 @@ function exportMonthPDF(){
       <div class="ov"><div class="ol">Total Income</div><div class="ov-val inc">${totalInc.toLocaleString('en-IN')}</div></div>
       <div class="ov"><div class="ol">Net Balance</div><div class="ov-val ${net>=0?'inc':'exp'}">${net.toLocaleString('en-IN')}</div></div>
     </div>
+    <div class="sh">Insights</div>
+    ${insightsHtml}
+    ${chartsHtml}
     <div class="sh">Category Breakdown</div>
     <table><tr><th>Category</th><th>Type</th><th class="num">Amount (৳)</th></tr>${catRows}</table>
-    <div class="sh">Day by Day</div>
-    <table><tr><th>Day</th><th class="num">Expense</th><th class="num">Income</th><th class="num">Net</th></tr>${dayRows}</table>`);
+    <div class="sh">Day by Day (Summary)</div>
+    <table><tr><th>Day</th><th class="num">Expense</th><th class="num">Income</th><th class="num">Net</th></tr>${dayRows}</table>
+    <div class="sh">Day by Day (Detailed — non-zero fields only)</div>
+    ${dayDetailHtml}`);
   showToast('PDF ready ✓');
 }
 
@@ -2001,6 +2071,7 @@ function exportYearPDF(){
   const yrNet=yrInc-yrExp;
   EXPENSE_FIELDS.forEach(f=>{if(yrCat[f.id]) catRows+=`<tr><td>${f.icon} ${escHtml(f.label)}</td><td>Expense</td><td class="num exp">${yrCat[f.id].toLocaleString('en-IN')}</td></tr>`;});
   INCOME_FIELDS.forEach(f=>{if(yrCat[f.id]) catRows+=`<tr><td>${f.icon} ${escHtml(f.label)}</td><td>Income</td><td class="num inc">${yrCat[f.id].toLocaleString('en-IN')}</td></tr>`;});
+  const chartsHtml=canvasImg('yearlyBarChart','Monthly Trend')+canvasImg('yearlyPieChart','Category Breakdown (Full Year)');
   printHTML(pdfStyle()+`
     <h1>💰 Money Tracker — ${curYear} Annual Report</h1>
     <div class="sub">Generated: ${new Date().toLocaleDateString('en-US',{day:'numeric',month:'long',year:'numeric'})}</div>
@@ -2009,6 +2080,7 @@ function exportYearPDF(){
       <div class="ov"><div class="ol">Total Income</div><div class="ov-val inc">${yrInc.toLocaleString('en-IN')}</div></div>
       <div class="ov"><div class="ol">Net Balance</div><div class="ov-val ${yrNet>=0?'inc':'exp'}">${yrNet.toLocaleString('en-IN')}</div></div>
     </div>
+    ${chartsHtml}
     <div class="sh">Monthly Breakdown</div>
     <table><tr><th>Month</th><th class="num">Expense</th><th class="num">Income</th><th class="num">Net</th></tr>${mRows}</table>
     <div class="sh">Category Breakdown (Full Year)</div>
@@ -2108,7 +2180,35 @@ function pdfStyle(){
     .subtotal td{font-weight:700;background:#fff3cd;}
     .grand td{font-weight:700;font-size:13px;background:#dbe9fb;}
     .sh{background:#2E86AB;color:#fff;padding:6px 10px;font-weight:700;font-size:11px;border-radius:4px;margin:12px 0 6px;}
+    .insight-box{border:1px solid #dde;border-left:4px solid #2E86AB;border-radius:6px;padding:8px 12px;margin-bottom:8px;font-size:11.5px;background:#f6f8fb;}
+    .insight-list{list-style:none;margin:0 0 8px;padding:0;}
+    .insight-list li{border:1px solid #dde;border-radius:6px;padding:7px 12px;margin-bottom:6px;font-size:11.5px;background:#fff;}
+    .chart-nodata{color:#999;font-size:11px;text-align:center;padding:10px;border:1px dashed #dde;border-radius:6px;margin-bottom:12px;}
+    .pdf-chart-wrap{border:1px solid #dde;border-radius:8px;padding:10px;margin-bottom:16px;text-align:center;background:#fff;}
+    .pdf-chart-wrap img{width:100%;max-width:650px;}
+    .day-block{margin-bottom:14px;page-break-inside:avoid;}
+    .day-block-head{background:#eef4fb;color:#1E3A5F;font-weight:700;padding:6px 10px;font-size:11px;border:1px solid #dde;border-bottom:none;border-radius:4px 4px 0 0;}
+    .day-block table{margin-bottom:0;border:1px solid #dde;border-top:none;}
+    @media print{ .day-block{ break-inside:avoid; } .pdf-chart-wrap{ break-inside:avoid; } }
   </style>`;
+}
+
+// Grabs whatever is currently drawn on a Chart.js canvas and turns it into an
+// <img> for the print window (charts live in the live DOM/canvas, not in the
+// PDF's own document, so they have to be captured as images first). Falls
+// back to a "no data" note if the chart is hidden/empty or capture fails.
+function canvasImg(id,label){
+  const el=document.getElementById(id);
+  const heading=label?`<div class="sh">${escHtml(label)}</div>`:'';
+  if(!el||el.style.display==='none'){
+    return `${heading}<div class="chart-nodata">No data available for this chart yet</div>`;
+  }
+  try{
+    const dataUrl=el.toDataURL('image/png',1.0);
+    return `${heading}<div class="pdf-chart-wrap"><img src="${dataUrl}" alt="${escHtml(label||'chart')}"/></div>`;
+  }catch(e){
+    return `${heading}<div class="chart-nodata">Chart unavailable</div>`;
+  }
 }
 
 function printHTML(body){
