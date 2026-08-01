@@ -532,6 +532,30 @@
     opacity: 0.5; padding: 5px 7px; border-radius: 8px; flex-shrink: 0; transition: var(--trans);
   }
   .cat-del-btn:hover { opacity: 1; background: rgba(220,38,38,0.12); }
+  .cat-pin-btn {
+    background: transparent; border: none; font-size: 0.95rem; cursor: pointer;
+    opacity: 0.45; padding: 5px 6px; border-radius: 8px; flex-shrink: 0; transition: var(--trans);
+  }
+  .cat-pin-btn:hover { opacity: 1; background: var(--surface); }
+  .cat-pin-btn.pinned { opacity: 1; color: #f5a623; }
+  .add-field-hint {
+    font-size: 0.7rem; color: var(--text-soft); text-align: center;
+    padding: 4px 16px 2px;
+  }
+  .cat-label-static { flex: 1; min-width: 0; font-size: 0.82rem; color: var(--text-main); }
+  .day-shown-badge {
+    font-size: 0.66rem; color: var(--text-soft); opacity: 0.8;
+    padding: 5px 6px; white-space: nowrap; flex-shrink: 0;
+  }
+  .day-add-btn, .day-remove-btn {
+    font-family: var(--font); font-size: 0.7rem; font-weight: 600; border-radius: 8px;
+    padding: 5px 9px; cursor: pointer; border: 1px solid var(--card-border);
+    background: var(--surface); white-space: nowrap; flex-shrink: 0; transition: var(--trans);
+  }
+  .day-add-btn { color: var(--accent); }
+  .day-add-btn:hover { background: var(--accent-glow); border-color: var(--accent); }
+  .day-remove-btn { color: var(--danger); }
+  .day-remove-btn:hover { background: var(--danger-glow); border-color: var(--danger); }
   .add-cat-row { display: flex; gap: 8px; margin-top: 9px; }
   .cat-add-btn {
     background: var(--accent); color: #fff; border: none; border-radius: 8px;
@@ -613,12 +637,22 @@
 
   /* ── expense/income rows: account picker (pay-from / deposit-to) ────────── */
   .field-row { flex-wrap: wrap; }
-  .field-acct-select {
-    width: 40px; flex-shrink: 0; background: var(--surface); border: 1px solid var(--card-border);
-    border-radius: 7px; padding: 5px 1px; font-size: 0.78rem; color: var(--text-main);
-    outline: none; font-family: inherit; text-align: center;
+  .acct-select-wrap {
+    position: relative; width: 30px; height: 28px; flex-shrink: 0;
   }
-  .field-acct-select:focus { border-color: var(--accent2); }
+  .acct-select-icon {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.95rem; line-height: 1;
+    background: var(--surface); border: 1px solid var(--card-border);
+    border-radius: 7px; pointer-events: none;
+  }
+  .field-acct-select {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    opacity: 0; border: none; padding: 0; margin: 0;
+    outline: none; font-family: inherit; cursor: pointer;
+  }
+  .acct-select-wrap:focus-within .acct-select-icon { border-color: var(--accent2); }
 
   /* ── BUDGET ROWS ───────────────────────────────────────────── */
   .budget-row {
@@ -735,13 +769,13 @@
     <div class="section-card">
       <div class="section-head expense">💸 EXPENSES</div>
       <div id="expenseFieldsContainer"></div>
-      <div class="add-cat-link" onclick="openSettings('categories')">➕ Add / manage categories</div>
+      <div class="add-cat-link" onclick="openAddFieldModal('expense')">➕ Add / Remove categories</div>
       <div class="total-row exp"><span>Total Expense</span><span id="totalExp">৳ 0</span></div>
     </div>
     <div class="section-card">
       <div class="section-head income">💵 INCOME</div>
       <div id="incomeFieldsContainer"></div>
-      <div class="add-cat-link" onclick="openSettings('categories')">➕ Add / manage income sources</div>
+      <div class="add-cat-link" onclick="openAddFieldModal('income')">➕ Add / Remove income sources</div>
       <div class="total-row inc"><span>Total Income</span><span id="totalInc">৳ 0</span></div>
     </div>
     <div class="net-card positive" id="netCard">
@@ -880,6 +914,20 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="addFieldModal">
+  <div class="modal-box" style="max-width:420px">
+    <div class="modal-header">
+      <h3 id="addFieldModalTitle">➕ Add Category</h3>
+      <button class="modal-close" onclick="closeAddFieldModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="add-field-hint">⭐ pin to always show it, or use + / − to show it just for today</div>
+      <div id="addFieldList"></div>
+      <div class="add-cat-link" style="margin-top:10px;border-bottom:none" onclick="closeAddFieldModal();openSettings('categories')">⚙️ Rename / create / delete categories</div>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="receiptViewerModal">
   <div class="modal-box" style="max-width:420px">
     <div class="modal-header">
@@ -919,31 +967,38 @@ const DAYS_IN_MONTH = [31,28,31,30,31,30,31,31,30,31,30,31];
 // Categories are no longer hardcoded in the DOM: they're data now, so users
 // can add/rename/remove them from Settings without touching any code.
 const DEFAULT_EXPENSE_FIELDS = [
-  {id:'nasta',label:'Nasta',icon:'🍳',budget:0},
-  {id:'lunch',label:'Lunch',icon:'🍛',budget:0},
-  {id:'dinner',label:'Dinner',icon:'🍽️',budget:0},
-  {id:'extrafood',label:'Extra Food',icon:'🥡',budget:0},
-  {id:'transport',label:'Transportation',icon:'🚌',budget:0},
-  {id:'extra',label:'Extra',icon:'➕',budget:0},
-  {id:'unifee',label:'University Fee',icon:'🎓',budget:0},
-  {id:'rent',label:'Home Rent',icon:'🏠',budget:0},
-  {id:'mobile',label:'Mobile',icon:'📱',budget:0},
-  {id:'stationary',label:'Stationary',icon:'📝',budget:0},
+  {id:'nasta',label:'Nasta',icon:'🍳',budget:0,pinned:true},
+  {id:'lunch',label:'Lunch',icon:'🍛',budget:0,pinned:true},
+  {id:'dinner',label:'Dinner',icon:'🍽️',budget:0,pinned:true},
+  {id:'extrafood',label:'Extra Food',icon:'🥡',budget:0,pinned:false},
+  {id:'transport',label:'Transportation',icon:'🚌',budget:0,pinned:true},
+  {id:'extra',label:'Extra',icon:'➕',budget:0,pinned:false},
+  {id:'unifee',label:'University Fee',icon:'🎓',budget:0,pinned:false},
+  {id:'rent',label:'Home Rent',icon:'🏠',budget:0,pinned:false},
+  {id:'mobile',label:'Mobile',icon:'📱',budget:0,pinned:false},
+  {id:'stationary',label:'Stationary',icon:'📝',budget:0,pinned:false},
 
-  {id:'bankdp',label:'Bank DP',icon:'🏦',budget:0},
-  {id:'shopping',label:'Shopping',icon:'🛍️',budget:0},
-  {id:'beauty',label:'Beauty',icon:'💄',budget:0},
-  {id:'gadget',label:'Gadget',icon:'📟',budget:0},
-  {id:'gift',label:'Gift',icon:'🎁',budget:0},
-  {id:'social',label:'Social',icon:'👥',budget:0},
-  {id:'tour',label:'Tour',icon:'🧳',budget:0},
-  {id:'necessary',label:'Necessary',icon:'🧾',budget:0},
-  {id:'medicine',label:'Medicine',icon:'💊',budget:0},
+  {id:'bankdp',label:'Bank DP',icon:'🏦',budget:0,pinned:false},
+  {id:'shopping',label:'Shopping',icon:'🛍️',budget:0,pinned:false},
+  {id:'beauty',label:'Beauty',icon:'💄',budget:0,pinned:false},
+  {id:'gadget',label:'Gadget',icon:'📟',budget:0,pinned:false},
+  {id:'gift',label:'Gift',icon:'🎁',budget:0,pinned:false},
+  {id:'social',label:'Social',icon:'👥',budget:0,pinned:false},
+  {id:'tour',label:'Tour',icon:'🧳',budget:0,pinned:false},
+  {id:'necessary',label:'Necessary',icon:'🧾',budget:0,pinned:true},
+  {id:'medicine',label:'Medicine',icon:'💊',budget:0,pinned:false},
 ];
 const DEFAULT_INCOME_FIELDS = [
-  {id:'family',label:'Family Income',icon:'👨‍👩‍👧'},
-  {id:'self',label:'Self Income',icon:'💼'},
+  {id:'family',label:'Family Income',icon:'👨‍👩‍👧',pinned:true},
+  {id:'self',label:'Self Income',icon:'💼',pinned:true},
 ];
+// Used to migrate categories saved before the pin/default-display feature existed —
+// any category missing a `pinned` flag gets one assigned based on this starter set.
+const DEFAULT_PINNED_EXPENSE_IDS=['nasta','lunch','dinner','transport','necessary'];
+function migratePinnedFields(){
+  EXPENSE_FIELDS.forEach(f=>{ if(typeof f.pinned!=='boolean') f.pinned=DEFAULT_PINNED_EXPENSE_IDS.includes(f.id); });
+  INCOME_FIELDS.forEach(f=>{ if(typeof f.pinned!=='boolean') f.pinned=true; });
+}
 const DEFAULT_ACCOUNTS = [
   {id:'cash',label:'Cash',icon:'💵',opening:0},
   {id:'bkash',label:'bKash',icon:'📱',opening:0},
@@ -957,6 +1012,34 @@ let ALL_FIELDS = [];
 let SAVINGS_GOAL = 0;
 let ACCOUNTS = [];
 let LEDGER = []; // manual account events: {id, ts, type:'add'|'transfer', accountId?, fromId?, toId?, amount, note?}
+// Non-pinned category ids currently displayed in the Day view for whichever day is
+// loaded right now — recomputed whenever the day changes, extended when the user
+// manually adds one from the "+ Add category" picker.
+let extraShownIds = new Set();
+function computeExtraShownForData(data){
+  const s=new Set();
+  ALL_FIELDS.forEach(f=>{
+    if(f.pinned) return;
+    const hasAmount=(parseFloat(data[f.id])||0)>0;
+    const hasNote=!!(data['note_'+f.id]&&String(data['note_'+f.id]).trim());
+    const hasReceipt=!!data['receipt_'+f.id];
+    const manuallyShown=!!data['shown_'+f.id];
+    if(hasAmount||hasNote||hasReceipt||manuallyShown) s.add(f.id);
+  });
+  return s;
+}
+function visibleFieldList(fields){
+  return fields.filter(f=>f.pinned||extraShownIds.has(f.id));
+}
+// True if a non-pinned field has real data (amount/note/receipt) — in that case it
+// must stay in the Day view and can't be manually removed from display.
+function fieldForcedShown(f,data){
+  if(f.pinned) return false;
+  const hasAmount=(parseFloat(data[f.id])||0)>0;
+  const hasNote=!!(data['note_'+f.id]&&String(data['note_'+f.id]).trim());
+  const hasReceipt=!!data['receipt_'+f.id];
+  return hasAmount||hasNote||hasReceipt;
+}
 
 // One-time migration: older saves stored a static "balance" number per account.
 // We now treat that number as the account's lifetime "opening" balance, and
@@ -1035,6 +1118,7 @@ function loadCategoriesLocal(){
     EXPENSE_FIELDS=DEFAULT_EXPENSE_FIELDS.map(f=>({...f}));
     INCOME_FIELDS=DEFAULT_INCOME_FIELDS.map(f=>({...f}));
   }
+  migratePinnedFields();
   rebuildAllFields();
 }
 function saveCategoriesLocal(){
@@ -1119,6 +1203,7 @@ async function loadSettingsRemote(){
       SAVINGS_GOAL=typeof data.goal==='number'?data.goal:SAVINGS_GOAL;
       if(Array.isArray(data.accounts)&&data.accounts.length) ACCOUNTS=data.accounts;
       migrateAccounts();
+      migratePinnedFields();
       rebuildAllFields();
       saveCategoriesLocal();
       saveGoalLocalOnly();
@@ -1219,16 +1304,30 @@ async function onMonthChange(){
 
 // ─── DYNAMIC FIELD ROWS (built from EXPENSE_FIELDS / INCOME_FIELDS) ──────────
 function fieldRowHTML(f,isIncome){
-  const acctSelect=`<select class="field-acct-select" id="acct_${f.id}" title="${isIncome?'Deposit to':'Pay from'}">${ACCOUNTS.map(a=>`<option value="${a.id}">${a.icon} ${escHtml(a.label)}</option>`).join('')}</select>`;
+  const acctSelect=`<div class="acct-select-wrap" title="${isIncome?'Deposit to':'Pay from'}"><span class="acct-select-icon" id="accticon_${f.id}"></span><select class="field-acct-select" id="acct_${f.id}" onchange="updateAcctIcon('${f.id}')">${ACCOUNTS.map(a=>`<option value="${a.id}">${a.icon} ${escHtml(a.label)}</option>`).join('')}</select></div>`;
   return `<div class="field-row"><span class="field-icon">${f.icon}</span><span class="field-label">${escHtml(f.label)}</span><input class="field-input${isIncome?' income-inp':''}" type="text" inputmode="decimal" autocomplete="off" placeholder="0" id="f_${f.id}">${acctSelect}<button class="note-btn" type="button" onclick="toggleNote('${f.id}')" id="nbtn_${f.id}" title="Add note">📝</button><input type="file" accept="image/*" style="display:none" id="rfile_${f.id}" onchange="onReceiptFileChosen('${f.id}',this.files[0])"></div><div class="note-row" id="noterow_${f.id}"><input class="note-input" type="text" placeholder="Note (optional)" id="note_${f.id}" maxlength="200"><div class="receipt-preview" id="rprev_${f.id}"></div></div>`;
 }
 
 function renderFieldRows(){
   const expC=document.getElementById('expenseFieldsContainer');
   const incC=document.getElementById('incomeFieldsContainer');
-  if(expC) expC.innerHTML=EXPENSE_FIELDS.map(f=>fieldRowHTML(f,false)).join('');
-  if(incC) incC.innerHTML=INCOME_FIELDS.map(f=>fieldRowHTML(f,true)).join('');
+  if(expC) expC.innerHTML=visibleFieldList(EXPENSE_FIELDS).map(f=>fieldRowHTML(f,false)).join('');
+  if(incC) incC.innerHTML=visibleFieldList(INCOME_FIELDS).map(f=>fieldRowHTML(f,true)).join('');
   attachFieldListeners();
+  ALL_FIELDS.forEach(f=>updateAcctIcon(f.id));
+}
+
+// Keeps the small icon-only chip (the visible part of the account picker) in
+// sync with whatever the underlying <select> is currently set to — the
+// select itself stays invisible/overlaid so tapping it still opens the
+// native picker (which shows full icon+name options), but the row only
+// ever displays the icon, not "Cash"/"bKash"/"Card" text.
+function updateAcctIcon(id){
+  const sel=document.getElementById('acct_'+id);
+  const iconSpan=document.getElementById('accticon_'+id);
+  if(!sel||!iconSpan) return;
+  const a=ACCOUNTS.find(x=>x.id===sel.value);
+  iconSpan.textContent=a?a.icon:'💰';
 }
 
 function attachFieldListeners(){
@@ -1278,9 +1377,11 @@ function resolveAmountExpr(el){
 // ─── CATEGORY MANAGEMENT (add / edit / delete) ───────────────────────────────
 function refreshAfterCategoryChange(){
   // Persist whatever's currently in the inputs before we tear down and rebuild the DOM
-  setDayLocal(curYear,curMonth,currentDay,collectDayData());
+  const data=collectDayData();
+  setDayLocal(curYear,curMonth,currentDay,data);
+  extraShownIds=computeExtraShownForData(data);
   renderFieldRows();
-  loadDay(currentDay);
+  applyDayValuesToDOM(data);
   if(document.getElementById('summarySection').classList.contains('active')) renderSummary();
   if(document.getElementById('yearlySection').classList.contains('active')) renderYearly();
 }
@@ -1308,7 +1409,7 @@ function addCategory(type){
   const label=labelEl.value.trim();
   if(!label){ showToast('Enter a category name','error'); return; }
   const id='c'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-  const newField=type==='expense'?{id,label,icon,budget:0}:{id,label,icon};
+  const newField=type==='expense'?{id,label,icon,budget:0,pinned:false}:{id,label,icon,pinned:false};
   if(type==='expense') EXPENSE_FIELDS.push(newField); else INCOME_FIELDS.push(newField);
   rebuildAllFields();
   saveSettingsRemote();
@@ -1365,6 +1466,7 @@ function addAccount(){
   showToast('Account added ✓');
 }
 function deleteAccount(id){
+  if(ACCOUNTS.length<=1){ showToast('At least one account is required','error'); return; }
   if(!confirm('Delete this account? Its tracked balance will be removed.')) return;
   ACCOUNTS=ACCOUNTS.filter(a=>a.id!==id);
   saveSettingsRemote();
@@ -1375,7 +1477,18 @@ function deleteAccount(id){
 
 // ─── SETTINGS MODAL ───────────────────────────────────────────────────────────
 function catRowHTML(f){
-  return `<div class="cat-row"><input class="cat-icon-input" value="${escHtml(f.icon)}" onchange="updateCategoryField('${f.id}','icon',this.value)"><input class="cat-label-input" value="${escHtml(f.label)}" onchange="updateCategoryField('${f.id}','label',this.value)"><button class="cat-del-btn" onclick="deleteCategory('${f.id}')" title="Delete">🗑</button></div>`;
+  const pinned=!!f.pinned;
+  const pinTitle=pinned?'Shown in Day view every day — tap to unpin':'Hidden by default — tap to always show in Day view';
+  return `<div class="cat-row"><button class="cat-pin-btn${pinned?' pinned':''}" onclick="toggleCategoryPin('${f.id}')" title="${pinTitle}">${pinned?'⭐':'☆'}</button><input class="cat-icon-input" value="${escHtml(f.icon)}" onchange="updateCategoryField('${f.id}','icon',this.value)"><input class="cat-label-input" value="${escHtml(f.label)}" onchange="updateCategoryField('${f.id}','label',this.value)"><button class="cat-del-btn" onclick="deleteCategory('${f.id}')" title="Delete">🗑</button></div>`;
+}
+function toggleCategoryPin(id){
+  const f=EXPENSE_FIELDS.find(x=>x.id===id)||INCOME_FIELDS.find(x=>x.id===id);
+  if(!f) return;
+  f.pinned=!f.pinned;
+  saveSettingsRemote();
+  refreshAfterCategoryChange();
+  renderSettingsLists();
+  showToast(f.pinned?'Pinned — shown every day ✓':'Unpinned — hidden unless used');
 }
 function budgetRowHTML(f){
   const val=f.budget||'';
@@ -1410,8 +1523,10 @@ function saveGoal(){
 }
 
 // ─── DAY LOGIC ───────────────────────────────────────────────────────────────
-function loadDay(d){
-  const data=getDay(curYear,curMonth,d);
+// Fills the already-rendered field rows with a day's saved values. Split out from
+// loadDay() so other flows (adding a category for today, pin/settings changes) can
+// re-populate the DOM after a re-render without re-fetching or resetting visibility.
+function applyDayValuesToDOM(data){
   currentReceipts={};
   ALL_FIELDS.forEach(f=>{
     const el=document.getElementById('f_'+f.id);
@@ -1431,8 +1546,80 @@ function loadDay(d){
     updateReceiptIndicator(f.id, hasReceipt);
     const acctEl=document.getElementById('acct_'+f.id);
     if(acctEl) acctEl.value=data['acct_'+f.id]||defaultIncomeAccountId()||'';
+    updateAcctIcon(f.id);
   });
   updateTotals();
+}
+
+function loadDay(d){
+  const data=getDay(curYear,curMonth,d);
+  extraShownIds=computeExtraShownForData(data);
+  renderFieldRows();
+  applyDayValuesToDOM(data);
+}
+
+// ─── DAY-VIEW CATEGORY DISPLAY POPUP ──────────────────────────────────────────
+// A display control only — never creates, renames, or deletes categories (that
+// stays in Settings). Lists every category of the given type with two independent
+// controls:
+//   ⭐/☆  pin toggle   — permanent: pinned categories show in Day view every day
+//   +/−   for today     — temporary: shows/hides this one category just for today
+// A category with a real amount/note/receipt today can't be removed from display —
+// it must stay visible until that data is cleared.
+function openAddFieldModal(type){
+  window._addFieldModalType=type;
+  const data=collectDayData(); // live snapshot, incl. anything being typed right now
+  setDayLocal(curYear,curMonth,currentDay,data);
+  const fields=type==='expense'?EXPENSE_FIELDS:INCOME_FIELDS;
+  document.getElementById('addFieldModalTitle').textContent=type==='expense'?'📋 Manage Expense Categories':'📋 Manage Income Sources';
+  const list=document.getElementById('addFieldList');
+  if(list) list.innerHTML=fields.map(f=>dayCatRowHTML(f,data)).join('');
+  document.getElementById('addFieldModal').classList.add('open');
+}
+function closeAddFieldModal(){ document.getElementById('addFieldModal').classList.remove('open'); }
+function reopenAddFieldModal(){
+  if(document.getElementById('addFieldModal').classList.contains('open')) openAddFieldModal(window._addFieldModalType);
+}
+function dayCatRowHTML(f,data){
+  const pinned=!!f.pinned;
+  const forced=fieldForcedShown(f,data);
+  const manuallyShown=!!data['shown_'+f.id];
+  const pinBtn=`<button class="cat-pin-btn${pinned?' pinned':''}" onclick="toggleCategoryPinFromDay('${f.id}')" title="${pinned?'Unpin — stop showing every day':'Pin — show every day'}">${pinned?'⭐':'☆'}</button>`;
+  let actionEl;
+  if(pinned) actionEl='<span class="day-shown-badge">Always shown</span>';
+  else if(forced) actionEl='<span class="day-shown-badge">Shown (has data)</span>';
+  else if(manuallyShown) actionEl=`<button class="day-remove-btn" onclick="removeFieldForToday('${f.id}')">➖ Remove</button>`;
+  else actionEl=`<button class="day-add-btn" onclick="addFieldForToday('${f.id}')">➕ Add</button>`;
+  return `<div class="cat-row"><span class="field-icon">${f.icon}</span><span class="cat-label-static">${escHtml(f.label)}</span>${pinBtn}${actionEl}</div>`;
+}
+function toggleCategoryPinFromDay(id){
+  const f=EXPENSE_FIELDS.find(x=>x.id===id)||INCOME_FIELDS.find(x=>x.id===id);
+  if(!f) return;
+  f.pinned=!f.pinned;
+  saveSettingsRemote();
+  refreshAfterCategoryChange();
+  renderSettingsLists();
+  reopenAddFieldModal();
+}
+function addFieldForToday(id){
+  const data=collectDayData();
+  data['shown_'+id]=true;
+  setDay(curYear,curMonth,currentDay,data);
+  extraShownIds.add(id);
+  renderFieldRows();
+  applyDayValuesToDOM(data);
+  reopenAddFieldModal();
+}
+function removeFieldForToday(id){
+  const data=collectDayData();
+  const f=EXPENSE_FIELDS.find(x=>x.id===id)||INCOME_FIELDS.find(x=>x.id===id);
+  if(f&&fieldForcedShown(f,data)){ showToast('Clear its amount/note first to remove it',true); return; }
+  delete data['shown_'+id];
+  setDay(curYear,curMonth,currentDay,data);
+  extraShownIds.delete(id);
+  renderFieldRows();
+  applyDayValuesToDOM(data);
+  reopenAddFieldModal();
 }
 
 // ── NOTES (per item, Day section only) ───────────────────────
@@ -1575,19 +1762,31 @@ function updateTotals(){
 
 function collectDayData(){
   const data={};
+  const active=document.activeElement;
   ALL_FIELDS.forEach(f=>{
     const el=document.getElementById('f_'+f.id);
+    let resolved=null;
     if(el){
-      const resolved=evalAmountExpr(el.value); // in case a "100+50"-style entry wasn't blurred yet
-      if(resolved!==null) el.value=resolved;
+      resolved=evalAmountExpr(el.value); // in case a "100+50"-style entry wasn't blurred yet
+      // Only snap the visible text for fields the user ISN'T currently typing in.
+      // Overwriting the active field mid-keystroke corrupts multi-digit entry
+      // (e.g. typing "150+200" would collapse to "150+2"→152 the instant the
+      // expression first becomes valid, then "00" gets appended to 152 → 15200).
+      if(resolved!==null&&el!==active) el.value=resolved;
     }
-    data[f.id]=parseFloat(el?.value)||0;
+    data[f.id]=resolved!==null?resolved:(parseFloat(el?.value)||0);
     const noteEl=document.getElementById('note_'+f.id);
     const noteVal=noteEl?noteEl.value.trim():'';
     if(noteVal) data['note_'+f.id]=noteVal;
     if(currentReceipts[f.id]) data['receipt_'+f.id]=currentReceipts[f.id];
     const acctEl=document.getElementById('acct_'+f.id);
     if(acctEl) data['acct_'+f.id]=acctEl.value;
+  });
+  // Keep a category visible for today even while its amount is 0, if it was
+  // manually added via the Day-view picker and hasn't been removed since.
+  ALL_FIELDS.forEach(f=>{
+    if(f.pinned) return;
+    if(!fieldForcedShown(f,data) && extraShownIds.has(f.id)) data['shown_'+f.id]=true;
   });
   updateTotals();
   return data;
