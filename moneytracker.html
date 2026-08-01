@@ -67,6 +67,8 @@
     backdrop-filter: blur(8px); transition: var(--trans);
   }
   .settings-btn:hover { border-color: var(--accent); color: var(--accent); transform: rotate(20deg); }
+  .home-btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; line-height: 1; }
+  .home-btn:hover { transform: scale(1.1) !important; }
   .month-bar {
     display: flex; justify-content: center;
     padding: 10px 14px;
@@ -560,6 +562,27 @@
   .goal-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 6px; transition: width 0.5s ease; }
   .goal-pct { font-size: 0.72rem; color: var(--text-soft); text-align: right; }
 
+  /* ── ACCOUNTS (Cash / bKash / Card balances) ─────────────────── */
+  .account-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    background: var(--card-bg); border: 1px solid var(--card-border);
+    border-radius: 10px; padding: 9px 13px; margin-bottom: 6px; backdrop-filter: blur(8px);
+  }
+  .acct-left { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-main); min-width: 0; }
+  .acct-icon { font-size: 1.05rem; flex-shrink: 0; }
+  .acct-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .acct-balance-input {
+    width: 110px; text-align: right; font-weight: 700; font-size: 0.9rem;
+    background: var(--surface); border: 1px solid var(--card-border); border-radius: 7px;
+    color: var(--accent2); padding: 5px 9px; font-family: inherit;
+  }
+  .acct-balance-input.neg { color: var(--danger); }
+  .acct-balance-input:focus { outline: none; border-color: var(--accent); }
+  .account-total { background: var(--surface2); font-weight: 700; }
+  .account-total .acct-label { font-size: 0.82rem; }
+  .acct-total-val { font-size: 0.95rem; font-weight: 800; color: var(--accent2); }
+  .acct-total-val.neg { color: var(--danger); }
+
   /* ── BUDGET ROWS ───────────────────────────────────────────── */
   .budget-row {
     background: var(--card-bg); border: 1px solid var(--card-border);
@@ -657,6 +680,7 @@
   <div class="topbar-right">
     <button class="settings-btn" onclick="openSearch()" title="Search">🔍</button>
     <button class="settings-btn" onclick="openSettings()" title="Settings">⚙️</button>
+    <a class="settings-btn home-btn" href="index.html" title="Home">🏠</a>
   </div>
 </div>
 
@@ -713,6 +737,8 @@
       <div class="sum-card full"><div class="sc-label">Net Balance</div><div class="sc-val" id="sumNet">৳ 0</div></div>
     </div>
     <div id="goalCardContainer"></div>
+    <div class="section-title">Accounts</div>
+    <div id="accountListSummary"></div>
     <div class="export-row">
       <button class="btn-excel" onclick="exportMonthExcel()">📊 Excel</button>
       <button class="btn-pdf" onclick="exportMonthPDF()">📄 PDF</button>
@@ -769,6 +795,7 @@
     </div>
     <div class="modal-tabs">
       <button class="modal-tab active" data-tab="categories" onclick="showSettingsTab('categories')">Categories</button>
+      <button class="modal-tab" data-tab="accounts" onclick="showSettingsTab('accounts')">Accounts</button>
       <button class="modal-tab" data-tab="budgets" onclick="showSettingsTab('budgets')">Budgets</button>
       <button class="modal-tab" data-tab="goal" onclick="showSettingsTab('goal')">Goal</button>
     </div>
@@ -789,12 +816,21 @@
           <button class="cat-add-btn" onclick="addCategory('income')" title="Add">➕</button>
         </div>
       </div>
+      <div class="settings-pane" id="pane-accounts">
+        <div class="settings-sub">💳 Track balances for Cash, bKash, Card, Bank, etc. — update the balance here or directly from Monthly Summary</div>
+        <div id="accountList"></div>
+        <div class="add-cat-row">
+          <input type="text" id="newAcctIcon" class="cat-icon-input" placeholder="🎯" maxlength="4">
+          <input type="text" id="newAcctLabel" class="cat-label-input" placeholder="New account name" maxlength="30">
+          <button class="cat-add-btn" onclick="addAccount()" title="Add">➕</button>
+        </div>
+      </div>
       <div class="settings-pane" id="pane-budgets">
         <div class="settings-sub">Set a monthly limit per category (৳0 = no limit)</div>
         <div id="budgetList"></div>
       </div>
       <div class="settings-pane" id="pane-goal">
-        <div class="settings-sub">Set a savings target — progress tracks your all-time net balance across every recorded month</div>
+        <div class="settings-sub">Set a savings target — progress tracks this month's net balance (income − expense)</div>
         <div class="field-row"><span class="field-label">Target Amount</span><input class="field-input" type="number" id="goalInput" min="0" placeholder="0"></div>
         <button class="btn-primary" style="margin-top:10px" onclick="saveGoal()">💾 Save Goal</button>
       </div>
@@ -840,6 +876,7 @@
 <div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.umd.min.js" onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js';document.head.appendChild(s);"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js" onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js';document.head.appendChild(s);"></script>
 <script>
 // Theme sync — must run before render
 if (localStorage.getItem('theme') === 'dark') {
@@ -878,12 +915,18 @@ const DEFAULT_INCOME_FIELDS = [
   {id:'family',label:'Family Income',icon:'👨‍👩‍👧'},
   {id:'self',label:'Self Income',icon:'💼'},
 ];
+const DEFAULT_ACCOUNTS = [
+  {id:'cash',label:'Cash',icon:'💵',balance:0},
+  {id:'bkash',label:'bKash',icon:'📱',balance:0},
+  {id:'card',label:'Card',icon:'💳',balance:0},
+];
 
 // Live, editable category lists (loaded from localStorage/Firestore in initApp)
 let EXPENSE_FIELDS = [];
 let INCOME_FIELDS = [];
 let ALL_FIELDS = [];
 let SAVINGS_GOAL = 0;
+let ACCOUNTS = [];
 
 function rebuildAllFields(){ ALL_FIELDS = [...EXPENSE_FIELDS, ...INCOME_FIELDS]; }
 
@@ -909,17 +952,30 @@ function saveCategoriesLocal(){
 }
 function loadGoalLocal(){ SAVINGS_GOAL=parseFloat(localStorage.getItem('mt_savings_goal_v1'))||0; }
 function saveGoalLocalOnly(){ localStorage.setItem('mt_savings_goal_v1', String(SAVINGS_GOAL)); }
+function loadAccountsLocal(){
+  try{
+    const raw=localStorage.getItem('mt_accounts_v1');
+    const parsed=raw?JSON.parse(raw):null;
+    ACCOUNTS=(Array.isArray(parsed)&&parsed.length)?parsed:DEFAULT_ACCOUNTS.map(a=>({...a}));
+  }catch{
+    ACCOUNTS=DEFAULT_ACCOUNTS.map(a=>({...a}));
+  }
+}
+function saveAccountsLocal(){
+  localStorage.setItem('mt_accounts_v1', JSON.stringify(ACCOUNTS));
+}
 
 // ── CATEGORY + GOAL PERSISTENCE (Firestore, one combined doc) ─
 async function saveSettingsRemote(){
   saveCategoriesLocal();
   saveGoalLocalOnly();
+  saveAccountsLocal();
   if(!window._mtAuth||!window._mtDb) return;
   const uid=window._mtAuth.currentUser?.uid;
   if(!uid) return;
   try{
     const {doc,setDoc}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-    await setDoc(doc(window._mtDb,"users",uid,"moneytracker_meta","settings"),{expense:EXPENSE_FIELDS,income:INCOME_FIELDS,goal:SAVINGS_GOAL});
+    await setDoc(doc(window._mtDb,"users",uid,"moneytracker_meta","settings"),{expense:EXPENSE_FIELDS,income:INCOME_FIELDS,goal:SAVINGS_GOAL,accounts:ACCOUNTS});
   }catch(e){console.error("Settings save failed:",e);}
 }
 async function loadSettingsRemote(){
@@ -934,9 +990,11 @@ async function loadSettingsRemote(){
       if(Array.isArray(data.expense)&&data.expense.length) EXPENSE_FIELDS=data.expense;
       if(Array.isArray(data.income)&&data.income.length) INCOME_FIELDS=data.income;
       SAVINGS_GOAL=typeof data.goal==='number'?data.goal:SAVINGS_GOAL;
+      if(Array.isArray(data.accounts)&&data.accounts.length) ACCOUNTS=data.accounts;
       rebuildAllFields();
       saveCategoriesLocal();
       saveGoalLocalOnly();
+      saveAccountsLocal();
       return true;
     }
   }catch(e){console.error("Settings load failed:",e);}
@@ -1143,6 +1201,47 @@ function deleteCategory(id){
   showToast('Category deleted');
 }
 
+// ─── ACCOUNTS (Cash / bKash / Card / Bank — manually tracked balances) ───────
+function updateAccountField(id,key,value){
+  const a=ACCOUNTS.find(x=>x.id===id);
+  if(!a) return;
+  if(key==='label'){
+    const v=String(value).trim();
+    if(!v) return; // ignore empty label, keep old one
+    a.label=v;
+  } else if(key==='icon'){
+    a.icon=String(value).trim()||a.icon;
+  } else if(key==='balance'){
+    a.balance=parseFloat(value)||0;
+  }
+  saveSettingsRemote();
+  renderSettingsLists();
+  renderAccountListSummary();
+  showToast('Account updated ✓');
+}
+function addAccount(){
+  const iconEl=document.getElementById('newAcctIcon');
+  const labelEl=document.getElementById('newAcctLabel');
+  const icon=iconEl.value.trim()||'💰';
+  const label=labelEl.value.trim();
+  if(!label){ showToast('Enter an account name','error'); return; }
+  const id='a'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  ACCOUNTS.push({id,label,icon,balance:0});
+  saveSettingsRemote();
+  iconEl.value=''; labelEl.value='';
+  renderSettingsLists();
+  renderAccountListSummary();
+  showToast('Account added ✓');
+}
+function deleteAccount(id){
+  if(!confirm('Delete this account? Its tracked balance will be removed.')) return;
+  ACCOUNTS=ACCOUNTS.filter(a=>a.id!==id);
+  saveSettingsRemote();
+  renderSettingsLists();
+  renderAccountListSummary();
+  showToast('Account deleted');
+}
+
 // ─── SETTINGS MODAL ───────────────────────────────────────────────────────────
 function catRowHTML(f){
   return `<div class="cat-row"><input class="cat-icon-input" value="${escHtml(f.icon)}" onchange="updateCategoryField('${f.id}','icon',this.value)"><input class="cat-label-input" value="${escHtml(f.label)}" onchange="updateCategoryField('${f.id}','label',this.value)"><button class="cat-del-btn" onclick="deleteCategory('${f.id}')" title="Delete">🗑</button></div>`;
@@ -1151,12 +1250,16 @@ function budgetRowHTML(f){
   const val=f.budget||'';
   return `<div class="cat-row"><span class="field-icon">${f.icon}</span><span class="field-label">${escHtml(f.label)}</span><input class="field-input" type="number" min="0" placeholder="0" value="${val}" onchange="updateCategoryField('${f.id}','budget',this.value)"></div>`;
 }
+function accountRowHTML(a){
+  return `<div class="cat-row"><input class="cat-icon-input" value="${escHtml(a.icon)}" onchange="updateAccountField('${a.id}','icon',this.value)"><input class="cat-label-input" value="${escHtml(a.label)}" onchange="updateAccountField('${a.id}','label',this.value)"><input class="field-input" type="number" style="width:92px" placeholder="0" value="${a.balance||0}" onchange="updateAccountField('${a.id}','balance',this.value)"><button class="cat-del-btn" onclick="deleteAccount('${a.id}')" title="Delete">🗑</button></div>`;
+}
 function renderSettingsLists(){
-  const ce=document.getElementById('catListExpense'), ci=document.getElementById('catListIncome'), bl=document.getElementById('budgetList'), gi=document.getElementById('goalInput');
+  const ce=document.getElementById('catListExpense'), ci=document.getElementById('catListIncome'), bl=document.getElementById('budgetList'), gi=document.getElementById('goalInput'), al=document.getElementById('accountList');
   if(ce) ce.innerHTML=EXPENSE_FIELDS.map(catRowHTML).join('');
   if(ci) ci.innerHTML=INCOME_FIELDS.map(catRowHTML).join('');
   if(bl) bl.innerHTML=EXPENSE_FIELDS.map(budgetRowHTML).join('')||'<div style="color:var(--muted);text-align:center;padding:14px;font-size:0.82rem">No expense categories yet</div>';
   if(gi) gi.value=SAVINGS_GOAL||'';
+  if(al) al.innerHTML=ACCOUNTS.map(accountRowHTML).join('')||'<div style="color:var(--muted);text-align:center;padding:14px;font-size:0.82rem">No accounts yet</div>';
 }
 function openSettings(tab){
   renderSettingsLists();
@@ -1666,21 +1769,24 @@ function renderSummary(){
   });
   if(!dl.innerHTML) dl.innerHTML='<div style="color:var(--muted);text-align:center;padding:14px;font-size:0.82rem">No data yet</div>';
 
-  renderSavingsGoalCard(net);
+  renderSavingsGoalCard();
+  renderAccountListSummary();
   renderBudgets(catTotals);
   renderInsights(catTotals,totalExp);
 }
 
 // ─── SAVINGS GOAL ─────────────────────────────────────────────────────────────
-// "Saved" = THIS month's net balance (income − expense), not all-time.
-function renderSavingsGoalCard(monthNet){
+// Target = manually entered in Settings → Goal (SAVINGS_GOAL).
+// "Saved" = sum of every category's budget input for the current month
+// (i.e. total money you've earmarked/set aside across all categories this month).
+function renderSavingsGoalCard(){
   const container=document.getElementById('goalCardContainer');
   if(!container) return;
   if(!SAVINGS_GOAL||SAVINGS_GOAL<=0){
     container.innerHTML=`<div class="goal-card empty" onclick="openSettings('goal')">🎯 No savings goal set yet — tap to create one</div>`;
     return;
   }
-  const saved=monthNet;
+  const saved=EXPENSE_FIELDS.reduce((s,f)=>s+(f.budget||0),0);
   const pct=Math.max(0,Math.min(100,(saved/SAVINGS_GOAL)*100));
   container.innerHTML=`<div class="goal-card">
     <div class="goal-head"><span>🎯 Savings Goal — ${MONTHS[curMonth]}</span><span class="goal-edit" onclick="openSettings('goal')" title="Edit goal">✏️</span></div>
@@ -1688,6 +1794,25 @@ function renderSavingsGoalCard(monthNet){
     <div class="goal-bar-track"><div class="goal-bar-fill" style="width:${pct}%"></div></div>
     <div class="goal-pct">${pct.toFixed(0)}% reached</div>
   </div>`;
+}
+
+// ─── ACCOUNTS ─────────────────────────────────────────────────────────────────
+// Manually-tracked balances (Cash / bKash / Card / Bank, etc). Not derived from
+// transactions — the user updates the number here or in Settings whenever it changes.
+function renderAccountListSummary(){
+  const container=document.getElementById('accountListSummary');
+  if(!container) return;
+  if(!ACCOUNTS.length){
+    container.innerHTML='<div style="color:var(--muted);text-align:center;padding:14px;font-size:0.82rem">No accounts yet — add one in ⚙️ Settings → Accounts</div>';
+    return;
+  }
+  const rows=ACCOUNTS.map(a=>`
+    <div class="account-row">
+      <span class="acct-left"><span class="acct-icon">${a.icon}</span><span class="acct-label">${escHtml(a.label)}</span></span>
+      <input class="acct-balance-input${(a.balance||0)<0?' neg':''}" type="number" inputmode="decimal" value="${a.balance||0}" onchange="updateAccountField('${a.id}','balance',this.value)">
+    </div>`).join('');
+  const total=ACCOUNTS.reduce((s,a)=>s+(a.balance||0),0);
+  container.innerHTML=rows+`<div class="account-row account-total"><span class="acct-left"><span class="acct-label">Total Balance</span></span><span class="acct-total-val${total<0?' neg':''}">${fmt(total)}</span></div>`;
 }
 
 // ─── BUDGETS ──────────────────────────────────────────────────────────────────
@@ -2007,44 +2132,146 @@ function exportYearPDF(){
   showToast('PDF ready ✓');
 }
 
-// ─── EXPORT: MONTH EXCEL ──────────────────────────────────────────────────────
-function exportMonthExcel(){
-  const{totalExp,totalInc,net,catTotals,daily}=calcMonth(curYear,curMonth);
-  const rows=[];
-  rows.push([`Money Tracker — ${MONTHS[curMonth]} ${curYear}`,'','','']);
-  rows.push(['Generated:',new Date().toLocaleDateString('en-US',{day:'numeric',month:'long',year:'numeric'}),'','']);
-  rows.push(['','','','']);
-  rows.push(['OVERVIEW','','','']);
-  rows.push(['Total Expense',totalExp,'Total Income',totalInc]);
-  rows.push(['Net Balance',net,'','']);
-  rows.push(['','','','']);
-  rows.push(['CATEGORY BREAKDOWN','','','']);
-  rows.push(['Category','Type','Amount (BDT)','']);
-  EXPENSE_FIELDS.forEach(f=>{if(catTotals[f.id]) rows.push([f.icon+' '+f.label,'Expense',catTotals[f.id],'']);});
-  INCOME_FIELDS.forEach(f=>{if(catTotals[f.id]) rows.push([f.icon+' '+f.label,'Income',catTotals[f.id],'']);});
-  rows.push(['','','','']);
-  rows.push(['DAY BY DAY','','','']);
-  rows.push(['Day','Total Expense','Total Income','Net Balance']);
-  daily.forEach(({day,exp,inc,net:n})=>rows.push([`Day ${day}`,exp,inc,n]));
-  rows.push(['','','','']);
-  rows.push(['DETAILED BREAKDOWN','','','']);
-  rows.push(['Day',...EXPENSE_FIELDS.map(f=>f.label),'Total Exp',...INCOME_FIELDS.map(f=>f.label),'Total Inc','Net']);
-  daily.forEach(({day,data,exp,inc,net:n})=>{
-    rows.push([`Day ${day}`,...EXPENSE_FIELDS.map(f=>data[f.id]||0),exp,...INCOME_FIELDS.map(f=>data[f.id]||0),inc,n]);
+// ─── EXCEL STYLING HELPERS (ExcelJS) ──────────────────────────────────────────
+const XL_NAVY='FF1E3A5F', XL_ACCENT='FF2E86AB', XL_BAND='FFF2F6FB', XL_WHITE='FFFFFFFF',
+      XL_EXP='FFC0392B', XL_INC='FF1A7A4A', XL_BORDER='FFD8DEE9', XL_MUTED='FF888888', XL_TEXT='FF1A1A2E';
+
+function xlFill(argb){ return {type:'pattern',pattern:'solid',fgColor:{argb}}; }
+function xlBorderAll(){
+  const b={style:'thin',color:{argb:XL_BORDER}};
+  return {top:b,left:b,bottom:b,right:b};
+}
+// Full-width colored banner row (title / section header), merged across columns 1..lastCol
+function xlBanner(ws,row,lastCol,text,{bg=XL_ACCENT,size=11,height=20}={}){
+  for(let c=1;c<=lastCol;c++){
+    const cell=ws.getCell(row,c);
+    cell.fill=xlFill(bg);
+    cell.font={bold:true,size,color:{argb:XL_WHITE}};
+  }
+  ws.getCell(row,1).value=text;
+  ws.getCell(row,1).alignment={vertical:'middle',horizontal:'left',indent:1};
+  ws.mergeCells(row,1,row,lastCol);
+  ws.getRow(row).height=height;
+  return row+1;
+}
+function xlSubtitle(ws,row,lastCol,text){
+  ws.getCell(row,1).value=text;
+  ws.getCell(row,1).font={italic:true,size:9,color:{argb:XL_MUTED}};
+  ws.mergeCells(row,1,row,lastCol);
+  return row+1;
+}
+// A row of label:value pairs (2 columns each), e.g. Total Expense | 5,000 | Total Income | 8,000
+function xlLabelValueRow(ws,row,lastCol,pairs){
+  let col=1;
+  pairs.forEach(p=>{
+    const lc=ws.getCell(row,col);
+    lc.value=p.label; lc.font={bold:true,color:{argb:XL_TEXT}}; lc.alignment={horizontal:'left',indent:1}; lc.border=xlBorderAll();
+    const vc=ws.getCell(row,col+1);
+    vc.value=p.value; vc.numFmt='#,##0'; vc.alignment={horizontal:'right'};
+    vc.font={bold:true,size:p.big?12:11,color:{argb:p.color||XL_TEXT}}; vc.border=xlBorderAll();
+    col+=2;
   });
-  downloadCSV(rows,`MoneyTracker_${MONTHS[curMonth]}_${curYear}.csv`);
+  for(;col<=lastCol;col++) ws.getCell(row,col).border=xlBorderAll();
+  return row+1;
+}
+// Table header row (navy fill, white bold text, right-aligned except first column)
+function xlTableHeader(ws,row,headers){
+  headers.forEach((h,i)=>{
+    const cell=ws.getCell(row,i+1);
+    cell.value=h;
+    cell.font={bold:true,size:10,color:{argb:XL_WHITE}};
+    cell.fill=xlFill(XL_NAVY);
+    cell.border=xlBorderAll();
+    cell.alignment={vertical:'middle',horizontal:i===0?'left':'right',indent:i===0?1:0};
+  });
+  ws.getRow(row).height=18;
+  return row+1;
+}
+// A normal data row — column 0 is a text label (bold), the rest are numbers (currency format),
+// optionally tinted red/green via colorMap = {colIndex:'exp'|'inc'}, with optional zebra banding.
+function xlDataRow(ws,row,values,{band=false,colorMap={}}={}){
+  values.forEach((v,i)=>{
+    const cell=ws.getCell(row,i+1);
+    cell.value=v;
+    cell.border=xlBorderAll();
+    if(band) cell.fill=xlFill(XL_BAND);
+    if(typeof v==='number'){
+      cell.numFmt='#,##0';
+      cell.alignment={horizontal:'right'};
+      if(colorMap[i]) cell.font={color:{argb:colorMap[i]==='exp'?XL_EXP:XL_INC}};
+    } else {
+      cell.alignment={horizontal:i===0?'left':'right',indent:i===0?1:0};
+      if(i===0) cell.font={bold:true,color:{argb:XL_TEXT}};
+    }
+  });
+  return row+1;
+}
+function xlColWidths(ws,widths){ widths.forEach((w,i)=>ws.getColumn(i+1).width=w); }
+async function downloadWorkbook(wb,filename){
+  const buf=await wb.xlsx.writeBuffer();
+  const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=filename;a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ─── EXPORT: MONTH EXCEL ──────────────────────────────────────────────────────
+async function exportMonthExcel(){
+  if(typeof ExcelJS==='undefined'){ showToast('Excel engine still loading — try again in a sec','error'); return; }
+  const{totalExp,totalInc,net,catTotals,daily}=calcMonth(curYear,curMonth);
+  const detailCols=1+EXPENSE_FIELDS.length+1+INCOME_FIELDS.length+1+1; // Day + exp fields + TotalExp + inc fields + TotalInc + Net
+  const lastCol=Math.max(4,detailCols);
+  const wb=new ExcelJS.Workbook();
+  wb.creator='Money Tracker'; wb.created=new Date();
+  const ws=wb.addWorksheet('Monthly Report',{views:[{state:'frozen',ySplit:2}]});
+
+  let r=1;
+  r=xlBanner(ws,r,lastCol,`💰 Money Tracker — ${MONTHS[curMonth]} ${curYear}`,{bg:XL_NAVY,size:14,height:26});
+  r=xlSubtitle(ws,r,lastCol,`Generated: ${new Date().toLocaleDateString('en-US',{day:'numeric',month:'long',year:'numeric'})}`);
+  r++;
+
+  r=xlBanner(ws,r,lastCol,'OVERVIEW');
+  r=xlLabelValueRow(ws,r,lastCol,[{label:'Total Expense',value:totalExp,color:XL_EXP},{label:'Total Income',value:totalInc,color:XL_INC}]);
+  r=xlLabelValueRow(ws,r,lastCol,[{label:'Net Balance',value:net,color:net>=0?XL_INC:XL_EXP,big:true}]);
+  r++;
+
+  r=xlBanner(ws,r,lastCol,'CATEGORY BREAKDOWN');
+  r=xlTableHeader(ws,r,['Category','Type','Amount (BDT)']);
+  let band=false;
+  EXPENSE_FIELDS.forEach(f=>{ if(catTotals[f.id]){ r=xlDataRow(ws,r,[f.label,'Expense',catTotals[f.id]],{band,colorMap:{2:'exp'}}); band=!band; } });
+  INCOME_FIELDS.forEach(f=>{ if(catTotals[f.id]){ r=xlDataRow(ws,r,[f.label,'Income',catTotals[f.id]],{band,colorMap:{2:'inc'}}); band=!band; } });
+  r++;
+
+  r=xlBanner(ws,r,lastCol,'DAY BY DAY');
+  r=xlTableHeader(ws,r,['Day','Total Expense','Total Income','Net Balance']);
+  band=false;
+  daily.forEach(({day,exp,inc,net:n})=>{
+    r=xlDataRow(ws,r,[`Day ${day}`,exp,inc,n],{band,colorMap:{1:'exp',2:'inc',3:n>=0?'inc':'exp'}});
+    band=!band;
+  });
+  r++;
+
+  r=xlBanner(ws,r,lastCol,'DETAILED BREAKDOWN — every category, every day');
+  r=xlTableHeader(ws,r,['Day',...EXPENSE_FIELDS.map(f=>f.label),'Total Exp',...INCOME_FIELDS.map(f=>f.label),'Total Inc','Net']);
+  band=false;
+  daily.forEach(({day,data,exp,inc,net:n})=>{
+    const row=[`Day ${day}`,...EXPENSE_FIELDS.map(f=>data[f.id]||0),exp,...INCOME_FIELDS.map(f=>data[f.id]||0),inc,n];
+    r=xlDataRow(ws,r,row,{band});
+    band=!band;
+  });
+
+  xlColWidths(ws,[14,...EXPENSE_FIELDS.map(()=>12),13,...INCOME_FIELDS.map(()=>12),13,13]);
+
+  await downloadWorkbook(wb,`MoneyTracker_${MONTHS[curMonth]}_${curYear}.xlsx`);
   showToast('Excel exported ✓');
 }
 
 // ─── EXPORT: YEAR EXCEL ───────────────────────────────────────────────────────
-function exportYearExcel(){
+async function exportYearExcel(){
+  if(typeof ExcelJS==='undefined'){ showToast('Excel engine still loading — try again in a sec','error'); return; }
   let yrExp=0,yrInc=0;
   const yrCat={};
   ALL_FIELDS.forEach(f=>yrCat[f.id]=0);
-  const rows=[];
-  rows.push([`Money Tracker — ${curYear} Annual Report`,'','','']);
-  rows.push(['Generated:',new Date().toLocaleDateString('en-US',{day:'numeric',month:'long',year:'numeric'}),'','']);
-  rows.push(['','','','']);
   const monthRows=[];
   for(let m=0;m<12;m++){
     const{totalExp,totalInc,net,catTotals}=calcMonth(curYear,m);
@@ -2054,31 +2281,40 @@ function exportYearExcel(){
       monthRows.push([MONTHS[m],totalExp,totalInc,net]);
     }
   }
-  rows.push(['YEARLY OVERVIEW','','','']);
-  rows.push(['Total Expense',yrExp,'Total Income',yrInc]);
-  rows.push(['Net Balance',yrInc-yrExp,'','']);
-  rows.push(['','','','']);
-  rows.push(['MONTHLY BREAKDOWN','','','']);
-  rows.push(['Month','Total Expense','Total Income','Net Balance']);
-  monthRows.forEach(r=>rows.push(r));
-  rows.push(['','','','']);
-  rows.push(['CATEGORY BREAKDOWN (FULL YEAR)','','','']);
-  rows.push(['Category','Type','Amount (BDT)','']);
-  EXPENSE_FIELDS.forEach(f=>{if(yrCat[f.id]) rows.push([f.icon+' '+f.label,'Expense',yrCat[f.id],'']);});
-  INCOME_FIELDS.forEach(f=>{if(yrCat[f.id]) rows.push([f.icon+' '+f.label,'Income',yrCat[f.id],'']);});
-  downloadCSV(rows,`MoneyTracker_${curYear}_Annual.csv`);
-  showToast('Excel exported ✓');
-}
+  const lastCol=4;
+  const wb=new ExcelJS.Workbook();
+  wb.creator='Money Tracker'; wb.created=new Date();
+  const ws=wb.addWorksheet('Annual Report',{views:[{state:'frozen',ySplit:2}]});
 
-function downloadCSV(rows,filename){
-  const csv=rows.map(row=>row.map(cell=>{
-    const s=String(cell==null?'':cell);
-    return s.includes(',')||s.includes('"')||s.includes('\n')?`"${s.replace(/"/g,'""')}"`:s;
-  }).join(',')).join('\n');
-  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download=filename;a.click();
-  URL.revokeObjectURL(url);
+  let r=1;
+  r=xlBanner(ws,r,lastCol,`💰 Money Tracker — ${curYear} Annual Report`,{bg:XL_NAVY,size:14,height:26});
+  r=xlSubtitle(ws,r,lastCol,`Generated: ${new Date().toLocaleDateString('en-US',{day:'numeric',month:'long',year:'numeric'})}`);
+  r++;
+
+  r=xlBanner(ws,r,lastCol,'YEARLY OVERVIEW');
+  r=xlLabelValueRow(ws,r,lastCol,[{label:'Total Expense',value:yrExp,color:XL_EXP},{label:'Total Income',value:yrInc,color:XL_INC}]);
+  r=xlLabelValueRow(ws,r,lastCol,[{label:'Net Balance',value:yrInc-yrExp,color:(yrInc-yrExp)>=0?XL_INC:XL_EXP,big:true}]);
+  r++;
+
+  r=xlBanner(ws,r,lastCol,'MONTHLY BREAKDOWN');
+  r=xlTableHeader(ws,r,['Month','Total Expense','Total Income','Net Balance']);
+  let band=false;
+  monthRows.forEach(row=>{
+    r=xlDataRow(ws,r,row,{band,colorMap:{1:'exp',2:'inc',3:row[3]>=0?'inc':'exp'}});
+    band=!band;
+  });
+  r++;
+
+  r=xlBanner(ws,r,lastCol,'CATEGORY BREAKDOWN (FULL YEAR)');
+  r=xlTableHeader(ws,r,['Category','Type','Amount (BDT)']);
+  band=false;
+  EXPENSE_FIELDS.forEach(f=>{ if(yrCat[f.id]){ r=xlDataRow(ws,r,[f.label,'Expense',yrCat[f.id]],{band,colorMap:{2:'exp'}}); band=!band; } });
+  INCOME_FIELDS.forEach(f=>{ if(yrCat[f.id]){ r=xlDataRow(ws,r,[f.label,'Income',yrCat[f.id]],{band,colorMap:{2:'inc'}}); band=!band; } });
+
+  xlColWidths(ws,[20,16,16,16]);
+
+  await downloadWorkbook(wb,`MoneyTracker_${curYear}_Annual.xlsx`);
+  showToast('Excel exported ✓');
 }
 
 function pdfStyle(){
@@ -2175,6 +2411,7 @@ async function initApp(){
   // so the UI isn't blank while Firebase spins up.
   loadCategoriesLocal();
   loadGoalLocal();
+  loadAccountsLocal();
   renderFieldRows();
 
   try {
