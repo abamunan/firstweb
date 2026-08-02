@@ -538,6 +538,9 @@
   }
   .cat-pin-btn:hover { opacity: 1; background: var(--surface); }
   .cat-pin-btn.pinned { opacity: 1; color: #f5a623; }
+  .cat-row.cat-row-stack { flex-direction: column; align-items: stretch; gap: 6px; }
+  .cat-row-line1 { display: flex; align-items: center; gap: 8px; }
+  .day-quickadd-row { display: flex; gap: 8px; padding-left: 30px; }
   .add-field-hint {
     font-size: 0.7rem; color: var(--text-soft); text-align: center;
     padding: 4px 16px 2px;
@@ -1765,12 +1768,18 @@ function dayCatRowHTML(f,data){
   const forced=fieldForcedShown(f,data);
   const manuallyShown=!!data['shown_'+f.id];
   const pinBtn=`<button class="cat-pin-btn${pinned?' pinned':''}" onclick="toggleCategoryPinFromDay('${f.id}')" title="${pinned?'Unpin — stop showing every day':'Pin — show every day'}">${pinned?'⭐':'☆'}</button>`;
-  let actionEl;
-  if(pinned) actionEl='<span class="day-shown-badge">Always shown</span>';
-  else if(forced) actionEl='<span class="day-shown-badge">Shown (has data)</span>';
-  else if(manuallyShown) actionEl=`<button class="day-remove-btn" onclick="removeFieldForToday('${f.id}')">➖ Remove</button>`;
-  else actionEl=`<button class="day-add-btn" onclick="addFieldForToday('${f.id}')">➕ Add</button>`;
-  return `<div class="cat-row"><span class="field-icon">${f.icon}</span><span class="cat-label-static">${escHtml(f.label)}</span>${pinBtn}${actionEl}</div>`;
+  const line1=`<span class="field-icon">${f.icon}</span><span class="cat-label-static">${escHtml(f.label)}</span>${pinBtn}`;
+  if(pinned) return `<div class="cat-row">${line1}<span class="day-shown-badge">Always shown</span></div>`;
+  if(forced) return `<div class="cat-row">${line1}<span class="day-shown-badge">Shown (has data)</span></div>`;
+  if(manuallyShown) return `<div class="cat-row">${line1}<button class="day-remove-btn" onclick="removeFieldForToday('${f.id}')">➖ Remove</button></div>`;
+  // Not shown yet — let them type the amount right here and add it in one step
+  return `<div class="cat-row cat-row-stack">
+    <div class="cat-row-line1">${line1}</div>
+    <div class="day-quickadd-row">
+      <input type="number" class="debt-input" id="quickAmt_${f.id}" placeholder="Amount" min="0" inputmode="decimal" onkeydown="if(event.key==='Enter'){event.preventDefault();addFieldForToday('${f.id}')}">
+      <button class="day-add-btn" onclick="addFieldForToday('${f.id}')">➕ Add</button>
+    </div>
+  </div>`;
 }
 function toggleCategoryPinFromDay(id){
   const f=EXPENSE_FIELDS.find(x=>x.id===id)||INCOME_FIELDS.find(x=>x.id===id);
@@ -1784,11 +1793,15 @@ function toggleCategoryPinFromDay(id){
 function addFieldForToday(id){
   const data=collectDayData();
   data['shown_'+id]=true;
+  const amtEl=document.getElementById('quickAmt_'+id);
+  const amt=amtEl?parseFloat(amtEl.value):NaN;
+  if(!isNaN(amt)&&amt>0) data[id]=amt;
   setDay(curYear,curMonth,currentDay,data);
   extraShownIds.add(id);
   renderFieldRows();
   applyDayValuesToDOM(data);
   reopenAddFieldModal();
+  if(isNaN(amt)||amt<=0) document.getElementById('f_'+id)?.focus();
 }
 function removeFieldForToday(id){
   const data=collectDayData();
