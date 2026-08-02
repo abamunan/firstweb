@@ -557,6 +557,15 @@
   .day-remove-btn { color: var(--danger); }
   .day-remove-btn:hover { background: var(--danger-glow); border-color: var(--danger); }
 
+  /* ── BUDGET OVERSPEND ALERT ────────────────────────────────── */
+  .budget-alert-banner {
+    border-radius: var(--card-radius); border: 1px solid var(--expense-border);
+    background: var(--danger-glow); padding: 10px 14px; margin: 10px 0;
+  }
+  .budget-alert-head { font-size: 0.8rem; font-weight: 700; color: var(--danger); margin-bottom: 6px; }
+  .budget-alert-row { display: flex; justify-content: space-between; font-size: 0.78rem; padding: 3px 0; color: var(--text-main); }
+  .budget-alert-amt { font-weight: 600; color: var(--danger); }
+
   /* ── DEBTS / LOANS ─────────────────────────────────────────── */
   .debt-summary-card {
     border-radius: var(--card-radius); border: 1px solid var(--card-border);
@@ -849,15 +858,16 @@
       <div class="sum-card inc-card"><div class="sc-label">Total Income</div><div class="sc-val" id="sumTotalInc">৳ 0</div></div>
       <div class="sum-card full"><div class="sc-label">Net Balance</div><div class="sc-val" id="sumNet">৳ 0</div></div>
     </div>
+    <div id="budgetAlertBanner"></div>
     <div id="goalCardContainer"></div>
     <div class="section-title">Accounts</div>
     <div id="accountListSummary"></div>
-    <div class="section-title">Debts / Loans</div>
-    <div id="debtsSummary"></div>
     <div class="export-row">
       <button class="btn-excel" onclick="exportMonthExcel()">📊 Excel</button>
       <button class="btn-pdf" onclick="exportMonthPDF()">📄 PDF</button>
     </div>
+    <div class="section-title">Debts / Loans</div>
+    <div id="debtsSummary"></div>
     <div class="section-title">Insights</div>
     <div id="topCategoryCard"></div>
     <div id="insightList"></div>
@@ -890,12 +900,12 @@
     </div>
     <div class="section-title">Accounts</div>
     <div id="accountListSummaryYear"></div>
-    <div class="section-title">Debts / Loans</div>
-    <div id="debtsSummaryYear"></div>
     <div class="export-row">
       <button class="btn-excel" onclick="exportYearExcel()">📊 Excel</button>
       <button class="btn-pdf" onclick="exportYearPDF()">📄 PDF</button>
     </div>
+    <div class="section-title">Debts / Loans</div>
+    <div id="debtsSummaryYear"></div>
     <div class="section-title">Monthly Trend</div>
     <div class="chart-card"><canvas id="yearlyBarChart"></canvas></div>
     <div class="section-title">Monthly Breakdown</div>
@@ -917,6 +927,7 @@
       <button class="modal-tab" data-tab="accounts" onclick="showSettingsTab('accounts')">Accounts</button>
       <button class="modal-tab" data-tab="budgets" onclick="showSettingsTab('budgets')">Budgets</button>
       <button class="modal-tab" data-tab="goal" onclick="showSettingsTab('goal')">Goal</button>
+      <button class="modal-tab" data-tab="backup" onclick="showSettingsTab('backup')">Backup</button>
     </div>
     <div class="modal-body">
       <div class="settings-pane active" id="pane-categories">
@@ -952,6 +963,16 @@
         <div class="settings-sub">Set a savings target — progress tracks total budgeted (Budgets tab) minus what you've spent in those categories this month</div>
         <div class="field-row"><span class="field-label">Target Amount</span><input class="field-input" type="number" id="goalInput" min="0" placeholder="0"></div>
         <button class="btn-primary" style="margin-top:10px" onclick="saveGoal()">💾 Save Goal</button>
+      </div>
+      <div class="settings-pane" id="pane-backup">
+        <div class="settings-sub">Download everything — categories, accounts, debts, and every day you've recorded — as one file you can restore from later</div>
+        <button class="btn-primary" onclick="exportAllDataJSON()">⬇️ Download Full Backup (JSON)</button>
+        <label class="btn-primary" style="display:block;text-align:center;margin-top:10px;cursor:pointer;box-sizing:border-box">
+          ⬆️ Restore From Backup
+          <input type="file" accept=".json,application/json" style="display:none" onchange="importAllDataJSON(this)">
+        </label>
+        <div class="settings-sub" style="margin-top:22px">Export every entry as a spreadsheet-friendly CSV file — one row per transaction, works in Excel/Sheets</div>
+        <button class="btn-primary" onclick="exportAllDataCSV()">📄 Export All Data (CSV)</button>
       </div>
     </div>
   </div>
@@ -1000,11 +1021,14 @@
     </div>
     <div class="modal-body">
       <div class="debt-pane active" id="debtpane-borrowed">
-        <div class="settings-sub">Money you took from someone — tick "Repaid" once you've paid it back</div>
+        <div class="settings-sub">Money you took from someone — pulls into the account below now, and leaves it again once you tick "Repaid"</div>
         <div class="debt-add-form">
           <input type="text" id="newDebtPersonB" class="cat-label-input" placeholder="Person's name" maxlength="40">
           <div class="debt-add-row">
+            <select id="newDebtAcctB" class="debt-input"></select>
             <input type="number" id="newDebtAmountB" class="debt-input" placeholder="Amount" min="0" inputmode="decimal">
+          </div>
+          <div class="debt-add-row">
             <input type="date" id="newDebtDateB" class="debt-input">
             <button class="cat-add-btn" onclick="addDebt('borrowed')" title="Add">➕</button>
           </div>
@@ -1012,11 +1036,14 @@
         <div id="debtListBorrowed"></div>
       </div>
       <div class="debt-pane" id="debtpane-lent">
-        <div class="settings-sub">Money you gave to someone — tick "Received" once they've paid you back</div>
+        <div class="settings-sub">Money you gave to someone — leaves the account below now, and returns once you tick "Received"</div>
         <div class="debt-add-form">
           <input type="text" id="newDebtPersonL" class="cat-label-input" placeholder="Person's name" maxlength="40">
           <div class="debt-add-row">
+            <select id="newDebtAcctL" class="debt-input"></select>
             <input type="number" id="newDebtAmountL" class="debt-input" placeholder="Amount" min="0" inputmode="decimal">
+          </div>
+          <div class="debt-add-row">
             <input type="date" id="newDebtDateL" class="debt-input">
             <button class="cat-add-btn" onclick="addDebt('lent')" title="Add">➕</button>
           </div>
@@ -1197,6 +1224,14 @@ function computeAccountBalances(){
       balances[ev.fromId]=(balances[ev.fromId]||0)-ev.amount;
       balances[ev.toId]=(balances[ev.toId]||0)+ev.amount;
     }
+  });
+  // Unsettled debts still affect real cash on hand: money lent is out of the
+  // account until received back; money borrowed is sitting in the account
+  // until repaid. Once settled, it's already reconciled — no more adjustment.
+  DEBTS.forEach(d=>{
+    if(d.settled||!d.accountId) return;
+    if(d.type==='lent') balances[d.accountId]=(balances[d.accountId]||0)-d.amount;
+    else if(d.type==='borrowed') balances[d.accountId]=(balances[d.accountId]||0)+d.amount;
   });
   return balances;
 }
@@ -1478,7 +1513,7 @@ function attachFieldListeners(){
         updateTotals();
         scheduleAutoSave();
       });
-      el.addEventListener('blur',()=>resolveAmountExpr(el));
+      el.addEventListener('blur',()=>{ resolveAmountExpr(el); checkBudgetAlert(f.id); });
       el.addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ e.preventDefault(); el.blur(); } });
     }
     const noteEl=document.getElementById('note_'+f.id);
@@ -1605,11 +1640,18 @@ function addAccount(){
 }
 function deleteAccount(id){
   if(ACCOUNTS.length<=1){ showToast('At least one account is required','error'); return; }
-  if(!confirm('Delete this account? Its tracked balance will be removed.')) return;
+  const linkedDebts=DEBTS.filter(d=>d.accountId===id && !d.settled);
+  const msg=linkedDebts.length
+    ? `This account has ${linkedDebts.length} unsettled debt${linkedDebts.length>1?'s':''} linked to it — deleting it will stop ${linkedDebts.length>1?'them':'it'} from affecting your balance (the debt entries themselves stay, just unlinked). Delete anyway?`
+    : 'Delete this account? Its tracked balance will be removed.';
+  if(!confirm(msg)) return;
   ACCOUNTS=ACCOUNTS.filter(a=>a.id!==id);
+  DEBTS.forEach(d=>{ if(d.accountId===id) d.accountId=null; });
+  saveDebtsRemote();
   saveSettingsRemote();
   renderSettingsLists();
   renderAccountListSummary();
+  renderAccountListSummary('accountListSummaryYear');
   showToast('Account deleted');
 }
 
@@ -2245,6 +2287,7 @@ function renderSummary(){
   renderAccountListSummary();
   renderDebtsSummary('debtsSummary');
   renderBudgets(catTotals);
+  renderBudgetAlertBanner(catTotals);
   renderInsights(catTotals,totalExp);
 }
 
@@ -2371,10 +2414,16 @@ function renderDebtsSummary(containerId){
     <div class="debt-summary-row"><span class="debt-summary-label receive">You'll Receive</span><span class="debt-summary-val receive">${fmt(receive)}</span></div>
   </div>`;
 }
+function debtAcctOptionsHTML(){
+  return ACCOUNTS.map(a=>`<option value="${a.id}">${a.icon} ${escHtml(a.label)}</option>`).join('');
+}
 function openDebtsModal(){
   const today=new Date().toISOString().slice(0,10);
   const dB=document.getElementById('newDebtDateB'); if(dB&&!dB.value) dB.value=today;
   const dL=document.getElementById('newDebtDateL'); if(dL&&!dL.value) dL.value=today;
+  const acctOpts=debtAcctOptionsHTML();
+  const aB=document.getElementById('newDebtAcctB'); if(aB) aB.innerHTML=acctOpts;
+  const aL=document.getElementById('newDebtAcctL'); if(aL) aL.innerHTML=acctOpts;
   renderDebtLists();
   document.getElementById('debtsModal').classList.add('open');
 }
@@ -2390,9 +2439,11 @@ function debtSortFn(a,b){
 function debtRowHTML(d){
   const dateStr=d.date?new Date(d.date+'T00:00:00').toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'}):'';
   const checkLabel=d.type==='borrowed'?'Repaid':'Received';
+  const acct=ACCOUNTS.find(a=>a.id===d.accountId);
+  const acctTag=acct?`<span class="debt-acct">${acct.icon} ${escHtml(acct.label)}</span>`:'';
   return `<div class="debt-row${d.settled?' settled':''}">
     <div class="debt-row-main"><span class="debt-person">${escHtml(d.person)}</span><span class="debt-amount">${fmt(d.amount)}</span></div>
-    <div class="debt-row-sub"><span class="debt-date">${dateStr}</span>${d.note?`<span class="debt-note">📝 ${escHtml(d.note)}</span>`:''}</div>
+    <div class="debt-row-sub"><span class="debt-date">${dateStr}</span>${acctTag}${d.note?`<span class="debt-note">📝 ${escHtml(d.note)}</span>`:''}</div>
     <div class="debt-row-actions">
       <label class="debt-check"><input type="checkbox" ${d.settled?'checked':''} onchange="toggleDebtSettled('${d.id}')">${checkLabel}</label>
       <button class="cat-del-btn" onclick="deleteDebt('${d.id}')" title="Delete">🗑</button>
@@ -2416,18 +2467,23 @@ function refreshDebtDisplays(){
   renderDebtLists();
   renderDebtsSummary('debtsSummary');
   renderDebtsSummary('debtsSummaryYear');
+  renderAccountListSummary();
+  renderAccountListSummary('accountListSummaryYear');
 }
 function addDebt(type){
   const suf=type==='borrowed'?'B':'L';
   const personEl=document.getElementById('newDebtPerson'+suf);
+  const acctEl=document.getElementById('newDebtAcct'+suf);
   const amountEl=document.getElementById('newDebtAmount'+suf);
   const dateEl=document.getElementById('newDebtDate'+suf);
   const person=personEl?.value.trim();
+  const accountId=acctEl?.value||null;
   const amount=Math.max(0,parseFloat(amountEl?.value)||0);
   const date=dateEl?.value||new Date().toISOString().slice(0,10);
   if(!person){ showToast('Enter a name','error'); return; }
+  if(!accountId){ showToast('Pick an account','error'); return; }
   if(amount<=0){ showToast('Enter a valid amount','error'); return; }
-  DEBTS.push({id:debtId(),type,person,amount,date,settled:false});
+  DEBTS.push({id:debtId(),type,person,amount,date,accountId,settled:false});
   saveDebtsRemote();
   if(personEl) personEl.value='';
   if(amountEl) amountEl.value='';
@@ -2451,6 +2507,31 @@ function deleteDebt(id){
 }
 
 // ─── BUDGETS ──────────────────────────────────────────────────────────────────
+function renderBudgetAlertBanner(catTotals){
+  const container=document.getElementById('budgetAlertBanner');
+  if(!container) return;
+  const overList=EXPENSE_FIELDS.filter(f=>f.budget>0 && (catTotals[f.id]||0)>f.budget);
+  if(!overList.length){ container.innerHTML=''; return; }
+  const rows=overList.map(f=>`<div class="budget-alert-row"><span>${f.icon} ${escHtml(f.label)}</span><span class="budget-alert-amt">${fmt(catTotals[f.id]||0)} / ${fmt(f.budget)}</span></div>`).join('');
+  container.innerHTML=`<div class="budget-alert-banner"><div class="budget-alert-head">⚠️ Over Budget This Month</div>${rows}</div>`;
+}
+// Fires once per category per session when a Day-view entry pushes it over its
+// monthly budget — resets so it can fire again if the total dips back under.
+let budgetAlertedIds=new Set();
+function checkBudgetAlert(fieldId){
+  const f=EXPENSE_FIELDS.find(x=>x.id===fieldId);
+  if(!f||!(f.budget>0)) return;
+  const {catTotals}=calcMonth(curYear,curMonth);
+  const used=catTotals[fieldId]||0;
+  if(used>f.budget){
+    if(!budgetAlertedIds.has(fieldId)){
+      budgetAlertedIds.add(fieldId);
+      showToast(`⚠️ Over budget: ${f.icon} ${f.label} — ${fmt(used)} / ${fmt(f.budget)}`, true);
+    }
+  } else {
+    budgetAlertedIds.delete(fieldId);
+  }
+}
 function renderBudgets(catTotals){
   const container=document.getElementById('budgetListSummary');
   if(!container) return;
@@ -3042,6 +3123,121 @@ function printHTML(body){
 
 // Note: per-field input/note listeners are attached inside attachFieldListeners(),
 // called every time renderFieldRows() (re)builds the category rows.
+
+// ─── FULL BACKUP / RESTORE (JSON) + CSV EXPORT ────────────────────────────────
+function downloadBlob(content,mime,filename){
+  const blob=new Blob([content],{type:mime});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=filename; a.click();
+  URL.revokeObjectURL(url);
+}
+function allDayEntries(){
+  // Returns [{key,y,m(0-idx),d,data}] for every saved day, parsed and sorted chronologically.
+  const dayKeyRe=/^mt_(\d+)_(\d+)_(\d+)$/;
+  const out=[];
+  for(let i=0;i<localStorage.length;i++){
+    const key=localStorage.key(i);
+    const m2=key&&key.match(dayKeyRe);
+    if(!m2) continue;
+    let data; try{ data=JSON.parse(localStorage.getItem(key)); }catch{ continue; }
+    if(!data) continue;
+    out.push({key, y:parseInt(m2[1]), m:parseInt(m2[2])-1, d:parseInt(m2[3]), data});
+  }
+  out.sort((a,b)=>a.y-b.y||a.m-b.m||a.d-b.d);
+  return out;
+}
+function exportAllDataJSON(){
+  const days={};
+  allDayEntries().forEach(({key,data})=>{ days[key]=data; });
+  const payload={
+    version:1, exportedAt:new Date().toISOString(),
+    categories:{expense:EXPENSE_FIELDS, income:INCOME_FIELDS},
+    goal:SAVINGS_GOAL, accounts:ACCOUNTS, ledger:LEDGER, debts:DEBTS, days
+  };
+  downloadBlob(JSON.stringify(payload,null,2), 'application/json', `money-tracker-backup-${new Date().toISOString().slice(0,10)}.json`);
+  showToast('Backup downloaded ✓');
+}
+async function batchSetDays(entries){
+  // entries: [{y,m,d,data}] — writes in small parallel batches so a large
+  // history doesn't fire hundreds of Firestore calls all at once.
+  const BATCH=15;
+  for(let i=0;i<entries.length;i+=BATCH){
+    const chunk=entries.slice(i,i+BATCH);
+    await Promise.all(chunk.map(e=>setDay(e.y,e.m,e.d,e.data)));
+  }
+}
+async function importAllDataJSON(fileInput){
+  const file=fileInput.files?.[0];
+  if(!file) return;
+  let payload;
+  try{ payload=JSON.parse(await file.text()); }
+  catch{ showToast('Invalid backup file','error'); fileInput.value=''; return; }
+  if(!payload||typeof payload!=='object'){ showToast('Invalid backup file','error'); fileInput.value=''; return; }
+  if(!confirm('This replaces ALL current data (categories, accounts, debts, and every day recorded) with this backup file. Continue?')){ fileInput.value=''; return; }
+  showToast('Restoring backup…');
+  try{
+    if(payload.categories){
+      if(Array.isArray(payload.categories.expense)&&payload.categories.expense.length) EXPENSE_FIELDS=payload.categories.expense;
+      if(Array.isArray(payload.categories.income)&&payload.categories.income.length) INCOME_FIELDS=payload.categories.income;
+      migratePinnedFields();
+      rebuildAllFields();
+    }
+    if(typeof payload.goal==='number') SAVINGS_GOAL=payload.goal;
+    if(Array.isArray(payload.accounts)&&payload.accounts.length) ACCOUNTS=payload.accounts;
+    if(Array.isArray(payload.ledger)) LEDGER=payload.ledger;
+    if(Array.isArray(payload.debts)) DEBTS=payload.debts;
+    await saveSettingsRemote();
+    await saveLedgerRemote();
+    await saveDebtsRemote();
+
+    // Wipe existing local day entries, then write back whatever the backup has
+    allDayEntries().forEach(({key})=>localStorage.removeItem(key));
+    if(payload.days&&typeof payload.days==='object'){
+      const dayKeyRe=/^mt_(\d+)_(\d+)_(\d+)$/;
+      const toWrite=Object.entries(payload.days).map(([key,data])=>{
+        const m2=key.match(dayKeyRe);
+        if(!m2) return null;
+        return {y:parseInt(m2[1]), m:parseInt(m2[2])-1, d:parseInt(m2[3]), data};
+      }).filter(Boolean);
+      await batchSetDays(toWrite);
+    }
+
+    renderFieldRows();
+    renderSettingsLists();
+    extraShownIds=new Set();
+    loadDay(currentDay);
+    if(document.getElementById('summarySection').classList.contains('active')) renderSummary();
+    if(document.getElementById('yearlySection').classList.contains('active')) renderYearly();
+    showToast('Backup restored ✓');
+    closeSettings();
+  }catch(err){
+    console.error('Restore failed:',err);
+    showToast('Restore failed — check console','error');
+  }
+  fileInput.value='';
+}
+function csvEscape(v){
+  const s=String(v==null?'':v);
+  return /[",\r\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
+}
+function exportAllDataCSV(){
+  const rows=[['Date','Category','Type','Amount','Note','Account']];
+  allDayEntries().forEach(({y,m,d,data})=>{
+    const dateStr=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    ALL_FIELDS.forEach(f=>{
+      const amt=data[f.id];
+      if(!amt) return;
+      const isInc=INCOME_FIELDS.some(x=>x.id===f.id);
+      const note=data['note_'+f.id]||'';
+      const acct=ACCOUNTS.find(a=>a.id===data['acct_'+f.id]);
+      rows.push([dateStr, f.label, isInc?'Income':'Expense', amt, note, acct?acct.label:'']);
+    });
+  });
+  const csv=rows.map(r=>r.map(csvEscape).join(',')).join('\r\n');
+  downloadBlob(csv, 'text/csv;charset=utf-8', `money-tracker-export-${new Date().toISOString().slice(0,10)}.csv`);
+  showToast('CSV exported ✓');
+}
 
 // ── FIREBASE INIT + AUTH CHECK ──────────────────────────────
 async function initApp(){
