@@ -728,6 +728,9 @@
   .budget-bar-fill.ok { background: var(--accent2); }
   .budget-bar-fill.warn { background: #d97706; }
   .budget-bar-fill.over { background: var(--danger); }
+  .pace-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+  .pace-dot.pace-green { background: var(--accent2); }
+  .pace-dot.pace-red { background: var(--danger); }
 
   /* ── INSIGHTS ─────────────────────────────────────────────── */
   .top-cat-card {
@@ -2305,9 +2308,26 @@ function renderSummary(){
 }
 
 // ─── SAVINGS GOAL ─────────────────────────────────────────────────────────────
-// Target = manually entered in Settings → Goal (SAVINGS_GOAL).
-// "Saved" = total budgeted across categories − actual expense in those budgeted
-// categories this month (i.e. how much of your planned budget you kept unspent).
+// Shared by the Goal card and the Budget pace indicators: how many days of the
+// given month have "elapsed" for prorating a budget so far.
+//   - viewing the real current month → up through today's date
+//   - a fully past month → the whole month counts as elapsed
+//   - a future month → nothing has elapsed yet
+function getElapsedDaysInMonth(y,m){
+  const totalDaysInMonth=daysInMonth(y,m);
+  const today=new Date();
+  if(y===today.getFullYear()&&m===today.getMonth()) return today.getDate();
+  if(new Date(y,m,1)<new Date(today.getFullYear(),today.getMonth(),1)) return totalDaysInMonth;
+  return 0;
+}
+// Target = manually entered in Settings → Goal (SAVINGS_GOAL), unchanged.
+// "Saved" (projected) is computed pace-based instead of full-month-vs-actual:
+//   1. For each budgeted category, find the expected spend-so-far (budget prorated
+//      to the number of days elapsed in the month) vs the actual spend-so-far.
+//   2. Sum the (expected − actual) difference across all budgeted categories.
+//   3. Average that difference per elapsed day.
+//   4. Project that daily average out to 30 days — this projected value is what's
+//      shown/compared against the target.
 function renderSavingsGoalCard(catTotals){
   const container=document.getElementById('goalCardContainer');
   if(!container) return;
@@ -2315,10 +2335,19 @@ function renderSavingsGoalCard(catTotals){
     container.innerHTML=`<div class="goal-card empty" onclick="openSettings('goal')">🎯 No savings goal set yet — tap to create one</div>`;
     return;
   }
+  const totalDaysInMonth=daysInMonth(curYear,curMonth);
+  const elapsedDays=getElapsedDaysInMonth(curYear,curMonth);
   const budgeted=EXPENSE_FIELDS.filter(f=>f.budget>0);
-  const totalBudget=budgeted.reduce((s,f)=>s+f.budget,0);
-  const spentInBudgeted=budgeted.reduce((s,f)=>s+(catTotals[f.id]||0),0);
-  const saved=totalBudget-spentInBudgeted;
+  let saved=0;
+  if(elapsedDays>0){
+    const diffSoFar=budgeted.reduce((s,f)=>{
+      const expectedSoFar=(f.budget/totalDaysInMonth)*elapsedDays;
+      const actualSoFar=catTotals[f.id]||0;
+      return s+(expectedSoFar-actualSoFar);
+    },0);
+    const perDayDiff=diffSoFar/elapsedDays;
+    saved=perDayDiff*30;
+  }
   const pct=Math.max(0,Math.min(100,(saved/SAVINGS_GOAL)*100));
   container.innerHTML=`<div class="goal-card">
     <div class="goal-head"><span>🎯 Savings Goal — ${MONTHS[curMonth]}</span><span class="goal-edit" onclick="openSettings('goal')" title="Edit goal">✏️</span></div>
@@ -2553,13 +2582,22 @@ function renderBudgets(catTotals){
     container.innerHTML='<div style="color:var(--muted);text-align:center;padding:14px;font-size:0.82rem">No budgets set yet — add one in ⚙️ Settings → Budgets</div>';
     return;
   }
+  const totalDaysInMonth=daysInMonth(curYear,curMonth);
+  const elapsedDays=getElapsedDaysInMonth(curYear,curMonth);
   container.innerHTML=withBudget.map(f=>{
     const used=catTotals[f.id]||0;
     const pct=Math.min(100,(used/f.budget)*100);
     const over=used>f.budget;
     const cls=over?'over':pct>=80?'warn':'ok';
+    // Pace mark: compares actual spend-so-far against what the budget allows
+    // up through today (budget ÷ days-in-month × elapsed days) — red if
+    // spending has already crossed that expected-so-far line, green if not.
+    const expectedSoFar=elapsedDays>0?(f.budget/totalDaysInMonth)*elapsedDays:0;
+    const onPace=elapsedDays<=0||used<=expectedSoFar;
+    const paceCls=onPace?'pace-green':'pace-red';
+    const paceTitle=elapsedDays>0?`${fmt(used)} spent vs ${fmt(expectedSoFar)} expected by day ${elapsedDays}`:'';
     return `<div class="budget-row">
-      <div class="budget-row-top"><span>${f.icon} ${escHtml(f.label)}</span><span class="${over?'over-text':''}">${fmt(used)} / ${fmt(f.budget)}</span></div>
+      <div class="budget-row-top"><span><span class="pace-dot ${paceCls}" title="${paceTitle}"></span>${f.icon} ${escHtml(f.label)}</span><span class="${over?'over-text':''}">${fmt(used)} / ${fmt(f.budget)}</span></div>
       <div class="budget-bar-track"><div class="budget-bar-fill ${cls}" style="width:${pct}%"></div></div>
     </div>`;
   }).join('');
