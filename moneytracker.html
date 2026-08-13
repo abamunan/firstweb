@@ -2281,6 +2281,9 @@ function renderSummary(){
     const row=document.createElement('div');
     row.className='breakdown-row';
     row.innerHTML=`<span class="br-left"><span>${f.icon}</span><span>${escHtml(f.label)}</span></span><span class="br-val ${isInc?'inc':'exp'}">${fmt(catTotals[f.id])}</span>`;
+    row.style.cursor='pointer';
+    row.title='View all entries';
+    row.onclick=()=>openCategoryDetail(f.id);
     bl.appendChild(row);
   });
   if(!bl.innerHTML) bl.innerHTML='<div style="color:var(--muted);text-align:center;padding:14px;font-size:0.82rem">No data yet</div>';
@@ -2307,6 +2310,59 @@ function renderSummary(){
   renderInsights(catTotals,totalExp);
 }
 
+// ─── CATEGORY DETAIL (view-only, opens in a new tab) ───────────────────────────
+// Triggered by clicking a category row in the Summary breakdown list. Walks every
+// day of the currently viewed month, pulls out that one category's amount + note
+// wherever it was entered, and lays it out as a simple read-only table.
+function openCategoryDetail(fieldId){
+  const f=ALL_FIELDS.find(x=>x.id===fieldId);
+  if(!f) return;
+  const isInc=INCOME_FIELDS.some(x=>x.id===fieldId);
+  const totalDays=daysInMonth(curYear,curMonth);
+  let rows='',total=0,count=0;
+  for(let d=1;d<=totalDays;d++){
+    const data=getDay(curYear,curMonth,d);
+    const v=data[f.id]||0;
+    if(!v) continue;
+    const note=data['note_'+f.id]||'';
+    const dateLabel=new Date(curYear,curMonth,d).toLocaleDateString('en-US',{weekday:'short',day:'numeric',month:'short'});
+    rows+=`<tr><td>${dateLabel}</td><td class="num ${isInc?'inc':'exp'}">${fmt(v)}</td><td>${note?escHtml(note):'<span class="muted">—</span>'}</td></tr>`;
+    total+=v; count++;
+  }
+  if(!rows) rows=`<tr><td colspan="3" class="empty">No entries for this category this month</td></tr>`;
+  const w=window.open('','_blank');
+  if(!w){ showToast('Popup blocked — allow popups to view details',true); return; }
+  w.document.write(`<html><head><meta charset="UTF-8"><title>${escHtml(f.label)} — ${MONTHS[curMonth]} ${curYear}</title><style>
+    body{font-family:'Poppins',Arial,sans-serif;background:#0f172a;color:#e2e8f0;margin:0;padding:20px;}
+    .head{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+    .head .icon{font-size:26px;}
+    h1{font-size:19px;margin:0;color:#fff;}
+    .sub{color:#94a3b8;font-size:12px;margin:2px 0 18px;}
+    .overview{display:flex;gap:10px;margin-bottom:18px;}
+    .ov{flex:1;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 14px;background:rgba(255,255,255,0.04);}
+    .ol{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+    .ov-val{font-size:17px;font-weight:700;color:#fff;}
+    table{width:100%;border-collapse:collapse;font-size:13px;background:rgba(255,255,255,0.03);border-radius:10px;overflow:hidden;}
+    th{background:rgba(255,255,255,0.08);color:#cbd5e1;text-align:left;padding:9px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.4px;}
+    td{padding:9px 12px;border-top:1px solid rgba(255,255,255,0.07);}
+    .num{text-align:right;font-weight:600;}
+    .num.exp{color:#f87171;}
+    .num.inc{color:#4ade80;}
+    .muted{color:#64748b;}
+    .empty{text-align:center;color:#64748b;padding:20px;}
+    .badge{font-size:11px;color:#94a3b8;background:rgba(255,255,255,0.06);padding:3px 9px;border-radius:20px;margin-left:auto;}
+  </style></head><body>
+    <div class="head"><span class="icon">${f.icon}</span><h1>${escHtml(f.label)}</h1><span class="badge">View only</span></div>
+    <div class="sub">${MONTHS[curMonth]} ${curYear}</div>
+    <div class="overview">
+      <div class="ov"><div class="ol">Total</div><div class="ov-val" style="color:${isInc?'#4ade80':'#f87171'}">${fmt(total)}</div></div>
+      <div class="ov"><div class="ol">Entries</div><div class="ov-val">${count}</div></div>
+    </div>
+    <table><tr><th>Date</th><th style="text-align:right">Amount (৳)</th><th>Note</th></tr>${rows}</table>
+  </body></html>`);
+  w.document.close();
+}
+
 // ─── SAVINGS GOAL ─────────────────────────────────────────────────────────────
 // Shared by the Goal card and the Budget pace indicators: how many days of the
 // given month have "elapsed" for prorating a budget so far.
@@ -2326,8 +2382,8 @@ function getElapsedDaysInMonth(y,m){
 //      to the number of days elapsed in the month) vs the actual spend-so-far.
 //   2. Sum the (expected − actual) difference across all budgeted categories.
 //   3. Average that difference per elapsed day.
-//   4. Project that daily average out to 30 days — this projected value is what's
-//      shown/compared against the target.
+//   4. Project that daily average out across the actual number of days in the
+//      month — this projected value is what's shown/compared against the target.
 function renderSavingsGoalCard(catTotals){
   const container=document.getElementById('goalCardContainer');
   if(!container) return;
@@ -2346,7 +2402,7 @@ function renderSavingsGoalCard(catTotals){
       return s+(expectedSoFar-actualSoFar);
     },0);
     const perDayDiff=diffSoFar/elapsedDays;
-    saved=perDayDiff*30;
+    saved=perDayDiff*totalDaysInMonth;
   }
   const pct=Math.max(0,Math.min(100,(saved/SAVINGS_GOAL)*100));
   container.innerHTML=`<div class="goal-card">
