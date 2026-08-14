@@ -24,6 +24,7 @@
     --card-radius:    16px;
     --font:           'Poppins', sans-serif;
     --accent-glow:    rgba(2,132,199,0.18);
+    --card-bg-solid:  #ffffff;
   }
   [data-theme="dark"] {
     --surface:        rgba(255,255,255,0.06);
@@ -35,6 +36,7 @@
     --income-border:  rgba(74,222,128,0.28);
     --expense-border: rgba(248,113,113,0.28);
     --accent-glow:    rgba(0,212,255,0.18);
+    --card-bg-solid:  #111a2b;
   }
 
   body {
@@ -476,12 +478,12 @@
 
   /* ── SETTINGS MODAL ─────────────────────────────────────────── */
   .modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+    position: fixed; inset: 0; background: rgba(0,0,0,0.08);
     z-index: 300; display: none; align-items: flex-end; justify-content: center;
   }
   .modal-overlay.open { display: flex; }
   .modal-box {
-    background: var(--card-bg); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+    background: var(--card-bg-solid, var(--card-bg)); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
     border: 1px solid var(--card-border); border-bottom: none;
     border-radius: 20px 20px 0 0; width: 100%; max-width: 500px; max-height: 85vh;
     display: flex; flex-direction: column;
@@ -507,6 +509,26 @@
   }
   .modal-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
   .modal-body { padding: 14px 16px 22px; overflow-y: auto; }
+  /* Category detail modal (Summary breakdown row → tap to view entries) */
+  .cd-stats { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+  .cd-stat { border: 1px solid var(--card-border); border-radius: 12px; padding: 11px 12px; background: var(--surface); }
+  .cd-stat-hero { border-width: 1px; }
+  .cd-stat-label { font-size: 0.62rem; color: var(--text-soft); text-transform: uppercase; letter-spacing: .5px; font-weight: 600; margin-bottom: 5px; }
+  .cd-stat-val { font-family: var(--font); font-size: 0.98rem; font-weight: 700; color: var(--text-main); }
+  .cd-panel { border: 1px solid var(--card-border); border-radius: 14px; overflow: hidden; background: var(--surface); }
+  .cd-panel-head { padding: 10px 14px; border-bottom: 1px solid var(--card-border); display: flex; align-items: center; justify-content: space-between; font-size: 0.72rem; font-weight: 700; color: var(--text-soft); text-transform: uppercase; letter-spacing: .4px; }
+  .cd-panel-count { font-weight: 500; text-transform: none; letter-spacing: 0; color: var(--text-soft); opacity: 0.8; }
+  .cd-list { max-height: 46vh; overflow-y: auto; }
+  .cd-row { display: grid; grid-template-columns: 46px 1fr 1fr; gap: 10px; align-items: center; padding: 10px 14px; border-top: 1px solid var(--card-border); }
+  .cd-row:first-child { border-top: none; }
+  .cd-date-num { font-weight: 700; font-size: 0.88rem; color: var(--text-main); margin-right: 4px; }
+  .cd-date-dow { font-size: 0.58rem; color: var(--text-soft); text-transform: uppercase; letter-spacing: .3px; }
+  .cd-amt-track { height: 4px; border-radius: 4px; background: var(--card-border); margin-bottom: 4px; overflow: hidden; }
+  .cd-amt-fill { height: 100%; border-radius: 4px; background: var(--cd-accent, var(--accent)); }
+  .cd-amt-val { font-weight: 700; font-size: 0.76rem; color: var(--cd-accent, var(--accent)); }
+  .cd-note { font-size: 0.74rem; color: var(--text-soft); line-height: 1.35; }
+  .cd-dash { color: var(--text-soft); opacity: 0.5; }
+  .cd-empty { text-align: center; color: var(--text-soft); padding: 30px 16px; font-size: 0.8rem; }
   .settings-pane { display: none; }
   .settings-pane.active { display: block; }
   .settings-sub {
@@ -1076,8 +1098,22 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="categoryDetailModal">
+  <div class="modal-box" style="max-width:480px">
+    <div class="modal-header">
+      <div>
+        <h3 id="categoryDetailTitle" style="margin-bottom:2px">🍳 Category</h3>
+        <div id="categoryDetailSub" style="font-size:0.68rem;color:var(--text-soft);font-weight:500"></div>
+      </div>
+      <button class="modal-close" onclick="closeCategoryDetail()">✕</button>
+    </div>
+    <div class="modal-body" id="categoryDetailBody"></div>
+  </div>
+</div>
+
 <div class="bottom-nav">
   <button class="bnav-btn active" id="bnav-day" onclick="switchView('day')"><span class="icon">📝</span>Daily</button>
+
   <button class="bnav-btn" id="bnav-summary" onclick="switchView('summary')"><span class="icon">📊</span>Monthly</button>
   <button class="bnav-btn" id="bnav-yearly" onclick="switchView('yearly')"><span class="icon">📅</span>Yearly</button>
 </div>
@@ -2146,6 +2182,24 @@ function calcMonth(y,m){
   return{totalExp,totalInc,net:totalInc-totalExp,catTotals,daily};
 }
 
+// Same as calcMonth, but only sums days 1..upToDay (inclusive). Used to compare
+// a month-in-progress fairly against the same stretch of a prior month, instead
+// of comparing e.g. "Aug 1–14" against all of July.
+function calcMonthUpTo(y,m,upToDay){
+  let totalExp=0,totalInc=0;
+  const catTotals={};
+  ALL_FIELDS.forEach(f=>catTotals[f.id]=0);
+  const days=Math.min(upToDay,daysInMonth(y,m));
+  for(let d=1;d<=days;d++){
+    const data=getDay(y,m,d);
+    const exp=EXPENSE_FIELDS.reduce((s,f)=>s+(data[f.id]||0),0);
+    const inc=INCOME_FIELDS.reduce((s,f)=>s+(data[f.id]||0),0);
+    totalExp+=exp; totalInc+=inc;
+    ALL_FIELDS.forEach(f=>catTotals[f.id]+=(data[f.id]||0));
+  }
+  return{totalExp,totalInc,net:totalInc-totalExp,catTotals};
+}
+
 // ─── CHARTS (bar + pie, theme-aware) ───────────────────────────────────────────
 const chartInstances={};
 const CAT_PALETTE=['#0284c7','#16a34a','#dc2626','#d97706','#7c3aed','#db2777','#0d9488','#ca8a04','#4f46e5','#059669','#e11d48','#0891b2','#65a30d','#c026d3','#ea580c','#2563eb','#0e7490','#9333ea','#b45309'];
@@ -2319,49 +2373,54 @@ function openCategoryDetail(fieldId){
   if(!f) return;
   const isInc=INCOME_FIELDS.some(x=>x.id===fieldId);
   const totalDays=daysInMonth(curYear,curMonth);
-  let rows='',total=0,count=0;
+  const entries=[];
   for(let d=1;d<=totalDays;d++){
     const data=getDay(curYear,curMonth,d);
     const v=data[f.id]||0;
     if(!v) continue;
-    const note=data['note_'+f.id]||'';
-    const dateLabel=new Date(curYear,curMonth,d).toLocaleDateString('en-US',{weekday:'short',day:'numeric',month:'short'});
-    rows+=`<tr><td>${dateLabel}</td><td class="num ${isInc?'inc':'exp'}">${fmt(v)}</td><td>${note?escHtml(note):'<span class="muted">—</span>'}</td></tr>`;
-    total+=v; count++;
+    entries.push({day:d,amount:v,note:data['note_'+f.id]||''});
   }
-  if(!rows) rows=`<tr><td colspan="3" class="empty">No entries for this category this month</td></tr>`;
-  const w=window.open('','_blank');
-  if(!w){ showToast('Popup blocked — allow popups to view details',true); return; }
-  w.document.write(`<html><head><meta charset="UTF-8"><title>${escHtml(f.label)} — ${MONTHS[curMonth]} ${curYear}</title><style>
-    body{font-family:'Poppins',Arial,sans-serif;background:#0f172a;color:#e2e8f0;margin:0;padding:20px;}
-    .head{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
-    .head .icon{font-size:26px;}
-    h1{font-size:19px;margin:0;color:#fff;}
-    .sub{color:#94a3b8;font-size:12px;margin:2px 0 18px;}
-    .overview{display:flex;gap:10px;margin-bottom:18px;}
-    .ov{flex:1;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 14px;background:rgba(255,255,255,0.04);}
-    .ol{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
-    .ov-val{font-size:17px;font-weight:700;color:#fff;}
-    table{width:100%;border-collapse:collapse;font-size:13px;background:rgba(255,255,255,0.03);border-radius:10px;overflow:hidden;}
-    th{background:rgba(255,255,255,0.08);color:#cbd5e1;text-align:left;padding:9px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.4px;}
-    td{padding:9px 12px;border-top:1px solid rgba(255,255,255,0.07);}
-    .num{text-align:right;font-weight:600;}
-    .num.exp{color:#f87171;}
-    .num.inc{color:#4ade80;}
-    .muted{color:#64748b;}
-    .empty{text-align:center;color:#64748b;padding:20px;}
-    .badge{font-size:11px;color:#94a3b8;background:rgba(255,255,255,0.06);padding:3px 9px;border-radius:20px;margin-left:auto;}
-  </style></head><body>
-    <div class="head"><span class="icon">${f.icon}</span><h1>${escHtml(f.label)}</h1><span class="badge">View only</span></div>
-    <div class="sub">${MONTHS[curMonth]} ${curYear}</div>
-    <div class="overview">
-      <div class="ov"><div class="ol">Total</div><div class="ov-val" style="color:${isInc?'#4ade80':'#f87171'}">${fmt(total)}</div></div>
-      <div class="ov"><div class="ol">Entries</div><div class="ov-val">${count}</div></div>
+  const total=entries.reduce((s,e)=>s+e.amount,0);
+  const count=entries.length;
+  const avg=count?total/count:0;
+  const maxAmt=count?Math.max(...entries.map(e=>e.amount)):0;
+  const accentVar=isInc?'var(--accent2)':'var(--danger)';
+  const accentGlowVar=isInc?'var(--accent2-glow)':'rgba(220,38,38,0.14)';
+
+  const rows=entries.map(e=>{
+    const dt=new Date(curYear,curMonth,e.day);
+    const weekday=dt.toLocaleDateString('en-US',{weekday:'short'});
+    const barPct=maxAmt?Math.max(6,Math.round((e.amount/maxAmt)*100)):0;
+    return `<div class="cd-row">
+      <div class="cd-date"><span class="cd-date-num">${e.day}</span><span class="cd-date-dow">${weekday}</span></div>
+      <div class="cd-amt">
+        <div class="cd-amt-track"><div class="cd-amt-fill" style="width:${barPct}%"></div></div>
+        <span class="cd-amt-val">${fmt(e.amount)}</span>
+      </div>
+      <div class="cd-note">${e.note?escHtml(e.note):'<span class="cd-dash">—</span>'}</div>
+    </div>`;
+  }).join('');
+  const listBody=rows||`<div class="cd-empty">🗒️ No entries logged for ${escHtml(f.label)} in ${MONTHS[curMonth]}</div>`;
+
+  document.getElementById('categoryDetailTitle').textContent=`${f.icon} ${f.label}`;
+  document.getElementById('categoryDetailSub').textContent=`${MONTHS[curMonth]} ${curYear} activity`;
+  document.getElementById('categoryDetailBody').innerHTML=`
+    <div class="cd-stats">
+      <div class="cd-stat cd-stat-hero" style="background:linear-gradient(135deg, ${accentGlowVar}, transparent);border-color:${accentGlowVar}">
+        <div class="cd-stat-label">Total ${isInc?'Received':'Spent'}</div>
+        <div class="cd-stat-val" style="color:${accentVar}">${fmt(total)}</div>
+      </div>
+      <div class="cd-stat"><div class="cd-stat-label">Entries</div><div class="cd-stat-val">${count}</div></div>
+      <div class="cd-stat"><div class="cd-stat-label">Avg / Entry</div><div class="cd-stat-val">${fmt(Math.round(avg))}</div></div>
     </div>
-    <table><tr><th>Date</th><th style="text-align:right">Amount (৳)</th><th>Note</th></tr>${rows}</table>
-  </body></html>`);
-  w.document.close();
+    <div class="cd-panel">
+      <div class="cd-panel-head"><span>Daily breakdown</span><span class="cd-panel-count">${count} ${count===1?'entry':'entries'}</span></div>
+      <div class="cd-list" style="--cd-accent:${accentVar}">${listBody}</div>
+    </div>
+  `;
+  document.getElementById('categoryDetailModal').classList.add('open');
 }
+function closeCategoryDetail(){ document.getElementById('categoryDetailModal').classList.remove('open'); }
 
 // ─── SAVINGS GOAL ─────────────────────────────────────────────────────────────
 // Shared by the Goal card and the Budget pace indicators: how many days of the
@@ -2689,7 +2748,11 @@ function renderComparisonChart(id,labels,curVals,prevVals,curLabel,prevLabel){
 
 function renderInsights(catTotals,totalExp){
   const{y:py,m:pm}=getPrevMonth(curYear,curMonth);
-  const prev=calcMonth(py,pm);
+  // Compare like-for-like: only count the previous month up through the same
+  // day-of-month we've reached in the current month (e.g. Aug 1–14 vs Jul 1–14),
+  // not the previous month's full total.
+  const elapsedDays=getElapsedDaysInMonth(curYear,curMonth)||daysInMonth(curYear,curMonth);
+  const prev=calcMonthUpTo(py,pm,elapsedDays);
 
   // Top spending category card
   const topCard=document.getElementById('topCategoryCard');
@@ -2865,7 +2928,10 @@ function exportMonthPDF(){
 
   // Insights (top category + month-over-month changes, same logic as the on-screen Insights card)
   const{y:py,m:pm}=getPrevMonth(curYear,curMonth);
-  const prevData=calcMonth(py,pm);
+  // Same like-for-like comparison as the on-screen card: cap the previous month
+  // at the same day-of-month reached this month, rather than its full total.
+  const elapsedDaysForCompare=getElapsedDaysInMonth(curYear,curMonth)||daysInMonth(curYear,curMonth);
+  const prevData=calcMonthUpTo(py,pm,elapsedDaysForCompare);
   let insightsHtml='';
   const topEntries=EXPENSE_FIELDS.map(f=>({f,val:catTotals[f.id]||0})).filter(e=>e.val>0).sort((a,b)=>b.val-a.val);
   if(topEntries.length){
