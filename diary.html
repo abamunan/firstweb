@@ -26,21 +26,20 @@
        Reuses --card-bg, --card-border, --accent, --text-* tokens
        from style.css so light/dark theming stays in sync site-wide.
 
-       This page also defines its own --ink / --ink-soft / --paper-dot
-       tokens below — a small, page-scoped "journal" identity layered
-       on top of the shared design system. --accent is never touched,
-       so every other page keeps looking exactly as it does today.
+       This page also defines its own --ink / --ink-soft tokens below,
+       plus a brown→orange ambient gradient — a small, page-scoped
+       "journal" identity layered on top of the shared design system.
+       --accent is never touched, so every other page keeps looking
+       exactly as it does today.
        ============================================================ */
 
     :root {
-        --ink: #17233f;                    /* navy ink — headings, dates, dividers */
-        --ink-soft: #4c5b7a;
-        --paper-dot: rgba(23,35,63,.07);   /* faint dot-grid, instead of the site's blobs */
+        --ink: #3a2413;                    /* espresso ink — headings, dates, dividers */
+        --ink-soft: #7a5a3c;
     }
     [data-theme="dark"] {
-        --ink: #d9bd7e;                    /* gold leaf on dark — like lettering on a bound cover */
-        --ink-soft: #a58e5e;
-        --paper-dot: rgba(217,189,126,.05);
+        --ink: #f0b673;                    /* warm amber on dark — like coals catching light */
+        --ink-soft: #c98d54;
     }
 
     /* ── BODY OVERRIDE (identical to TypeMaster.html) ────────── */
@@ -51,15 +50,19 @@
         min-height: 100vh;
     }
 
-    /* Quiet dot-grid "paper" ambience, replacing the site's colour blobs
-       on this page only — a diary calls for something calmer. */
+    /* Brown → orange ambient gradient, replacing the site's colour blobs
+       on this page only. Direction AND colour order both flip in dark
+       mode (135deg cream→brown becomes 315deg near-black→amber) so it
+       genuinely reads as dark, not just the same gradient dimmed. */
     .blobs { display: none; }
     body::before {
         content: "";
         position: fixed; inset: 0; z-index: -1;
-        background-image: radial-gradient(circle, var(--paper-dot) 1px, transparent 1px);
-        background-size: 24px 24px;
+        background: linear-gradient(135deg, #fff6ec 0%, #ffd9ad 32%, #f2a15c 66%, #b8632b 100%);
         pointer-events: none;
+    }
+    [data-theme="dark"] body::before {
+        background: linear-gradient(315deg, #0c0603 0%, #2b160a 32%, #5c2f14 66%, #93481c 100%);
     }
 
     /* ── NAVBAR OVERRIDE (identical to TypeMaster.html) ──────── */
@@ -113,8 +116,9 @@
     /* An index-tab / chapter-divider treatment instead of pill
        buttons — a moving underline rather than a filled background. */
     .diary-tabs {
-        display: flex; gap: 34px; justify-content: center;
-        margin-bottom: 32px; border-bottom: 1px solid var(--card-border);
+        display: flex; gap: 28px;
+        width: max-content; margin: 0 auto 32px;
+        border-bottom: 1px solid var(--card-border);
         animation: fadeUp .6s ease .05s both;
     }
     .diary-tab {
@@ -134,7 +138,12 @@
     .diary-tab.active { color: var(--ink); }
     .diary-tab.active::after { right: 0; }
 
-    .diary-view { display: none; animation: fadeUp .45s ease both; }
+    .diary-view {
+        display: none; animation: fadeUp .45s ease both;
+        background: var(--card-bg); border: 1px solid var(--card-border);
+        border-radius: 16px; padding: 34px 34px 38px;
+        backdrop-filter: blur(16px); box-shadow: 0 20px 50px rgba(0,0,0,.12);
+    }
     .diary-view.active { display: block; }
 
     /* ── WRITE: DATE/TIME ROW ────────────────────────────────── */
@@ -181,6 +190,8 @@
         animation: cardIn .35s ease both;
     }
     .diary-section:first-child { border-top: none; padding-top: 0; }
+    .diary-section:hover { background: rgba(0,0,0,.015); }
+    [data-theme="dark"] .diary-section:hover { background: rgba(255,255,255,.02); }
     .diary-section-head {
         display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
     }
