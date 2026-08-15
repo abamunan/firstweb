@@ -42,6 +42,7 @@ let editingDocId  = null;      // null = creating new entry; set = editing exist
 let sectionIdSeq  = 0;         // increments to give each section row a unique DOM id
 let historyLimit  = 10;        // 10 | 50 | 'all'
 let cachedEntries = [];        // last fetched batch, reused for PDF export so we don't re-query
+let readingEntry  = null;      // entry currently open in the read overlay (null = overlay closed)
 
 // ── TEMP DEBUG HOOK (safe to remove once PDF export is confirmed working) ──
 // Since diary.js is a module, its functions aren't reachable from the
@@ -79,6 +80,13 @@ const entryListEl     = $("#entry-list");
 const downloadPdfBtn  = $("#download-pdf-btn");
 const filterBtns      = document.querySelectorAll(".diary-filter-btn");
 const toastEl         = $("#diary-toast");
+
+const readOverlay      = $("#diary-read-overlay");
+const readBackBtn      = $("#diary-read-back-btn");
+const readEditBtn      = $("#diary-read-edit-btn");
+const readDateEl       = $("#diary-read-date");
+const readTimeEl       = $("#diary-read-time");
+const readSectionsEl   = $("#diary-read-sections");
 
 // NOTE: Theme is handled entirely by the shared theme.js script tag
 // in <head> (loaded before this module). It applies the persisted
@@ -385,6 +393,55 @@ saveEntryBtn.addEventListener("click", async () => {
 });
 
 // ════════════════════════════════════════════════════════════
+//  READ OVERLAY (view-only entry detail)
+// ════════════════════════════════════════════════════════════
+// Opened when a History row is clicked. Purely presentational — no
+// inputs, nothing editable. The only way into the Write form for an
+// existing entry is the explicit "Edit" button below, which hands off
+// to the same loadEntryIntoForm() used before, so save/update logic
+// is untouched.
+function showEntryRead(entryDoc) {
+    readingEntry = entryDoc;
+    readDateEl.textContent = formatDateLabel(entryDoc.datetime);
+    readTimeEl.textContent = formatTimeLabel(entryDoc.datetime);
+
+    const sections = entryDoc.sections && entryDoc.sections.length
+        ? entryDoc.sections
+        : [{ title: "Untitled", content: "" }];
+
+    readSectionsEl.innerHTML = sections.map((s) => `
+        <div>
+            <div class="diary-read-section-title">${escapeHtml(s.title || "Untitled")}</div>
+            <div class="diary-read-section-body">${escapeHtml(s.content || "")}</div>
+        </div>`).join("");
+
+    readOverlay.classList.add("show");
+}
+
+function closeEntryRead() {
+    readOverlay.classList.remove("show");
+    readingEntry = null;
+}
+
+readBackBtn.addEventListener("click", closeEntryRead);
+
+// Click on the dimmed backdrop (not the card itself) also closes it.
+readOverlay.addEventListener("click", (e) => {
+    if (e.target === readOverlay) closeEntryRead();
+});
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && readOverlay.classList.contains("show")) closeEntryRead();
+});
+
+readEditBtn.addEventListener("click", () => {
+    if (!readingEntry) return;
+    const entry = readingEntry;
+    closeEntryRead();
+    loadEntryIntoForm(entry); // existing logic: fills Write form, shows editing banner, switches tab
+});
+
+// ════════════════════════════════════════════════════════════
 //  HISTORY (list + filter)
 // ════════════════════════════════════════════════════════════
 filterBtns.forEach((btn) => {
@@ -464,7 +521,7 @@ function renderEntryList(entries) {
     entryListEl.querySelectorAll(".diary-entry").forEach((el) => {
         el.addEventListener("click", () => {
             const entry = cachedEntries.find((e) => e.id === el.dataset.docId);
-            if (entry) loadEntryIntoForm(entry);
+            if (entry) showEntryRead(entry);
         });
     });
 }

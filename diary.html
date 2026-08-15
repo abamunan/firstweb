@@ -264,6 +264,58 @@
     .diary-empty i { font-size: 2.2rem; margin-bottom: 12px; opacity: .4; display: block; }
     .diary-empty p { font-size: .85rem; }
 
+    /* ── READ OVERLAY (view-only entry detail, opened from History) ── */
+    .diary-read-overlay {
+        position: fixed; inset: 0; z-index: 1500;
+        display: none; align-items: flex-start; justify-content: center;
+        background: rgba(2,6,23,.55); backdrop-filter: blur(6px);
+        padding: 50px 20px; overflow-y: auto;
+    }
+    .diary-read-overlay.show { display: flex; }
+    .diary-read-card {
+        width: 100%; max-width: 640px;
+        background: var(--card-bg); border: 1px solid var(--card-border);
+        border-radius: 18px; padding: 30px 32px 34px;
+        backdrop-filter: blur(16px); box-shadow: 0 24px 60px rgba(0,0,0,.3);
+        animation: cardIn .35s ease both;
+    }
+    .diary-read-toolbar {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 22px;
+    }
+    .diary-read-back {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: none; border: none; color: var(--text-soft);
+        font-size: .82rem; font-weight: 700; cursor: pointer; font-family: inherit;
+        padding: 6px 4px;
+    }
+    .diary-read-back:hover { color: var(--text-main); }
+    .diary-read-edit-btn {
+        display: inline-flex; align-items: center; gap: 7px;
+        padding: 8px 16px; border-radius: 10px;
+        background: var(--accent); border: 1.5px solid var(--accent);
+        color: #fff; font-size: .8rem; font-weight: 700; cursor: pointer;
+        transition: var(--trans); font-family: inherit;
+    }
+    .diary-read-edit-btn:hover { filter: brightness(1.08); }
+    [data-theme="dark"] .diary-read-edit-btn { color: #020617; }
+
+    .diary-read-header {
+        margin-bottom: 26px; padding-bottom: 18px; border-bottom: 1px solid var(--card-border);
+    }
+    .diary-read-date { font-size: 1.25rem; font-weight: 800; color: var(--text-main); letter-spacing: -.3px; }
+    .diary-read-time { font-size: .78rem; font-weight: 600; color: var(--text-soft); margin-top: 3px; }
+
+    .diary-read-sections { display: flex; flex-direction: column; gap: 24px; }
+    .diary-read-section-title {
+        font-size: .72rem; font-weight: 700; text-transform: uppercase;
+        letter-spacing: .08em; color: var(--accent); margin-bottom: 8px;
+    }
+    .diary-read-section-body {
+        font-size: .95rem; line-height: 1.85; color: var(--text-main);
+        white-space: pre-wrap;
+    }
+
     .diary-loading {
         text-align: center; padding: 40px 20px; color: var(--text-soft); font-size: .85rem;
     }
@@ -321,6 +373,8 @@
         .diary-history-toolbar { flex-direction: column; align-items: stretch; }
         .diary-pdf-btn { justify-content: center; }
         .diary-entry-time { display: none; }
+        .diary-read-overlay { padding: 0; }
+        .diary-read-card { max-width: 100%; min-height: 100vh; border-radius: 0; padding: 22px 20px 30px; }
     }
 </style>
 </head>
@@ -434,6 +488,25 @@
 </div><!-- /#diary-app -->
 
 </div><!-- /.page-content -->
+
+<!-- ── READ OVERLAY (view-only entry detail — opened by clicking a History row) ── -->
+<div class="diary-read-overlay" id="diary-read-overlay">
+    <div class="diary-read-card">
+        <div class="diary-read-toolbar">
+            <button class="diary-read-back" id="diary-read-back-btn" type="button">
+                <i class="fas fa-arrow-left"></i> Back
+            </button>
+            <button class="diary-read-edit-btn" id="diary-read-edit-btn" type="button">
+                <i class="fas fa-pen"></i> Edit
+            </button>
+        </div>
+        <div class="diary-read-header">
+            <div class="diary-read-date" id="diary-read-date"></div>
+            <div class="diary-read-time" id="diary-read-time"></div>
+        </div>
+        <div class="diary-read-sections" id="diary-read-sections"></div>
+    </div>
+</div>
 
 <!-- Toast -->
 <div class="diary-toast" id="diary-toast"></div>
