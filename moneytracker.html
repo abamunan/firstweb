@@ -529,6 +529,26 @@
   .cd-note { font-size: 0.74rem; color: var(--text-soft); line-height: 1.35; }
   .cd-dash { color: var(--text-soft); opacity: 0.5; }
   .cd-empty { text-align: center; color: var(--text-soft); padding: 30px 16px; font-size: 0.8rem; }
+  /* Account history modal (Monthly Summary → tap Cash/Card/Total → full ledger) */
+  .account-row.ah-clickable { cursor: pointer; transition: var(--trans); }
+  .account-row.ah-clickable:hover { border-color: var(--accent); }
+  .ah-stat-hero { border: 1px solid var(--card-border); border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; background: var(--surface); text-align: center; }
+  .ah-stat-label { font-size: 0.62rem; color: var(--text-soft); text-transform: uppercase; letter-spacing: .5px; font-weight: 600; margin-bottom: 6px; }
+  .ah-stat-val { font-family: var(--font); font-size: 1.35rem; font-weight: 800; color: var(--accent2); }
+  .ah-stat-val.neg { color: var(--danger); }
+  .ah-row { display: flex; flex-direction: column; gap: 3px; padding: 10px 14px; border-top: 1px solid var(--card-border); }
+  .ah-row:first-child { border-top: none; }
+  .ah-row-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .ah-desc { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; font-weight: 600; color: var(--text-main); min-width: 0; overflow: hidden; }
+  .ah-desc-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ah-amt { font-weight: 700; font-size: 0.82rem; flex-shrink: 0; }
+  .ah-amt.inc { color: var(--accent2); }
+  .ah-amt.exp { color: var(--danger); }
+  .ah-row-bottom { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .ah-date { font-size: 0.68rem; color: var(--text-soft); }
+  .ah-bal { font-size: 0.7rem; color: var(--text-soft); font-weight: 600; flex-shrink: 0; }
+  .ah-note { font-size: 0.72rem; color: var(--text-soft); font-style: italic; margin-top: 1px; }
+  .ah-loadall-btn { width: 100%; margin-top: 12px; }
   .settings-pane { display: none; }
   .settings-pane.active { display: block; }
   .settings-sub {
@@ -1108,6 +1128,29 @@
       <button class="modal-close" onclick="closeCategoryDetail()">✕</button>
     </div>
     <div class="modal-body" id="categoryDetailBody"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="acctHistoryModal">
+  <div class="modal-box" style="max-width:480px">
+    <div class="modal-header">
+      <div>
+        <h3 id="acctHistoryTitle" style="margin-bottom:2px">💵 Cash</h3>
+        <div style="font-size:0.68rem;color:var(--text-soft);font-weight:500">All-time transaction history</div>
+      </div>
+      <button class="modal-close" onclick="closeAcctHistory()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="ah-stat-hero">
+        <div class="ah-stat-label">Current Balance</div>
+        <div class="ah-stat-val" id="ahCurrentBalance">৳ 0</div>
+      </div>
+      <div class="cd-panel">
+        <div class="cd-panel-head"><span>Transactions</span><span class="cd-panel-count" id="ahCount"></span></div>
+        <div class="cd-list" id="ahList" style="max-height:50vh"></div>
+      </div>
+      <button class="btn-outline ah-loadall-btn" id="ahLoadAllBtn" style="display:none" onclick="showAllAcctHistory()">Show all</button>
+    </div>
   </div>
 </div>
 
@@ -2490,9 +2533,12 @@ function renderAccountListSummary(containerId){
   const interactive=containerId==='accountListSummary';
   const rows=ACCOUNTS.map(a=>{
     const bal=balances[a.id]||0;
-    const actions=interactive?`<button class="acct-mini-btn" onclick="toggleAcctPanel('${a.id}','add')" title="Add balance">➕</button><button class="acct-mini-btn" onclick="toggleAcctPanel('${a.id}','transfer')" title="Transfer">⇄</button>`:'';
+    const actions=interactive?`<button class="acct-mini-btn" onclick="event.stopPropagation();toggleAcctPanel('${a.id}','add')" title="Add balance">➕</button><button class="acct-mini-btn" onclick="event.stopPropagation();toggleAcctPanel('${a.id}','transfer')" title="Transfer">⇄</button>`:'';
     const panel=interactive?`<div class="acct-panel" id="acctpanel_${a.id}"></div>`:'';
-    return `<div class="account-row">
+    // Only the Monthly copy opens the tap-through transaction history — same
+    // reasoning as the interactive Add/Transfer controls above.
+    const rowAttrs=interactive?` class="account-row ah-clickable" onclick="openAcctHistory('${a.id}')"`:` class="account-row"`;
+    return `<div${rowAttrs}>
       <span class="acct-left"><span class="acct-icon">${a.icon}</span><span class="acct-label">${escHtml(a.label)}</span></span>
       <span class="acct-right">
         <span class="acct-balance-val${bal<0?' neg':''}">${fmt(bal)}</span>
@@ -2501,7 +2547,8 @@ function renderAccountListSummary(containerId){
     </div>${panel}`;
   }).join('');
   const total=ACCOUNTS.reduce((s,a)=>s+(balances[a.id]||0),0);
-  container.innerHTML=rows+`<div class="account-row account-total"><span class="acct-left"><span class="acct-label">Total Balance</span></span><span class="acct-total-val${total<0?' neg':''}">${fmt(total)}</span></div>`;
+  const totalAttrs=interactive?` class="account-row account-total ah-clickable" onclick="openAcctHistory(null)"`:` class="account-row account-total"`;
+  container.innerHTML=rows+`<div${totalAttrs}><span class="acct-left"><span class="acct-label">Total Balance</span></span><span class="acct-total-val${total<0?' neg':''}">${fmt(total)}</span></div>`;
 }
 
 // ── Add-balance / Transfer inline panels ──────────────────────
@@ -2546,6 +2593,134 @@ function confirmTransfer(id){
   renderAccountListSummary();
   showToast('Transferred ✓');
 }
+
+// ─── ACCOUNT TRANSACTION HISTORY (tap Cash/bKash/Card/Total in Monthly Summary) ─
+// Rebuilds every dated event that ever touched an account — day-entry income/
+// expense, manual Add/Transfer ledger events, and unsettled debts — in
+// chronological order, then walks forward from the account's opening balance
+// so every line carries the running balance right after it. This mirrors
+// computeAccountBalances() exactly, so the last line always matches the
+// balance shown on the account row. accountId=null means "all accounts
+// combined" (Total Balance row) — internal transfers are left out there since
+// they net to zero across the whole picture.
+function buildAccountLedger(accountId){
+  const combined=accountId==null;
+  const entries=[];
+  const defAcct=defaultExpenseAccountId();
+  const dayKeyRe=/^mt_(\d+)_(\d+)_(\d+)$/;
+  for(let i=0;i<localStorage.length;i++){
+    const key=localStorage.key(i);
+    const m=key&&key.match(dayKeyRe);
+    if(!m) continue;
+    const y=+m[1], mo=+m[2]-1, d=+m[3];
+    let data;
+    try{ data=JSON.parse(localStorage.getItem(key)); }catch{ continue; }
+    if(!data) continue;
+    const dt=new Date(y,mo,d,12,0,0); // no per-entry clock time is stored — noon keeps sort/DST stable
+    EXPENSE_FIELDS.forEach(f=>{
+      const amt=data[f.id];
+      if(amt>0){
+        const acctId=data['acct_'+f.id]||defAcct;
+        if(combined||acctId===accountId){
+          entries.push({dt,hasTime:false,sign:-1,amount:amt,icon:f.icon,label:f.label,note:data['note_'+f.id]||''});
+        }
+      }
+    });
+    INCOME_FIELDS.forEach(f=>{
+      const amt=data[f.id];
+      if(amt>0){
+        const acctId=data['acct_'+f.id]||defAcct;
+        if(combined||acctId===accountId){
+          entries.push({dt,hasTime:false,sign:1,amount:amt,icon:f.icon,label:f.label,note:data['note_'+f.id]||''});
+        }
+      }
+    });
+  }
+  LEDGER.forEach(ev=>{
+    const dt=ev.ts?new Date(ev.ts):new Date();
+    if(ev.type==='add'){
+      if(combined||ev.accountId===accountId){
+        const acct=ACCOUNTS.find(a=>a.id===ev.accountId);
+        entries.push({dt,hasTime:true,sign:1,amount:ev.amount,icon:'➕',label:combined?`Balance added — ${acct?acct.label:'account'}`:'Balance added',note:''});
+      }
+    } else if(ev.type==='transfer' && !combined){
+      if(ev.fromId===accountId){
+        const to=ACCOUNTS.find(a=>a.id===ev.toId);
+        entries.push({dt,hasTime:true,sign:-1,amount:ev.amount,icon:'⇄',label:`Transfer to ${to?to.label:'account'}`,note:''});
+      }
+      if(ev.toId===accountId){
+        const from=ACCOUNTS.find(a=>a.id===ev.fromId);
+        entries.push({dt,hasTime:true,sign:1,amount:ev.amount,icon:'⇄',label:`Transfer from ${from?from.label:'account'}`,note:''});
+      }
+    }
+    // combined view: transfers between two of the user's own accounts are
+    // purely internal and net to zero, so they're left out of the merged feed
+  });
+  DEBTS.forEach(dbt=>{
+    if(dbt.settled||!dbt.accountId) return;
+    if(!(combined||dbt.accountId===accountId)) return;
+    const dt=dbt.date?new Date(dbt.date+'T12:00:00'):new Date();
+    if(dbt.type==='lent'){
+      entries.push({dt,hasTime:false,sign:-1,amount:dbt.amount,icon:'📤',label:`Lent to ${dbt.person}`,note:dbt.note||''});
+    } else {
+      entries.push({dt,hasTime:false,sign:1,amount:dbt.amount,icon:'📥',label:`Borrowed from ${dbt.person}`,note:dbt.note||''});
+    }
+  });
+  entries.sort((a,b)=>a.dt-b.dt);
+  let running=combined?ACCOUNTS.reduce((s,a)=>s+(a.opening||0),0):(ACCOUNTS.find(a=>a.id===accountId)?.opening||0);
+  entries.forEach(e=>{ running+=e.sign*e.amount; e.balanceAfter=running; });
+  return entries; // ascending, oldest first
+}
+
+let ahFullList=[]; // currently-open account's transactions, newest first
+let ahShowingAll=false;
+const AH_PAGE_SIZE=50;
+
+function openAcctHistory(accountId){
+  const combined=accountId==null;
+  const acct=combined?null:ACCOUNTS.find(a=>a.id===accountId);
+  if(!combined&&!acct) return;
+  const balances=computeAccountBalances();
+  const currentBal=combined?ACCOUNTS.reduce((s,a)=>s+(balances[a.id]||0),0):(balances[accountId]||0);
+  ahFullList=buildAccountLedger(accountId).reverse();
+  ahShowingAll=false;
+  document.getElementById('acctHistoryTitle').textContent=combined?'💰 Total Balance':`${acct.icon} ${acct.label}`;
+  const balEl=document.getElementById('ahCurrentBalance');
+  balEl.textContent=fmt(currentBal);
+  balEl.className='ah-stat-val'+(currentBal<0?' neg':'');
+  document.getElementById('acctHistoryModal').classList.add('open');
+  renderAcctHistoryList();
+}
+function renderAcctHistoryList(){
+  const list=ahShowingAll?ahFullList:ahFullList.slice(0,AH_PAGE_SIZE);
+  const rows=list.map(e=>{
+    const dateStr=e.dt.toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'});
+    const timeStr=e.hasTime?e.dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}):'';
+    const cls=e.sign>0?'inc':'exp';
+    return `<div class="ah-row">
+      <div class="ah-row-top">
+        <span class="ah-desc"><span>${e.icon}</span><span class="ah-desc-label">${escHtml(e.label)}</span></span>
+        <span class="ah-amt ${cls}">${fmt(e.sign*e.amount,true)}</span>
+      </div>
+      <div class="ah-row-bottom">
+        <span class="ah-date">${dateStr}${timeStr?', '+timeStr:''}</span>
+        <span class="ah-bal">Bal ${fmt(e.balanceAfter)}</span>
+      </div>
+      ${e.note?`<div class="ah-note">📝 ${escHtml(e.note)}</div>`:''}
+    </div>`;
+  }).join('');
+  document.getElementById('ahList').innerHTML=rows||'<div class="cd-empty">🗒️ No transactions yet</div>';
+  document.getElementById('ahCount').textContent=ahFullList.length?(ahShowingAll?`${ahFullList.length} total`:`Latest ${Math.min(AH_PAGE_SIZE,ahFullList.length)} of ${ahFullList.length}`):'';
+  const btn=document.getElementById('ahLoadAllBtn');
+  if(!ahShowingAll&&ahFullList.length>AH_PAGE_SIZE){
+    btn.style.display='block';
+    btn.textContent=`Show all ${ahFullList.length} transactions`;
+  } else {
+    btn.style.display='none';
+  }
+}
+function showAllAcctHistory(){ ahShowingAll=true; renderAcctHistoryList(); }
+function closeAcctHistory(){ document.getElementById('acctHistoryModal').classList.remove('open'); }
 
 // ─── DEBTS / LOANS ──────────────────────────────────────────────────────────────
 // Tracks money borrowed from people (you owe them) and lent to people (they owe
