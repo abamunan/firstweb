@@ -263,8 +263,20 @@
     .diary-editing-banner button {
         margin-left: auto; background: none; border: none; color: var(--accent);
         font-size: .75rem; font-weight: 700; cursor: pointer; text-decoration: underline;
-        font-family: inherit;
+        font-family: inherit; flex-shrink: 0;
     }
+    /* Phase 3 — draft-restore notice: same shape as the editing banner,
+       amber accent so it reads as "heads up" rather than "in progress". */
+    .diary-draft-banner {
+        background: rgba(217,119,6,.08); border-left-color: #d97706;
+    }
+    .diary-draft-banner button { color: #d97706; }
+    /* Phase 4 — stale-edit conflict: warmer/red accent, deliberately more
+       insistent since ignoring it risks a silent overwrite. */
+    .diary-stale-banner {
+        background: rgba(220,38,38,.08); border-left-color: #dc2626;
+    }
+    .diary-stale-banner button { color: #dc2626; }
 
     /* ── HISTORY ──────────────────────────────────────────────── */
     .diary-history-toolbar {
@@ -294,6 +306,23 @@
     .diary-pdf-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
     [data-theme="dark"] .diary-pdf-btn:hover { color: #020617; }
     .diary-pdf-btn:disabled { opacity: .5; cursor: not-allowed; }
+    .diary-pdf-btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+    /* Phase 6 — "Export All" is visually secondary to "Download PDF (loaded)"
+       so the default, cheap action stays the obvious one; the expensive
+       full-diary fetch is opt-in and clearly labeled as a separate action. */
+    .diary-pdf-btn-ghost { opacity: .78; border-style: dashed; }
+    .diary-pdf-btn-ghost:hover { opacity: 1; }
+
+    /* ── LOAD MORE (Phase 5 — pagination) ────────────────────── */
+    .diary-load-more-btn {
+        display: flex; align-items: center; gap: 8px; justify-content: center;
+        width: fit-content; margin: 18px auto 0; padding: 10px 22px; border-radius: 8px;
+        background: none; border: 1.5px dashed var(--card-border);
+        color: var(--text-soft); font-size: .74rem; font-weight: 700; letter-spacing: .04em;
+        text-transform: uppercase; cursor: pointer; transition: var(--trans); font-family: inherit;
+    }
+    .diary-load-more-btn:hover { color: var(--ink); border-color: var(--accent); }
+    .diary-load-more-btn:disabled { opacity: .5; cursor: not-allowed; }
 
     /* Each row's left border, run edge-to-edge with no gap between
        rows, reads as a continuous spine — a ledger of moments rather
@@ -353,8 +382,9 @@
     }
     .diary-read-toolbar {
         display: flex; align-items: center; justify-content: space-between;
-        margin-bottom: 26px;
+        margin-bottom: 26px; gap: 12px; flex-wrap: wrap;
     }
+    .diary-read-toolbar-actions { display: flex; align-items: center; gap: 10px; }
     .diary-read-back {
         display: inline-flex; align-items: center; gap: 6px;
         background: none; border: none; color: var(--text-soft);
@@ -372,6 +402,19 @@
     }
     .diary-read-edit-btn:hover { filter: brightness(1.08); }
     [data-theme="dark"] .diary-read-edit-btn { color: #020617; }
+
+    /* Phase 2 — delete: intentionally a lower-emphasis outline (not filled
+       red) so it doesn't visually compete with Edit as the "default"
+       action, while still being clearly reachable and legible. */
+    .diary-read-delete-btn {
+        display: inline-flex; align-items: center; gap: 7px;
+        padding: 9px 16px; border-radius: 8px;
+        background: none; border: 1.5px solid rgba(220,38,38,.4);
+        color: #dc2626; font-size: .74rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+        cursor: pointer; transition: var(--trans); font-family: inherit;
+    }
+    .diary-read-delete-btn:hover { background: #dc2626; border-color: #dc2626; color: #fff; }
+    .diary-read-delete-btn:disabled { opacity: .55; cursor: not-allowed; }
 
     .diary-read-header {
         margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid var(--card-border);
@@ -438,6 +481,27 @@
     .diary-checking { display: flex; flex-direction: column; align-items: center; gap: 10px; color: #fff; }
     .diary-checking i { font-size: 1.6rem; }
 
+    /* ── FOCUS VISIBILITY (Phase 8 — accessibility) ─────────────
+       Only shows the ring for keyboard focus (:focus-visible), not for
+       mouse clicks, so the visual design isn't affected for mouse/touch
+       users — but keyboard users always get a clear, high-contrast cue. */
+    .diary-tab:focus-visible,
+    .diary-btn:focus-visible,
+    .diary-filter-btn:focus-visible,
+    .diary-pdf-btn:focus-visible,
+    .diary-load-more-btn:focus-visible,
+    .diary-add-section:focus-visible,
+    .diary-section-remove:focus-visible,
+    .diary-read-back:focus-visible,
+    .diary-read-edit-btn:focus-visible,
+    .diary-read-delete-btn:focus-visible,
+    .diary-entry:focus-visible,
+    .diary-field input:focus-visible,
+    .diary-field textarea:focus-visible,
+    .diary-editing-banner button:focus-visible {
+        outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px;
+    }
+
     /* ── RESPONSIVE ───────────────────────────────────────────── */
     @media (max-width: 600px) {
         .page-content { padding: 66px 12px 32px; }
@@ -448,6 +512,7 @@
         .diary-history-toolbar { flex-direction: column; align-items: stretch; }
         .diary-filter-group { justify-content: center; }
         .diary-pdf-btn { justify-content: center; }
+        .diary-pdf-btn-group { flex-direction: column; width: 100%; }
         .diary-entry-time { display: none; }
         .diary-read-overlay { padding: 36px 14px; align-items: center; }
         .diary-read-card { padding: 28px 22px 32px; }
@@ -504,6 +569,20 @@
     <!-- ════════════════ WRITE VIEW ════════════════ -->
     <section class="diary-view active" id="view-write">
 
+        <!-- Phase 3: local draft restore notice (never touches Firestore) -->
+        <div class="diary-editing-banner diary-draft-banner" id="draft-banner" role="status">
+            <i class="fas fa-clock-rotate-left"></i>
+            <span id="draft-banner-text">Draft restored — not saved yet.</span>
+            <button id="draft-discard-btn" type="button">Discard draft</button>
+        </div>
+
+        <!-- Phase 4: shown only if the doc being edited changed elsewhere since load -->
+        <div class="diary-editing-banner diary-stale-banner" id="stale-conflict-banner" role="alert">
+            <i class="fas fa-triangle-exclamation"></i>
+            <span id="stale-conflict-text">This entry changed elsewhere since you started editing.</span>
+            <button id="stale-conflict-reload-btn" type="button">Reload latest version</button>
+        </div>
+
         <div class="diary-editing-banner" id="editing-banner">
             <i class="fas fa-pen-to-square"></i>
             <span id="editing-banner-text">Editing an existing entry</span>
@@ -547,19 +626,27 @@
     <section class="diary-view" id="view-history">
 
         <div class="diary-history-toolbar">
-            <div class="diary-filter-group" role="group" aria-label="Entry limit filter">
-                <button class="diary-filter-btn active" data-limit="10">Last 10</button>
-                <button class="diary-filter-btn" data-limit="50">Last 50</button>
-                <button class="diary-filter-btn" data-limit="all">All</button>
+            <div class="diary-filter-group" role="group" aria-label="Entries per page">
+                <button class="diary-filter-btn active" data-limit="10">10 / page</button>
+                <button class="diary-filter-btn" data-limit="50">50 / page</button>
             </div>
-            <button class="diary-pdf-btn" id="download-pdf-btn">
-                <i class="fas fa-file-pdf"></i> Download PDF
-            </button>
+            <div class="diary-pdf-btn-group">
+                <button class="diary-pdf-btn" id="download-pdf-btn" title="Exports only the entries currently loaded below">
+                    <i class="fas fa-file-pdf"></i> Download PDF (loaded)
+                </button>
+                <button class="diary-pdf-btn diary-pdf-btn-ghost" id="export-all-pdf-btn" title="Fetches your entire diary first, then builds one PDF">
+                    <i class="fas fa-cloud-arrow-down"></i> Export All
+                </button>
+            </div>
         </div>
 
         <div class="diary-entry-list" id="entry-list">
             <div class="diary-loading"><i class="fas fa-circle-notch fa-spin"></i> Loading entries…</div>
         </div>
+
+        <button class="diary-load-more-btn" id="history-load-more-btn" type="button" style="display:none;">
+            <i class="fas fa-chevron-down"></i> Load more
+        </button>
 
     </section>
 
@@ -569,14 +656,19 @@
 
 <!-- ── READ OVERLAY (view-only entry detail — opened by clicking a History row) ── -->
 <div class="diary-read-overlay" id="diary-read-overlay">
-    <div class="diary-read-card">
+    <div class="diary-read-card" role="dialog" aria-modal="true" aria-labelledby="diary-read-date">
         <div class="diary-read-toolbar">
-            <button class="diary-read-back" id="diary-read-back-btn" type="button">
+            <button class="diary-read-back" id="diary-read-back-btn" type="button" aria-label="Back to History">
                 <i class="fas fa-arrow-left"></i> Back
             </button>
-            <button class="diary-read-edit-btn" id="diary-read-edit-btn" type="button">
-                <i class="fas fa-pen"></i> Edit
-            </button>
+            <div class="diary-read-toolbar-actions">
+                <button class="diary-read-delete-btn" id="diary-read-delete-btn" type="button" aria-label="Delete this entry">
+                    <i class="fas fa-trash-can"></i> Delete
+                </button>
+                <button class="diary-read-edit-btn" id="diary-read-edit-btn" type="button" aria-label="Edit this entry">
+                    <i class="fas fa-pen"></i> Edit
+                </button>
+            </div>
         </div>
         <div class="diary-read-header">
             <div class="diary-read-date" id="diary-read-date"></div>
@@ -586,8 +678,8 @@
     </div>
 </div>
 
-<!-- Toast -->
-<div class="diary-toast" id="diary-toast"></div>
+<!-- Toast — aria-live so screen readers announce save/delete/error status without focus ever moving -->
+<div class="diary-toast" id="diary-toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
 <!-- ── html2pdf.js (client-side PDF export, per Munan's choice) ── -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
