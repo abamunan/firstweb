@@ -142,6 +142,25 @@
   }
   .day-header p { font-size: 0.74rem; color: var(--text-soft); margin-top: 4px; }
 
+  /* ── DAY LOCK ────────────────────────────────── */
+  .day-lock-bar {
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    padding: 9px 14px; margin-bottom: 14px; border-radius: 10px;
+    font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: var(--trans);
+    border: 1px solid var(--card-border); background: var(--surface); color: var(--text-soft);
+  }
+  .day-lock-bar:hover { border-color: var(--accent); color: var(--accent); }
+  .day-lock-bar.locked {
+    background: rgba(220,38,38,0.08); border-color: var(--expense-border); color: var(--danger);
+  }
+  .day-lock-bar.locked:hover { filter: brightness(1.08); }
+  #dayEntryArea.locked {
+    pointer-events: none; user-select: none;
+    opacity: 0.5; filter: grayscale(0.4);
+    transition: opacity var(--trans), filter var(--trans);
+  }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none!important; box-shadow: none!important; }
+
   /* ── SECTION CARDS ──────────────────────────── */
   .section-card {
     border-radius: var(--card-radius);
@@ -873,6 +892,11 @@
       <h2 id="dayTitle">Day 1</h2>
       <p id="daySubtitle"></p>
     </div>
+    <div class="day-lock-bar" id="dayLockBar" onclick="toggleDayLock()">
+      <span id="dayLockIcon">🔓</span>
+      <span id="dayLockText">Unlocked — tap to lock</span>
+    </div>
+    <div id="dayEntryArea">
     <div class="section-card">
       <div class="section-head expense">💸 EXPENSES</div>
       <div id="expenseFieldsContainer"></div>
@@ -889,7 +913,8 @@
       <div class="net-label">Daily Balance (Income − Expense)</div>
       <div class="net-amount" id="netAmount">৳ 0</div>
     </div>
-    <button class="btn-primary" onclick="saveDay()">✅ Save</button>
+    <button class="btn-primary" id="saveDayBtn" onclick="saveDay()">✅ Save</button>
+    </div>
     <button class="btn-outline" onclick="exportDayPDF()">📄 Export Today as PDF</button>
   </div>
 </div>
@@ -1485,6 +1510,24 @@ function storageKey(y,m,d){return `mt_${y}_${m+1}_${d}`;}
 function getDay(y,m,d){try{return JSON.parse(localStorage.getItem(storageKey(y,m,d)))||{};}catch{return {};}}
 function setDayLocal(y,m,d,data){localStorage.setItem(storageKey(y,m,d),JSON.stringify(data));}
 
+// ── DAY LOCK ───────────────────────────────────────────────
+// A day auto-locks once it's DAY_AUTO_LOCK_AFTER_DAYS old, purely by date —
+// no flag needs to be stored for that. A manual tap on the lock bar stores an
+// explicit override (`data.locked`, true/false) that wins over the date rule
+// either way, so a day can be unlocked early for editing or locked early to
+// protect it. No password — it's just a tap.
+const DAY_AUTO_LOCK_AFTER_DAYS=2;
+function computeAutoLocked(y,m,d){
+  const dayDate=new Date(y,m,d); dayDate.setHours(0,0,0,0);
+  const today=new Date(); today.setHours(0,0,0,0);
+  const diffDays=Math.round((today-dayDate)/86400000);
+  return diffDays>=DAY_AUTO_LOCK_AFTER_DAYS;
+}
+function isDayLocked(y,m,d,data){
+  data=data||getDay(y,m,d);
+  return typeof data.locked==='boolean' ? data.locked : computeAutoLocked(y,m,d);
+}
+
 // ── FIRESTORE SAVE ───────────────────────────────────────────
 async function setDay(y,m,d,data){
   setDayLocal(y,m,d,data);
@@ -2063,12 +2106,18 @@ function collectDayData(){
     if(f.pinned) return;
     if(!fieldForcedShown(f,data) && extraShownIds.has(f.id)) data['shown_'+f.id]=true;
   });
+  // Carry over the lock override (if any) — collectDayData() only rebuilds
+  // fields it knows about, so without this a normal Save/autosave would drop
+  // a manual unlock/lock and let the 2-day auto-rule silently take back over.
+  const existingLock=getDay(curYear,curMonth,currentDay).locked;
+  if(typeof existingLock==='boolean') data.locked=existingLock;
   updateTotals();
   return data;
 }
 
 let autoSaveTimer=null;
 function scheduleAutoSave(){
+  if(isDayLocked(curYear,curMonth,currentDay)) return;
   setDayLocal(curYear,curMonth,currentDay,collectDayData());
   clearTimeout(autoSaveTimer);
   autoSaveTimer=setTimeout(async()=>{
@@ -2078,12 +2127,43 @@ function scheduleAutoSave(){
 }
 
 async function saveDay(){
+  if(isDayLocked(curYear,curMonth,currentDay)){ showToast('Day is locked 🔒','error'); return; }
   clearTimeout(autoSaveTimer);
   const data=collectDayData();
   showToast('Saving…');
   await setDay(curYear,curMonth,currentDay,data);
   renderDayBtns();
   showToast('Saved ✓');
+}
+
+// Tap-to-toggle, no password. Locking captures whatever's currently in the
+// form first (like an implicit save) so nothing typed gets lost; unlocking
+// just flips the stored flag since the fields were disabled either way.
+async function toggleDayLock(){
+  const wasLocked=isDayLocked(curYear,curMonth,currentDay);
+  document.activeElement?.blur(); // avoid a focused field still taking keystrokes under the disabled overlay
+  clearTimeout(autoSaveTimer);
+  const data=wasLocked?getDay(curYear,curMonth,currentDay):collectDayData();
+  data.locked=!wasLocked;
+  await setDay(curYear,curMonth,currentDay,data);
+  applyDayLockUI();
+  renderDayBtns();
+  showToast(data.locked?'Day locked 🔒':'Day unlocked 🔓');
+}
+
+function applyDayLockUI(){
+  const locked=isDayLocked(curYear,curMonth,currentDay);
+  const bar=document.getElementById('dayLockBar');
+  const area=document.getElementById('dayEntryArea');
+  const icon=document.getElementById('dayLockIcon');
+  const text=document.getElementById('dayLockText');
+  const saveBtn=document.getElementById('saveDayBtn');
+  if(!bar||!area) return;
+  bar.classList.toggle('locked',locked);
+  area.classList.toggle('locked',locked);
+  icon.textContent=locked?'🔒':'🔓';
+  text.textContent=locked?'Locked — tap to unlock':'Unlocked — tap to lock';
+  if(saveBtn) saveBtn.disabled=locked;
 }
 
 async function selectDay(day){
@@ -2093,6 +2173,7 @@ async function selectDay(day){
   document.getElementById('daySubtitle').textContent=d.toLocaleDateString('en-US',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   await loadDayFromFirestore(curYear,curMonth,day);
   loadDay(day);
+  applyDayLockUI();
   renderDayBtns();
 }
 
