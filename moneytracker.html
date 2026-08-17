@@ -1395,14 +1395,8 @@ function defaultIncomeAccountId(){ return defaultExpenseAccountId(); }
 function computeAccountBalances(){
   const balances={};
   ACCOUNTS.forEach(a=>{ balances[a.id]=a.opening||0; });
-  const dayKeyRe=/^mt_\d+_\d+_\d+$/;
   const defAcct=defaultExpenseAccountId();
-  for(let i=0;i<localStorage.length;i++){
-    const key=localStorage.key(i);
-    if(!key||!dayKeyRe.test(key)) continue;
-    let data;
-    try{ data=JSON.parse(localStorage.getItem(key)); }catch{ continue; }
-    if(!data) continue;
+  getAllDayEntriesCached().forEach(({data})=>{
     EXPENSE_FIELDS.forEach(f=>{
       const amt=data[f.id];
       if(amt>0){
@@ -1417,7 +1411,7 @@ function computeAccountBalances(){
         if(acctId!=null) balances[acctId]=(balances[acctId]||0)+amt;
       }
     });
-  }
+  });
   LEDGER.forEach(ev=>{
     if(ev.type==='add'){
       balances[ev.accountId]=(balances[ev.accountId]||0)+ev.amount;
@@ -1599,7 +1593,21 @@ function storageKey(y,m,d){return `mt_${y}_${m+1}_${d}`;}
 
 // ── LOCAL (sync, used for summary/yearly calc) ───────────────
 function getDay(y,m,d){try{return JSON.parse(localStorage.getItem(storageKey(y,m,d)))||{};}catch{return {};}}
-function setDayLocal(y,m,d,data){localStorage.setItem(storageKey(y,m,d),JSON.stringify(data));}
+function setDayLocal(y,m,d,data){localStorage.setItem(storageKey(y,m,d),JSON.stringify(data)); invalidateDayEntriesCache();}
+
+// ── CACHED FULL-DATA SCAN (perf) ──────────────────────────────
+// Summary / Search / Ledger / Insights each need every saved day. Re-scanning
+// and JSON.parsing all of localStorage on every one of those screens gets
+// slower as months of data pile up. The underlying data only actually changes
+// when a day is written (setDayLocal, above), so we scan once and reuse the
+// result until a write invalidates it. Output is identical to a fresh scan —
+// this only removes repeated, redundant work.
+let _dayEntriesCache=null;
+function invalidateDayEntriesCache(){ _dayEntriesCache=null; }
+function getAllDayEntriesCached(){
+  if(!_dayEntriesCache) _dayEntriesCache=allDayEntries();
+  return _dayEntriesCache;
+}
 
 // ── DAY LOCK ───────────────────────────────────────────────
 // A day auto-locks once it's DAY_AUTO_LOCK_AFTER_DAYS old, purely by date —
@@ -1701,6 +1709,16 @@ function fieldRowHTML(f,isIncome){
   return `<div class="field-row"><span class="field-icon">${f.icon}</span><span class="field-label">${escHtml(f.label)}</span><input class="field-input${isIncome?' income-inp':''}" type="text" inputmode="decimal" autocomplete="off" placeholder="0" id="f_${f.id}">${acctSelect}<button class="note-btn" type="button" onclick="toggleNote('${f.id}')" id="nbtn_${f.id}" title="Add note">📝</button><input type="file" accept="image/*" style="display:none" id="rfile_${f.id}" onchange="onReceiptFileChosen('${f.id}',this.files[0])"></div><div class="note-row" id="noterow_${f.id}"><input class="note-input" type="text" placeholder="Note (optional)" id="note_${f.id}" maxlength="200"><div class="receipt-preview" id="rprev_${f.id}"></div></div>`;
 }
 
+// Tracks which fields were actually rendered last, so loadDay() can skip a
+// full DOM rebuild when switching to a day that would show the exact same
+// set of rows — only the values differ, and applyDayValuesToDOM() already
+// handles that safely on its own. Any call to renderFieldRows() (category
+// edits, import, init, etc.) keeps this signature in sync automatically, so
+// those flows are completely unaffected.
+let _renderedFieldSig=null;
+function fieldVisibilitySignature(){
+  return visibleFieldList(EXPENSE_FIELDS).map(f=>f.id).join(',')+'|'+visibleFieldList(INCOME_FIELDS).map(f=>f.id).join(',');
+}
 function renderFieldRows(){
   const expC=document.getElementById('expenseFieldsContainer');
   const incC=document.getElementById('incomeFieldsContainer');
@@ -1708,6 +1726,7 @@ function renderFieldRows(){
   if(incC) incC.innerHTML=visibleFieldList(INCOME_FIELDS).map(f=>fieldRowHTML(f,true)).join('');
   attachFieldListeners();
   ALL_FIELDS.forEach(f=>updateAcctIcon(f.id));
+  _renderedFieldSig=fieldVisibilitySignature();
 }
 
 // Keeps the small icon-only chip (the visible part of the account picker) in
@@ -1955,7 +1974,7 @@ function applyDayValuesToDOM(data){
 function loadDay(d){
   const data=getDay(curYear,curMonth,d);
   extraShownIds=computeExtraShownForData(data);
-  renderFieldRows();
+  if(fieldVisibilitySignature()!==_renderedFieldSig) renderFieldRows();
   applyDayValuesToDOM(data);
 }
 
@@ -2263,10 +2282,20 @@ async function selectDay(day){
   document.getElementById('dayTitle').textContent='Day '+day;
   const d=new Date(curYear,curMonth,day);
   document.getElementById('daySubtitle').textContent=d.toLocaleDateString('en-US',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  await loadDayFromFirestore(curYear,curMonth,day);
+  // Paint immediately from what's already local — no waiting on the network.
   loadDay(day);
   applyDayLockUI();
   renderDayBtns();
+  // Then reconcile with Firestore in the background (e.g. an edit made on
+  // another device). Same data flow/guarantee as before, just not blocking.
+  const y=curYear, m=curMonth;
+  await loadDayFromFirestore(y,m,day);
+  const active=document.activeElement;
+  const isEditing=active&&(active.classList.contains('field-input')||active.classList.contains('note-input'));
+  if(curYear===y&&curMonth===m&&currentDay===day&&!isEditing){
+    loadDay(day);
+    applyDayLockUI();
+  }
 }
 
 function renderDayBtns(){
@@ -2321,14 +2350,7 @@ function searchAllTransactions(query){
   const q=query.trim().toLowerCase();
   if(!q) return [];
   const results=[];
-  for(let i=0;i<localStorage.length;i++){
-    const key=localStorage.key(i);
-    const m=key&&key.match(/^mt_(\d+)_(\d+)_(\d+)$/);
-    if(!m) continue;
-    const y=+m[1], mo=+m[2]-1, d=+m[3];
-    let data;
-    try{ data=JSON.parse(localStorage.getItem(key)); }catch{ continue; }
-    if(!data) continue;
+  getAllDayEntriesCached().forEach(({y,m:mo,d,data})=>{
     ALL_FIELDS.forEach(f=>{
       const amt=data[f.id]||0;
       const note=data['note_'+f.id]||'';
@@ -2338,7 +2360,7 @@ function searchAllTransactions(query){
         results.push({y,mo,d,field:f,amount:amt,note,receipt:data['receipt_'+f.id]||null,isIncome:INCOME_FIELDS.some(x=>x.id===f.id)});
       }
     });
-  }
+  });
   results.sort((a,b)=>(b.y-a.y)||(b.mo-a.mo)||(b.d-a.d));
   return results.slice(0,150);
 }
@@ -2781,15 +2803,7 @@ function buildAccountLedger(accountId){
   const combined=accountId==null;
   const entries=[];
   const defAcct=defaultExpenseAccountId();
-  const dayKeyRe=/^mt_(\d+)_(\d+)_(\d+)$/;
-  for(let i=0;i<localStorage.length;i++){
-    const key=localStorage.key(i);
-    const m=key&&key.match(dayKeyRe);
-    if(!m) continue;
-    const y=+m[1], mo=+m[2]-1, d=+m[3];
-    let data;
-    try{ data=JSON.parse(localStorage.getItem(key)); }catch{ continue; }
-    if(!data) continue;
+  getAllDayEntriesCached().forEach(({y,m:mo,d,data})=>{
     const dt=new Date(y,mo,d,12,0,0); // no per-entry clock time is stored — noon keeps sort/DST stable
     EXPENSE_FIELDS.forEach(f=>{
       const amt=data[f.id];
@@ -2809,7 +2823,7 @@ function buildAccountLedger(accountId){
         }
       }
     });
-  }
+  });
   LEDGER.forEach(ev=>{
     const dt=ev.ts?new Date(ev.ts):new Date();
     if(ev.type==='add'){
@@ -3126,20 +3140,12 @@ function renderInsightsTab(){
 // Used to gate YoY (needs >=12 months of history) and to bound rolling-trend/
 // best-worst scans so they don't walk into years that never had any data.
 function findEarliestDataMonth(){
-  const dayKeyRe=/^mt_(\d+)_(\d+)_(\d+)$/;
   let earliest=null;
-  for(let i=0;i<localStorage.length;i++){
-    const key=localStorage.key(i);
-    const m=key&&key.match(dayKeyRe);
-    if(!m) continue;
-    let data;
-    try{ data=JSON.parse(localStorage.getItem(key)); }catch{ continue; }
-    if(!data) continue;
+  getAllDayEntriesCached().forEach(({y,m:mo,data})=>{
     const hasAmount=ALL_FIELDS.some(f=>(data[f.id]||0)>0);
-    if(!hasAmount) continue;
-    const y=+m[1], mo=+m[2]-1;
+    if(!hasAmount) return;
     if(!earliest||y<earliest.y||(y===earliest.y&&mo<earliest.m)) earliest={y,m:mo};
-  }
+  });
   return earliest;
 }
 
@@ -4180,6 +4186,7 @@ async function importAllDataJSON(fileInput){
 
     // Wipe existing local day entries, then write back whatever the backup has
     allDayEntries().forEach(({key})=>localStorage.removeItem(key));
+    invalidateDayEntriesCache();
     if(payload.days&&typeof payload.days==='object'){
       const dayKeyRe=/^mt_(\d+)_(\d+)_(\d+)$/;
       const toWrite=Object.entries(payload.days).map(([key,data])=>{
