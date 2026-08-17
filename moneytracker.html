@@ -311,6 +311,8 @@
   .summary-section.active { display: block; }
   .yearly-section { display: none; }
   .yearly-section.active { display: block; }
+  .insights-section { display: none; }
+  .insights-section.active { display: block; }
 
   /* ── BOTTOM NAV ─────────────────────────────── */
   .bottom-nav {
@@ -817,6 +819,52 @@
   .insight-good { color: var(--accent2); font-weight: 700; }
   .insight-bad { color: var(--danger); font-weight: 700; }
 
+  /* ── INSIGHTS TAB — SECTION A/B EXTRAS ──────────────────────── */
+  .ins-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  .ins-stat-card {
+    background: var(--card-bg); border: 1px solid var(--card-border);
+    border-radius: var(--card-radius); padding: 12px 14px; text-align: center;
+    backdrop-filter: blur(12px); box-shadow: 0 2px 12px rgba(2,132,199,0.06);
+  }
+  .ins-stat-label { font-size: 0.63rem; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px; font-weight: 600; }
+  .ins-stat-val { font-size: 1.05rem; font-weight: 800; color: var(--text-main); }
+  .ins-stat-sub { font-size: 0.68rem; color: var(--text-soft); margin-top: 3px; }
+
+  .ins-card {
+    background: var(--card-bg); border: 1px solid var(--card-border);
+    border-radius: var(--card-radius); padding: 13px 15px; margin-bottom: 10px;
+    backdrop-filter: blur(12px); box-shadow: 0 2px 12px rgba(2,132,199,0.06);
+  }
+  .ins-card-title { font-size: 0.72rem; font-weight: 700; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+  .ins-card-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 0.81rem; border-bottom: 1px solid var(--card-border); }
+  .ins-card-row:last-child { border-bottom: none; }
+  .ins-card-row .icr-left { display: flex; align-items: center; gap: 8px; color: var(--text-main); min-width: 0; }
+  .ins-card-row .icr-left span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ins-card-row .icr-right { font-weight: 700; flex-shrink: 0; text-align: right; }
+  .ins-empty { color: var(--muted); text-align: center; padding: 14px; font-size: 0.82rem; }
+
+  .trend-badge {
+    display: inline-block; font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.04em; padding: 3px 8px; border-radius: 20px; flex-shrink: 0;
+  }
+  .trend-badge.rising { background: rgba(220,38,38,0.14); color: var(--danger); }
+  .trend-badge.falling { background: rgba(22,163,74,0.14); color: var(--accent2); }
+  .trend-badge.stable { background: rgba(2,132,199,0.12); color: var(--accent); }
+  .trend-badge.volatile { background: rgba(217,119,6,0.14); color: #d97706; }
+  [data-theme="dark"] .trend-badge.volatile { color: #fbbf24; }
+
+  .ins-forecast-range { font-size: 1.1rem; font-weight: 800; color: var(--text-main); }
+  .ins-forecast-note { font-size: 0.74rem; color: var(--text-soft); margin-top: 6px; line-height: 1.4; }
+  .ins-pace-compare { display: flex; gap: 10px; }
+  .ins-pace-compare > div { flex: 1; text-align: center; padding: 10px; border-radius: 12px; background: var(--surface); }
+  .ins-pace-compare .icp-label { font-size: 0.62rem; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .ins-pace-compare .icp-val { font-size: 0.98rem; font-weight: 800; color: var(--text-main); }
+
+  .ins-best-worst-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; font-size: 0.8rem; }
+  .ins-best-worst-row .ibw-tag { font-size: 0.66rem; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-right: 8px; }
+  .ibw-tag.best { background: rgba(22,163,74,0.14); color: var(--accent2); }
+  .ibw-tag.worst { background: rgba(220,38,38,0.14); color: var(--danger); }
+
   /* ── RECEIPT ATTACH ─────────────────────────────────────────── */
   .receipt-preview:empty { display: none; }
   .receipt-preview { margin-top: 8px; }
@@ -941,10 +989,6 @@
     </div>
     <div class="section-title">Debts / Loans</div>
     <div id="debtsSummary"></div>
-    <div class="section-title">Insights</div>
-    <div id="topCategoryCard"></div>
-    <div id="insightList"></div>
-    <div class="chart-card"><canvas id="comparisonChart"></canvas></div>
     <div class="section-title">Budgets</div>
     <div id="budgetListSummary"></div>
     <div class="section-title">Daily Trend</div>
@@ -986,6 +1030,52 @@
     <div class="section-title">Category Breakdown (Full Year)</div>
     <div class="chart-card"><canvas id="yearlyPieChart"></canvas></div>
     <div id="yearlyCatBreakdown"></div>
+  </div>
+</div>
+
+<!-- INSIGHTS -->
+<div class="insights-section" id="insightsSection">
+  <div class="main">
+    <div class="day-header" style="margin-top:10px">
+      <h2>Insights</h2>
+      <p id="insightsSubtitle"></p>
+    </div>
+
+    <div class="section-title">Top Spending Category</div>
+    <div id="topCategoryCard"></div>
+
+    <div class="section-title">This Month vs Last Month</div>
+    <div id="insightList"></div>
+    <div class="chart-card"><canvas id="comparisonChart"></canvas></div>
+
+    <div class="section-title">Spending Patterns</div>
+    <div class="ins-stat-grid">
+      <div class="ins-stat-card"><div class="ins-stat-label">No-Spend Days</div><div class="ins-stat-val" id="insNoSpendVal">–</div><div class="ins-stat-sub" id="insNoSpendSub"></div></div>
+      <div class="ins-stat-card"><div class="ins-stat-label">Longest Streak</div><div class="ins-stat-val" id="insStreakVal">–</div><div class="ins-stat-sub" id="insStreakSub"></div></div>
+      <div class="ins-stat-card"><div class="ins-stat-label">Highest Spend Day</div><div class="ins-stat-val" id="insHighDayVal">–</div><div class="ins-stat-sub" id="insHighDaySub"></div></div>
+      <div class="ins-stat-card"><div class="ins-stat-label">Weekday vs Weekend</div><div class="ins-stat-val" id="insWkndVal">–</div><div class="ins-stat-sub" id="insWkndSub"></div></div>
+    </div>
+
+    <div class="ins-card" id="insParetoCard"></div>
+    <div class="ins-card" id="insFixedVarCard"></div>
+    <div class="ins-card" id="insFreqCard"></div>
+    <div class="ins-card" id="insNewDroppedCard"></div>
+    <div class="ins-card" id="insAvgTxnCard"></div>
+    <div class="ins-card" id="insIncomeConcCard"></div>
+
+    <div class="section-title">Rolling Trend (per category)</div>
+    <div class="chart-card"><canvas id="rollingTrendChart"></canvas></div>
+    <div id="insTrendList"></div>
+
+    <div class="section-title" id="insYoyTitle" style="display:none">Same Month, Last Year</div>
+    <div id="insYoyCard"></div>
+
+    <div class="section-title">Best &amp; Worst Months</div>
+    <div class="ins-card" id="insBestWorstCard"></div>
+
+    <div class="section-title">Next Month Forecast</div>
+    <div class="ins-card" id="insForecastCard"></div>
+    <div class="ins-card" id="insPaceCard" style="display:none"></div>
   </div>
 </div>
 
@@ -1184,6 +1274,7 @@
 
   <button class="bnav-btn" id="bnav-summary" onclick="switchView('summary')"><span class="icon">📊</span>Monthly</button>
   <button class="bnav-btn" id="bnav-yearly" onclick="switchView('yearly')"><span class="icon">📅</span>Yearly</button>
+  <button class="bnav-btn" id="bnav-insights" onclick="switchView('insights')"><span class="icon">📈</span>Insights</button>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -1601,6 +1692,7 @@ async function onMonthChange(){
   await selectDay(currentDay);
   if(document.getElementById('summarySection').classList.contains('active')) renderSummary();
   if(document.getElementById('yearlySection').classList.contains('active')) renderYearly();
+  if(document.getElementById('insightsSection').classList.contains('active')) renderInsightsTab();
 }
 
 // ─── DYNAMIC FIELD ROWS (built from EXPENSE_FIELDS / INCOME_FIELDS) ──────────
@@ -1685,6 +1777,7 @@ function refreshAfterCategoryChange(){
   applyDayValuesToDOM(data);
   if(document.getElementById('summarySection').classList.contains('active')) renderSummary();
   if(document.getElementById('yearlySection').classList.contains('active')) renderYearly();
+  if(document.getElementById('insightsSection').classList.contains('active')) renderInsightsTab();
 }
 
 function updateCategoryField(id,key,value){
@@ -2141,7 +2234,6 @@ async function saveDay(){
 // just flips the stored flag since the fields were disabled either way.
 async function toggleDayLock(){
   const wasLocked=isDayLocked(curYear,curMonth,currentDay);
-  document.activeElement?.blur(); // avoid a focused field still taking keystrokes under the disabled overlay
   clearTimeout(autoSaveTimer);
   const data=wasLocked?getDay(curYear,curMonth,currentDay):collectDayData();
   data.locked=!wasLocked;
@@ -2206,11 +2298,13 @@ function switchView(view){
   document.getElementById('daySection').className=(view==='day'?'':'hidden');
   document.getElementById('summarySection').className='summary-section'+(view==='summary'?' active':'');
   document.getElementById('yearlySection').className='yearly-section'+(view==='yearly'?' active':'');
-  ['day','summary','yearly'].forEach(v=>{
+  document.getElementById('insightsSection').className='insights-section'+(view==='insights'?' active':'');
+  ['day','summary','yearly','insights'].forEach(v=>{
     document.getElementById('bnav-'+v).className='bnav-btn'+(v===view?' active':'');
   });
   if(view==='summary') renderSummary();
   if(view==='yearly') renderYearly();
+  if(view==='insights') renderInsightsTab();
 }
 
 // ─── SEARCH (notes + transactions across every saved day) ───────────────────
@@ -2485,7 +2579,6 @@ function renderSummary(){
   renderDebtsSummary('debtsSummary');
   renderBudgets(catTotals);
   renderBudgetAlertBanner(catTotals);
-  renderInsights(catTotals,totalExp);
 }
 
 // ─── CATEGORY DETAIL (view-only, opens in a new tab) ───────────────────────────
@@ -3002,7 +3095,270 @@ function renderComparisonChart(id,labels,curVals,prevVals,curLabel,prevLabel){
   });
 }
 
-function renderInsights(catTotals,totalExp){
+// ─────────────────────────────────────────────────────────────────────────────
+// INSIGHTS TAB — fully read-only, derived entirely from existing stored data.
+// Orchestrator below calls calcMonth/calcMonthUpTo/getDay per section; nothing
+// here writes to localStorage/Firestore.
+// ─────────────────────────────────────────────────────────────────────────────
+
+function renderInsightsTab(){
+  const{totalExp,totalInc,catTotals}=calcMonth(curYear,curMonth);
+  const monthDays=daysInMonth(curYear,curMonth);
+  document.getElementById('insightsSubtitle').textContent=`${MONTHS[curMonth]} ${curYear}`;
+
+  renderComparisonSection(catTotals,totalExp);          // Section B — this month vs last month (migrated)
+  renderNoSpendAndStreak(monthDays);                     // Section A.3 + A.4
+  renderHighestSpendDay();                               // Section A.5
+  renderWeekdayWeekend();                                // Section A.6
+  renderParetoCard(catTotals,totalExp);                  // Section A.1
+  renderFixedVarCard();                                  // Section A.2
+  renderFreqCard();                                      // Section A.7
+  renderNewDroppedCard(catTotals);                       // Section A.8
+  renderAvgTxnTrendCard();                                // Section A.9
+  renderIncomeConcentrationCard(catTotals,totalInc);      // Section A.10
+  renderRollingTrend();                                   // Section B — 6-12mo rolling trend
+  renderYoyCard();                                        // Section B — YoY
+  renderBestWorstCard();                                  // Section B — best/worst month
+  renderForecastAndPace(catTotals,monthDays);             // Section B — forecast + mid-month pace
+}
+
+// Walks localStorage keys to find the earliest month with any recorded data.
+// Used to gate YoY (needs >=12 months of history) and to bound rolling-trend/
+// best-worst scans so they don't walk into years that never had any data.
+function findEarliestDataMonth(){
+  const dayKeyRe=/^mt_(\d+)_(\d+)_(\d+)$/;
+  let earliest=null;
+  for(let i=0;i<localStorage.length;i++){
+    const key=localStorage.key(i);
+    const m=key&&key.match(dayKeyRe);
+    if(!m) continue;
+    let data;
+    try{ data=JSON.parse(localStorage.getItem(key)); }catch{ continue; }
+    if(!data) continue;
+    const hasAmount=ALL_FIELDS.some(f=>(data[f.id]||0)>0);
+    if(!hasAmount) continue;
+    const y=+m[1], mo=+m[2]-1;
+    if(!earliest||y<earliest.y||(y===earliest.y&&mo<earliest.m)) earliest={y,m:mo};
+  }
+  return earliest;
+}
+
+// ── SECTION A.3 + A.4 — No-spend days & longest streak ─────────────────────
+function renderNoSpendAndStreak(monthDays){
+  const today=new Date();
+  const isCurrentMonth=(curYear===today.getFullYear()&&curMonth===today.getMonth());
+  const lastDay=isCurrentMonth?today.getDate():monthDays;
+
+  const noSpendDays=[];
+  let longestStreak=0,curStreak=0,streakEndDay=null;
+  for(let d=1;d<=lastDay;d++){
+    const data=getDay(curYear,curMonth,d);
+    const exp=EXPENSE_FIELDS.reduce((s,f)=>s+(data[f.id]||0),0);
+    const hasEntry=ALL_FIELDS.some(f=>(data[f.id]||0)>0);
+    if(exp===0) noSpendDays.push(d);
+    if(hasEntry){
+      curStreak++;
+      if(curStreak>longestStreak){ longestStreak=curStreak; streakEndDay=d; }
+    } else {
+      curStreak=0;
+    }
+  }
+
+  document.getElementById('insNoSpendVal').textContent=noSpendDays.length;
+  document.getElementById('insNoSpendSub').textContent=noSpendDays.length
+    ? 'Days '+noSpendDays.slice(0,8).join(', ')+(noSpendDays.length>8?'…':'')
+    : lastDay>0?'Every day had spending':'';
+
+  document.getElementById('insStreakVal').textContent=longestStreak+' day'+(longestStreak===1?'':'s');
+  document.getElementById('insStreakSub').textContent=longestStreak&&streakEndDay
+    ? `Ending on day ${streakEndDay}`
+    : 'No logged entries yet';
+}
+
+// ── SECTION A.5 — Highest single spending day ───────────────────────────────
+function renderHighestSpendDay(){
+  const{daily}=calcMonth(curYear,curMonth);
+  if(!daily.length){
+    document.getElementById('insHighDayVal').textContent='–';
+    document.getElementById('insHighDaySub').textContent='No data yet';
+    return;
+  }
+  const top=daily.reduce((a,b)=>b.exp>a.exp?b:a);
+  const drivers=EXPENSE_FIELDS.map(f=>({f,val:top.data[f.id]||0})).filter(e=>e.val>0).sort((a,b)=>b.val-a.val).slice(0,2);
+  document.getElementById('insHighDayVal').textContent=fmt(top.exp);
+  document.getElementById('insHighDaySub').textContent=top.exp>0
+    ? `Day ${top.day} — ${drivers.map(e=>e.f.label).join(', ')||'—'}`
+    : 'No expenses logged';
+}
+
+// ── SECTION A.6 — Weekday vs weekend average spend ──────────────────────────
+function renderWeekdayWeekend(){
+  const{daily}=calcMonth(curYear,curMonth);
+  let wdSum=0,wdCount=0,weSum=0,weCount=0;
+  daily.forEach(({day,exp})=>{
+    const dow=new Date(curYear,curMonth,day).getDay(); // 0=Sun..6=Sat
+    if(dow===0||dow===6){ weSum+=exp; weCount++; } else { wdSum+=exp; wdCount++; }
+  });
+  const wdAvg=wdCount?wdSum/wdCount:0;
+  const weAvg=weCount?weSum/weCount:0;
+  if(!wdCount&&!weCount){
+    document.getElementById('insWkndVal').textContent='–';
+    document.getElementById('insWkndSub').textContent='No data yet';
+    return;
+  }
+  const higher=weAvg>wdAvg?'Weekend':'Weekday';
+  document.getElementById('insWkndVal').textContent=higher+' higher';
+  document.getElementById('insWkndSub').textContent=`Weekday ${fmt(wdAvg)}/day · Weekend ${fmt(weAvg)}/day`;
+}
+
+// ── SECTION A.1 — Category concentration (Pareto) ───────────────────────────
+function renderParetoCard(catTotals,totalExp){
+  const card=document.getElementById('insParetoCard');
+  const entries=EXPENSE_FIELDS.map(f=>({f,val:catTotals[f.id]||0})).filter(e=>e.val>0).sort((a,b)=>b.val-a.val);
+  if(!entries.length||totalExp<=0){ card.innerHTML=insCardEmpty('Category Concentration','No expenses logged yet this month'); return; }
+  let running=0,n80=0;
+  for(const e of entries){ running+=e.val; n80++; if(running/totalExp>=0.8) break; }
+  const top5=entries.slice(0,5);
+  const rows=top5.map(e=>{
+    const pct=((e.val/totalExp)*100).toFixed(0);
+    return `<div class="ins-card-row"><span class="icr-left"><span>${e.f.icon}</span><span>${escHtml(e.f.label)}</span></span><span class="icr-right">${pct}%</span></div>`;
+  }).join('');
+  card.innerHTML=`<div class="ins-card-title">Category Concentration (Pareto)</div>
+    <div class="ins-forecast-note" style="margin-bottom:8px">Top ${n80} of ${entries.length} categor${n80===1?'y makes':'ies make'} up 80% of this month's spending</div>
+    ${rows}`;
+}
+
+// ── SECTION A.2 — Fixed vs variable categories ──────────────────────────────
+function renderFixedVarCard(){
+  const card=document.getElementById('insFixedVarCard');
+  const months=collectRecentMonths(6);
+  if(months.length<3){ card.innerHTML=insCardEmpty('Fixed vs Variable Categories','Needs at least 3 months of history'); return; }
+  const results=EXPENSE_FIELDS.map(f=>{
+    const vals=months.map(mo=>mo.catTotals[f.id]||0);
+    const active=vals.filter(v=>v>0);
+    if(active.length<Math.ceil(months.length*0.5)) return null; // too sparse to classify
+    const mean=active.reduce((a,b)=>a+b,0)/active.length;
+    if(mean<=0) return null;
+    const variance=active.reduce((s,v)=>s+Math.pow(v-mean,2),0)/active.length;
+    const cv=Math.sqrt(variance)/mean; // coefficient of variation
+    return {f,mean,cv,fixed:cv<0.15};
+  }).filter(Boolean);
+  if(!results.length){ card.innerHTML=insCardEmpty('Fixed vs Variable Categories','Not enough recurring categories yet'); return; }
+  const fixed=results.filter(r=>r.fixed).sort((a,b)=>b.mean-a.mean).slice(0,4);
+  const variable=results.filter(r=>!r.fixed).sort((a,b)=>b.mean-a.mean).slice(0,4);
+  const row=r=>`<div class="ins-card-row"><span class="icr-left"><span>${r.f.icon}</span><span>${escHtml(r.f.label)}</span></span><span class="icr-right">${fmt(r.mean)}/mo</span></div>`;
+  card.innerHTML=`<div class="ins-card-title">Fixed vs Variable Categories</div>
+    <div class="ins-forecast-note">Fixed — steady month to month</div>
+    ${fixed.length?fixed.map(row).join(''):'<div class="ins-empty">None detected</div>'}
+    <div class="ins-forecast-note" style="margin-top:8px">Variable — swings month to month</div>
+    ${variable.length?variable.map(row).join(''):'<div class="ins-empty">None detected</div>'}`;
+}
+
+// ── SECTION A.7 — Frequent-small vs rare-large categories ───────────────────
+function renderFreqCard(){
+  const card=document.getElementById('insFreqCard');
+  const monthDays=daysInMonth(curYear,curMonth);
+  const freq={},sum={},cnt={};
+  EXPENSE_FIELDS.forEach(f=>{freq[f.id]=0;sum[f.id]=0;cnt[f.id]=0;});
+  for(let d=1;d<=monthDays;d++){
+    const data=getDay(curYear,curMonth,d);
+    EXPENSE_FIELDS.forEach(f=>{
+      const amt=data[f.id]||0;
+      if(amt>0){ freq[f.id]++; sum[f.id]+=amt; cnt[f.id]++; }
+    });
+  }
+  const entries=EXPENSE_FIELDS.map(f=>({f,logCount:freq[f.id],avg:cnt[f.id]?sum[f.id]/cnt[f.id]:0})).filter(e=>e.logCount>0);
+  if(entries.length<2){ card.innerHTML=insCardEmpty('Logging Frequency vs Amount','Not enough logged categories yet'); return; }
+  const frequentSmall=[...entries].sort((a,b)=>b.logCount-a.logCount).slice(0,3);
+  const rareLarge=[...entries].sort((a,b)=>b.avg-a.avg).slice(0,3);
+  const row=e=>`<div class="ins-card-row"><span class="icr-left"><span>${e.f.icon}</span><span>${escHtml(e.f.label)}</span></span><span class="icr-right">${e.logCount}× · avg ${fmt(e.avg)}</span></div>`;
+  card.innerHTML=`<div class="ins-card-title">Logging Frequency vs Amount</div>
+    <div class="ins-forecast-note">Logged most often</div>
+    ${frequentSmall.map(row).join('')}
+    <div class="ins-forecast-note" style="margin-top:8px">Largest average amount</div>
+    ${rareLarge.map(row).join('')}`;
+}
+
+// ── SECTION A.8 — New or dropped categories vs previous month ───────────────
+function renderNewDroppedCard(catTotals){
+  const card=document.getElementById('insNewDroppedCard');
+  const{y:py,m:pm}=getPrevMonth(curYear,curMonth);
+  const prev=calcMonth(py,pm);
+  const isNew=[],isDropped=[];
+  ALL_FIELDS.forEach(f=>{
+    const cur=catTotals[f.id]||0, prevVal=prev.catTotals[f.id]||0;
+    if(cur>0&&prevVal===0) isNew.push(f);
+    if(cur===0&&prevVal>0) isDropped.push(f);
+  });
+  if(!isNew.length&&!isDropped.length){ card.innerHTML=insCardEmpty('New / Dropped Categories','No changes from last month'); return; }
+  const row=f=>`<div class="ins-card-row"><span class="icr-left"><span>${f.icon}</span><span>${escHtml(f.label)}</span></span></div>`;
+  card.innerHTML=`<div class="ins-card-title">New / Dropped Categories</div>
+    ${isNew.length?`<div class="ins-forecast-note">New this month</div>${isNew.map(row).join('')}`:''}
+    ${isDropped.length?`<div class="ins-forecast-note" style="margin-top:8px">Dropped since last month</div>${isDropped.map(row).join('')}`:''}`;
+}
+
+// ── SECTION A.9 — Average transaction size trend per category ───────────────
+function renderAvgTxnTrendCard(){
+  const card=document.getElementById('insAvgTxnCard');
+  const months=collectRecentMonths(4);
+  if(months.length<2){ card.innerHTML=insCardEmpty('Average Transaction Size Trend','Needs at least 2 months of history'); return; }
+  const results=EXPENSE_FIELDS.map(f=>{
+    const series=months.map(mo=>{
+      const days=mo.daily.filter(d=>(d.data[f.id]||0)>0);
+      const total=days.reduce((s,d)=>s+d.data[f.id],0);
+      return days.length?total/days.length:null;
+    });
+    const valid=series.filter(v=>v!==null);
+    if(valid.length<2) return null;
+    const first=valid[0],last=valid[valid.length-1];
+    const pct=first>0?((last-first)/first)*100:0;
+    if(Math.abs(pct)<5) return null;
+    return {f,pct,last};
+  }).filter(Boolean).sort((a,b)=>Math.abs(b.pct)-Math.abs(a.pct)).slice(0,5);
+  if(!results.length){ card.innerHTML=insCardEmpty('Average Transaction Size Trend','No clear per-transaction trend yet'); return; }
+  const rows=results.map(r=>{
+    const up=r.pct>0;
+    return `<div class="ins-card-row"><span class="icr-left"><span>${r.f.icon}</span><span>${escHtml(r.f.label)}</span></span><span class="icr-right ${up?'insight-bad':'insight-good'}">${up?'▲':'▼'} ${Math.abs(r.pct).toFixed(0)}%</span></div>`;
+  }).join('');
+  card.innerHTML=`<div class="ins-card-title">Average Transaction Size Trend</div>
+    <div class="ins-forecast-note">Change in typical amount per entry, oldest vs most recent month tracked</div>
+    ${rows}`;
+}
+
+// ── SECTION A.10 — Income concentration ──────────────────────────────────────
+function renderIncomeConcentrationCard(catTotals,totalInc){
+  const card=document.getElementById('insIncomeConcCard');
+  const entries=INCOME_FIELDS.map(f=>({f,val:catTotals[f.id]||0})).filter(e=>e.val>0).sort((a,b)=>b.val-a.val);
+  if(!entries.length||totalInc<=0){ card.innerHTML=insCardEmpty('Income Concentration','No income logged yet this month'); return; }
+  const top=entries[0];
+  const share=((top.val/totalInc)*100).toFixed(0);
+  card.innerHTML=`<div class="ins-card-title">Income Concentration</div>
+    <div class="ins-card-row"><span class="icr-left"><span>💼</span><span>Active income sources</span></span><span class="icr-right">${entries.length}</span></div>
+    <div class="ins-card-row"><span class="icr-left"><span>${top.f.icon}</span><span>Top source: ${escHtml(top.f.label)}</span></span><span class="icr-right">${share}%</span></div>`;
+}
+
+// ── Shared helper: collect last N months (including current) with calcMonth ──
+// Walks backwards via getPrevMonth so it correctly crosses year boundaries.
+// Only includes months at/after the earliest month with any recorded data.
+function collectRecentMonths(n){
+  const earliest=findEarliestDataMonth();
+  const months=[];
+  let y=curYear,m=curMonth;
+  for(let i=0;i<n;i++){
+    if(earliest&&(y<earliest.y||(y===earliest.y&&m<earliest.m))) break;
+    months.unshift({y,m,...calcMonth(y,m)});
+    const prev=getPrevMonth(y,m);
+    y=prev.y; m=prev.m;
+  }
+  return months;
+}
+
+function insCardEmpty(title,msg){
+  return `<div class="ins-card-title">${title}</div><div class="ins-empty">${msg}</div>`;
+}
+
+// ── SECTION B — This month vs last month (migrated from Month tab) ──────────
+function renderComparisonSection(catTotals,totalExp){
   const{y:py,m:pm}=getPrevMonth(curYear,curMonth);
   // Compare like-for-like: only count the previous month up through the same
   // day-of-month we've reached in the current month (e.g. Aug 1–14 vs Jul 1–14),
@@ -3055,6 +3411,208 @@ function renderInsights(catTotals,totalExp){
   combined.sort((a,b)=>(b.cur+b.prevVal)-(a.cur+a.prevVal));
   const top6=combined.slice(0,6);
   renderComparisonChart('comparisonChart', top6.map(e=>e.f.label), top6.map(e=>e.cur), top6.map(e=>e.prevVal), MONTHS[curMonth].slice(0,3), MONTHS[pm].slice(0,3));
+}
+
+// ── SECTION B — Multi-month rolling trend, classified per category ──────────
+function renderRollingTrend(){
+  const months=collectRecentMonths(12);
+  const listEl=document.getElementById('insTrendList');
+  if(months.length<3){
+    listEl.innerHTML=`<div class="ins-card">${insCardEmpty('Rolling Trend','Needs at least 3 months of history')}</div>`;
+    destroyChart('rollingTrendChart');
+    setChartEmpty('rollingTrendChart',true,'Not enough history yet');
+    return;
+  }
+  // Classify every expense category by slope + coefficient of variation across the window
+  const classified=EXPENSE_FIELDS.map(f=>{
+    const series=months.map(mo=>mo.catTotals[f.id]||0);
+    const total=series.reduce((a,b)=>a+b,0);
+    if(total<=0) return null;
+    const mean=total/series.length;
+    const variance=series.reduce((s,v)=>s+Math.pow(v-mean,2),0)/series.length;
+    const cv=mean>0?Math.sqrt(variance)/mean:0;
+    // Simple linear slope via least squares over month index
+    const n=series.length;
+    const xs=series.map((_,i)=>i);
+    const xMean=xs.reduce((a,b)=>a+b,0)/n;
+    const yMean=mean;
+    let num=0,den=0;
+    xs.forEach((x,i)=>{ num+=(x-xMean)*(series[i]-yMean); den+=(x-xMean)*(x-xMean); });
+    const slope=den?num/den:0;
+    const slopePct=mean>0?(slope/mean)*100:0; // slope as % of mean per month
+    let cls;
+    if(cv>0.4) cls='volatile';
+    else if(slopePct>8) cls='rising';
+    else if(slopePct<-8) cls='falling';
+    else cls='stable';
+    return {f,series,mean,cls};
+  }).filter(Boolean).sort((a,b)=>b.mean-a.mean);
+
+  if(!classified.length){
+    listEl.innerHTML=`<div class="ins-card">${insCardEmpty('Rolling Trend','No categories with enough spend to classify')}</div>`;
+    destroyChart('rollingTrendChart');
+    setChartEmpty('rollingTrendChart',true,'No data yet');
+    return;
+  }
+
+  listEl.innerHTML=classified.map(c=>
+    `<div class="ins-card-row"><span class="icr-left"><span>${c.f.icon}</span><span>${escHtml(c.f.label)}</span></span><span class="icr-right"><span class="trend-badge ${c.cls}">${c.cls}</span></span></div>`
+  ).join('');
+
+  // Chart the top 4 categories by mean spend across the window
+  const top4=classified.slice(0,4);
+  const ctx=document.getElementById('rollingTrendChart');
+  destroyChart('rollingTrendChart');
+  if(!ctx){ /* no-op */ }
+  else if(typeof Chart==='undefined'){ setChartEmpty('rollingTrendChart',true,'⚠️ Chart library failed to load — check your internet connection'); }
+  else {
+    setChartEmpty('rollingTrendChart',false);
+    const c=chartColors();
+    const labels=months.map(mo=>MONTHS[mo.m].slice(0,3)+(mo.y!==curYear?" '"+String(mo.y).slice(2):''));
+    chartInstances['rollingTrendChart']=new Chart(ctx,{
+      type:'line',
+      data:{labels,datasets:top4.map((c2,i)=>({
+        label:c2.f.label,
+        data:c2.series,
+        borderColor:CAT_PALETTE[i%CAT_PALETTE.length],
+        backgroundColor:'transparent',
+        tension:0.3,
+        borderWidth:2,
+        pointRadius:2
+      }))},
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:true,labels:{color:c.text,font:{size:9}}}},
+        scales:{
+          x:{ticks:{color:c.text,font:{size:9}},grid:{display:false}},
+          y:{beginAtZero:true,ticks:{color:c.text,font:{size:9}},grid:{color:c.grid}}
+        }
+      }
+    });
+  }
+}
+
+// ── SECTION B — Same-month-last-year (YoY) ───────────────────────────────────
+function renderYoyCard(){
+  const titleEl=document.getElementById('insYoyTitle');
+  const card=document.getElementById('insYoyCard');
+  const earliest=findEarliestDataMonth();
+  // Gate: only show once >=12 months of history exist, measured from the
+  // earliest recorded month up to the currently viewed month.
+  if(!earliest){ titleEl.style.display='none'; card.innerHTML=''; return; }
+  const monthsOfHistory=(curYear-earliest.y)*12+(curMonth-earliest.m)+1;
+  if(monthsOfHistory<12){ titleEl.style.display='none'; card.innerHTML=''; return; }
+
+  titleEl.style.display='';
+  const thisY=calcMonth(curYear,curMonth);
+  const lastY=calcMonth(curYear-1,curMonth);
+  if(lastY.totalExp<=0&&lastY.totalInc<=0){
+    card.innerHTML=`<div class="ins-card">${insCardEmpty(MONTHS[curMonth]+' — Year over Year',"No data for "+MONTHS[curMonth]+' '+(curYear-1))}</div>`;
+    return;
+  }
+  const expPct=lastY.totalExp>0?((thisY.totalExp-lastY.totalExp)/lastY.totalExp)*100:null;
+  const incPct=lastY.totalInc>0?((thisY.totalInc-lastY.totalInc)/lastY.totalInc)*100:null;
+  const row=(label,cur,prevVal,pct,goodIsUp)=>{
+    if(pct===null) return `<div class="ins-card-row"><span class="icr-left"><span>${label}</span></span><span class="icr-right">${fmt(cur)} (new)</span></div>`;
+    const up=pct>0;
+    const good=goodIsUp?up:!up;
+    return `<div class="ins-card-row"><span class="icr-left"><span>${label}</span></span><span class="icr-right ${good?'insight-good':'insight-bad'}">${fmt(cur)} <span style="font-weight:700">${up?'▲':'▼'}${Math.abs(pct).toFixed(0)}%</span></span></div>`;
+  };
+  card.innerHTML=`<div class="ins-card">
+    <div class="ins-card-title">${MONTHS[curMonth]} ${curYear} vs ${MONTHS[curMonth]} ${curYear-1}</div>
+    ${row('Expense',thisY.totalExp,lastY.totalExp,expPct,false)}
+    ${row('Income',thisY.totalInc,lastY.totalInc,incPct,true)}
+  </div>`;
+}
+
+// ── SECTION B — Best / worst month on record ──────────────────────────────────
+function renderBestWorstCard(){
+  const card=document.getElementById('insBestWorstCard');
+  const earliest=findEarliestDataMonth();
+  if(!earliest){ card.innerHTML=insCardEmpty('Best &amp; Worst Months','No data yet'); return; }
+  const monthsList=[];
+  let y=earliest.y,m=earliest.m;
+  while(y<curYear||(y===curYear&&m<=curMonth)){
+    const r=calcMonth(y,m);
+    if(r.totalExp>0||r.totalInc>0) monthsList.push({y,m,...r});
+    m++; if(m>11){ m=0; y++; }
+  }
+  if(monthsList.length<2){ card.innerHTML=insCardEmpty('Best &amp; Worst Months','Needs at least 2 recorded months'); return; }
+
+  const label=mo=>`${MONTHS[mo.m].slice(0,3)} ${mo.y}`;
+  const highestExp=monthsList.reduce((a,b)=>b.totalExp>a.totalExp?b:a);
+  const lowestExp=monthsList.reduce((a,b)=>b.totalExp<a.totalExp?b:a);
+  const highestInc=monthsList.reduce((a,b)=>b.totalInc>a.totalInc?b:a);
+  const bestNet=monthsList.reduce((a,b)=>b.net>a.net?b:a);
+  const worstNet=monthsList.reduce((a,b)=>b.net<a.net?b:a);
+
+  const row=(tag,tagCls,text,val)=>`<div class="ins-best-worst-row"><span><span class="ibw-tag ${tagCls}">${tag}</span>${text}</span><span style="font-weight:700">${val}</span></div>`;
+  card.innerHTML=
+    row('Highest expense','worst',label(highestExp),fmt(highestExp.totalExp))+
+    row('Lowest expense','best',label(lowestExp),fmt(lowestExp.totalExp))+
+    row('Highest income','best',label(highestInc),fmt(highestInc.totalInc))+
+    row('Best net','best',label(bestNet),fmt(bestNet.net,true))+
+    row('Worst net','worst',label(worstNet),fmt(worstNet.net,true));
+}
+
+// ── SECTION B — Next-month forecast (per category) + mid-month pace ─────────
+function renderForecastAndPace(catTotals,monthDays){
+  const forecastCard=document.getElementById('insForecastCard');
+  const months=collectRecentMonths(6);
+  const expenseMonths=months.filter(mo=>mo.totalExp>0||mo.totalInc>0);
+  if(expenseMonths.length<2){
+    forecastCard.innerHTML=insCardEmpty('Next Month Forecast','Needs at least 2 months of history to project');
+  } else {
+    // Weighted recent-month average (most recent months weighted higher), blended
+    // with trend direction, per category. Range comes from historical stddev.
+    const weights=months.map((_,i)=>i+1); // oldest=1 .. newest=n
+    const weightSum=weights.reduce((a,b)=>a+b,0);
+    const perCat=EXPENSE_FIELDS.map(f=>{
+      const series=months.map(mo=>mo.catTotals[f.id]||0);
+      const total=series.reduce((a,b)=>a+b,0);
+      if(total<=0) return null;
+      const weighted=series.reduce((s,v,i)=>s+v*weights[i],0)/weightSum;
+      const mean=total/series.length;
+      const variance=series.reduce((s,v)=>s+Math.pow(v-mean,2),0)/series.length;
+      const stdev=Math.sqrt(variance);
+      // trend nudge: compare weighted avg to plain mean to lean toward recent direction
+      const trendNudge=weighted-mean;
+      const center=Math.max(0,weighted+trendNudge*0.5);
+      const low=Math.max(0,center-stdev);
+      const high=center+stdev;
+      return {f,low,high,center};
+    }).filter(Boolean);
+
+    const totalLow=Math.round(perCat.reduce((s,c)=>s+c.low,0));
+    const totalHigh=Math.round(perCat.reduce((s,c)=>s+c.high,0));
+    const drivers=[...perCat].sort((a,b)=>b.center-a.center).slice(0,3).map(c=>c.f.label).join(', ');
+
+    forecastCard.innerHTML=`<div class="ins-card-title">Estimated Next Month Expense</div>
+      <div class="ins-forecast-range">${fmt(totalLow)} – ${fmt(totalHigh)}</div>
+      <div class="ins-forecast-note">Based on a weighted average of the last ${expenseMonths.length} months, blended with recent trend direction. Mainly driven by: ${drivers||'—'}.</div>`;
+  }
+
+  // Mid-month current-pace projection — only meaningful while the viewed month
+  // is genuinely in progress (getElapsedDaysInMonth returns 0 for past/future months).
+  const elapsed=getElapsedDaysInMonth(curYear,curMonth);
+  const paceCard=document.getElementById('insPaceCard');
+  const today=new Date();
+  const isCurrentMonth=(curYear===today.getFullYear()&&curMonth===today.getMonth());
+  if(isCurrentMonth&&elapsed>0&&elapsed<monthDays){
+    const{totalExp}=calcMonthUpTo(curYear,curMonth,elapsed);
+    const dailyPace=totalExp/elapsed;
+    const projected=Math.round(dailyPace*monthDays);
+    paceCard.style.display='';
+    paceCard.innerHTML=`<div class="ins-card-title">Mid-Month Pace Projection</div>
+      <div class="ins-pace-compare">
+        <div><div class="icp-label">Spent so far (day ${elapsed})</div><div class="icp-val">${fmt(totalExp)}</div></div>
+        <div><div class="icp-label">Projected month-end</div><div class="icp-val">${fmt(projected)}</div></div>
+      </div>
+      <div class="ins-forecast-note">At the current daily pace of ${fmt(Math.round(dailyPace))}/day, projected across all ${monthDays} days.</div>`;
+  } else {
+    paceCard.style.display='none';
+    paceCard.innerHTML='';
+  }
 }
 
 // ─── RENDER YEARLY ────────────────────────────────────────────────────────────
@@ -3638,6 +4196,7 @@ async function importAllDataJSON(fileInput){
     loadDay(currentDay);
     if(document.getElementById('summarySection').classList.contains('active')) renderSummary();
     if(document.getElementById('yearlySection').classList.contains('active')) renderYearly();
+    if(document.getElementById('insightsSection').classList.contains('active')) renderInsightsTab();
     showToast('Backup restored ✓');
     closeSettings();
   }catch(err){
