@@ -1246,6 +1246,33 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="dayQuickViewModal">
+  <div class="modal-box" style="max-width:480px">
+    <div class="modal-header">
+      <div>
+        <h3 id="dayQuickViewTitle" style="margin-bottom:2px">📅 Day</h3>
+        <div id="dayQuickViewSub" style="font-size:0.68rem;color:var(--text-soft);font-weight:500"></div>
+      </div>
+      <button class="modal-close" onclick="closeDayQuickView()">✕</button>
+    </div>
+    <div class="modal-body" id="dayQuickViewBody"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="monthQuickViewModal">
+  <div class="modal-box" style="max-width:480px">
+    <div class="modal-header">
+      <div>
+        <h3 id="monthQuickViewTitle" style="margin-bottom:2px">📆 Month</h3>
+        <div id="monthQuickViewSub" style="font-size:0.68rem;color:var(--text-soft);font-weight:500"></div>
+      </div>
+      <button class="modal-close" onclick="closeMonthQuickView()">✕</button>
+    </div>
+    <div class="modal-body" id="monthQuickViewBody"></div>
+  </div>
+</div>
+
+
 <div class="modal-overlay" id="acctHistoryModal">
   <div class="modal-box" style="max-width:480px">
     <div class="modal-header">
@@ -2310,7 +2337,7 @@ function renderDayBtns(){
     const hasData=ALL_FIELDS.some(f=>(saved[f.id]||0)>0);
     btn.className='day-btn'+(d===currentDay?' active':(hasData?' has-data':''));
     btn.textContent=d;
-    btn.onclick=(()=>{const dd=d;return()=>selectDay(dd);})();
+    btn.onclick=(()=>{const dd=d;return()=>openDayQuickView(curYear,curMonth,dd);})();
     container.appendChild(btn);
   }
 }
@@ -2660,6 +2687,96 @@ function openCategoryDetail(fieldId){
   document.getElementById('categoryDetailModal').classList.add('open');
 }
 function closeCategoryDetail(){ document.getElementById('categoryDetailModal').classList.remove('open'); }
+
+// ─── DAY QUICK-VIEW (view-only, tap a day in the month strip) ─────────────────
+// Tapping a day button used to switch straight into editing that day. Now it
+// just previews it — same read-only pattern as the category detail popup
+// above — so browsing other days doesn't disturb whatever you're currently
+// typing. "Edit this day" is the one explicit action that actually switches.
+function openDayQuickView(y,m,d){
+  const isActiveDay=(y===curYear&&m===curMonth&&d===currentDay);
+  const data=isActiveDay?collectDayData():getDay(y,m,d);
+  const exp=EXPENSE_FIELDS.reduce((s,f)=>s+(data[f.id]||0),0);
+  const inc=INCOME_FIELDS.reduce((s,f)=>s+(data[f.id]||0),0);
+  const net=inc-exp;
+  const entries=[];
+  ALL_FIELDS.forEach(f=>{
+    const amt=data[f.id]||0;
+    const note=data['note_'+f.id]||'';
+    if(amt<=0&&!note) return;
+    entries.push({f,amt,note,isInc:INCOME_FIELDS.some(x=>x.id===f.id)});
+  });
+  const maxAmt=entries.length?Math.max(...entries.map(e=>e.amt)):0;
+  const rows=entries.map(e=>{
+    const barPct=maxAmt?Math.max(6,Math.round((e.amt/maxAmt)*100)):0;
+    const accent=e.isInc?'var(--accent2)':'var(--danger)';
+    return `<div class="cd-row" style="--cd-accent:${accent}">
+      <div class="cd-date"><span class="cd-date-num" style="font-size:1.05rem">${e.f.icon}</span></div>
+      <div class="cd-amt">
+        <div style="font-size:0.7rem;color:var(--text-soft);margin-bottom:3px">${escHtml(e.f.label)}</div>
+        <div class="cd-amt-track"><div class="cd-amt-fill" style="width:${barPct}%"></div></div>
+        <span class="cd-amt-val">${fmt(e.amt)}</span>
+      </div>
+      <div class="cd-note">${e.note?escHtml(e.note):'<span class="cd-dash">—</span>'}</div>
+    </div>`;
+  }).join('');
+  const netGlow=net>=0?'var(--accent2-glow)':'rgba(220,38,38,0.14)';
+  const dateStr=new Date(y,m,d).toLocaleDateString('en-US',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('dayQuickViewTitle').textContent=`📅 Day ${d}`;
+  document.getElementById('dayQuickViewSub').textContent=dateStr+(isActiveDay?' — currently open for editing':'');
+  document.getElementById('dayQuickViewBody').innerHTML=`
+    <div class="cd-stats">
+      <div class="cd-stat cd-stat-hero" style="background:linear-gradient(135deg, ${netGlow}, transparent);border-color:${netGlow}">
+        <div class="cd-stat-label">Net</div>
+        <div class="cd-stat-val" style="color:${net>=0?'var(--accent2)':'var(--danger)'}">${fmt(net,true)}</div>
+      </div>
+      <div class="cd-stat"><div class="cd-stat-label">Expense</div><div class="cd-stat-val" style="color:var(--danger)">${fmt(exp)}</div></div>
+      <div class="cd-stat"><div class="cd-stat-label">Income</div><div class="cd-stat-val" style="color:var(--accent2)">${fmt(inc)}</div></div>
+    </div>
+    <div class="cd-panel">
+      <div class="cd-panel-head"><span>Entries</span><span class="cd-panel-count">${entries.length}</span></div>
+      <div class="cd-list">${rows||`<div class="cd-empty">🗒️ No entries logged for this day</div>`}</div>
+    </div>
+    <button class="btn-primary" style="margin-top:14px" onclick="closeDayQuickView();switchView('day');selectDay(${d})">✏️ Edit this day</button>
+  `;
+  document.getElementById('dayQuickViewModal').classList.add('open');
+}
+function closeDayQuickView(){ document.getElementById('dayQuickViewModal').classList.remove('open'); }
+
+// ─── MONTH QUICK-VIEW (view-only, tap a month row in Yearly Summary) ─────────
+// Same idea, one level up: previews a month's category breakdown without
+// leaving the Yearly screen. "Open full Summary" is the explicit action that
+// actually navigates — the row itself used to do that directly.
+function openMonthQuickView(m){
+  const{totalExp,totalInc,net,catTotals,daily}=calcMonth(curYear,m);
+  const rows=ALL_FIELDS.map(f=>{
+    if(!catTotals[f.id]) return '';
+    const isInc=INCOME_FIELDS.some(x=>x.id===f.id);
+    return `<div class="breakdown-row"><span class="br-left"><span>${f.icon}</span><span>${escHtml(f.label)}</span></span><span class="br-val ${isInc?'inc':'exp'}">${fmt(catTotals[f.id])}</span></div>`;
+  }).join('');
+  const netGlow=net>=0?'var(--accent2-glow)':'rgba(220,38,38,0.14)';
+  document.getElementById('monthQuickViewTitle').textContent=`📆 ${MONTHS[m]}`;
+  document.getElementById('monthQuickViewSub').textContent=`${curYear} — ${daily.length} days recorded`;
+  document.getElementById('monthQuickViewBody').innerHTML=`
+    <div class="cd-stats">
+      <div class="cd-stat cd-stat-hero" style="background:linear-gradient(135deg, ${netGlow}, transparent);border-color:${netGlow}">
+        <div class="cd-stat-label">Net</div>
+        <div class="cd-stat-val" style="color:${net>=0?'var(--accent2)':'var(--danger)'}">${fmt(net,true)}</div>
+      </div>
+      <div class="cd-stat"><div class="cd-stat-label">Expense</div><div class="cd-stat-val" style="color:var(--danger)">${fmt(totalExp)}</div></div>
+      <div class="cd-stat"><div class="cd-stat-label">Income</div><div class="cd-stat-val" style="color:var(--accent2)">${fmt(totalInc)}</div></div>
+    </div>
+    ${rows||'<div style="color:var(--muted);text-align:center;padding:14px;font-size:0.82rem">No data yet</div>'}
+    <button class="btn-primary" style="margin-top:14px" onclick="closeMonthQuickView();openSummaryFromQuickView(${m})">📊 Open full Summary</button>
+  `;
+  document.getElementById('monthQuickViewModal').classList.add('open');
+}
+function closeMonthQuickView(){ document.getElementById('monthQuickViewModal').classList.remove('open'); }
+function openSummaryFromQuickView(m){
+  curMonth=m;
+  document.getElementById('monthSel').value=m;
+  switchView('summary');
+}
 
 // ─── SAVINGS GOAL ─────────────────────────────────────────────────────────────
 // Shared by the Goal card and the Budget pace indicators: how many days of the
@@ -3657,11 +3774,7 @@ function renderYearly(){
     const row=document.createElement('div');
     row.className='month-row';
     row.innerHTML=`<span class="mr-name">${MONTHS[m]}</span><span class="mr-exp">${fmt(totalExp)}</span><span class="mr-inc">${fmt(totalInc)}</span><span class="mr-net ${n>=0?'pos':'neg'}">${fmt(n,true)}</span>`;
-    row.onclick=()=>{
-      curMonth=m;
-      document.getElementById('monthSel').value=m;
-      switchView('summary');
-    };
+    row.onclick=()=>openMonthQuickView(m);
     mb.appendChild(row);
   });
   if(!mb.innerHTML) mb.innerHTML='<div style="color:var(--muted);text-align:center;padding:14px;font-size:0.82rem">No data yet</div>';
