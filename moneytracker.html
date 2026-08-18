@@ -2615,10 +2615,7 @@ function renderSummary(){
     const row=document.createElement('div');
     row.className='daily-row';
     row.innerHTML=`<span class="dr-day">Day ${day}</span><span class="dr-exp">${fmt(exp)}</span><span class="dr-inc">${fmt(inc)}</span><span class="dr-net ${n>=0?'pos':'neg'}">${fmt(n,true)}</span>`;
-    row.onclick=()=>{
-      switchView('day');
-      selectDay(day);
-    };
+    row.onclick=()=>openDayQuickView(curYear,curMonth,day);
     dl.appendChild(row);
   });
   if(!dl.innerHTML) dl.innerHTML='<div style="color:var(--muted);text-align:center;padding:14px;font-size:0.82rem">No data yet</div>';
@@ -2687,6 +2684,61 @@ function openCategoryDetail(fieldId){
   document.getElementById('categoryDetailModal').classList.add('open');
 }
 function closeCategoryDetail(){ document.getElementById('categoryDetailModal').classList.remove('open'); }
+
+// ─── CATEGORY DETAIL — YEAR VIEW (view-only) ───────────────────────────────────
+// Same popup as openCategoryDetail above, but for a click coming from the
+// Yearly "Category Breakdown" list: walks all 12 months of curYear instead of
+// the days of one month, since a day-by-day list for a whole year would be
+// too long to be useful at a glance.
+function openCategoryDetailYear(fieldId){
+  const f=ALL_FIELDS.find(x=>x.id===fieldId);
+  if(!f) return;
+  const isInc=INCOME_FIELDS.some(x=>x.id===fieldId);
+  const entries=[];
+  for(let m=0;m<12;m++){
+    const{catTotals}=calcMonth(curYear,m);
+    const v=catTotals[fieldId]||0;
+    if(!v) continue;
+    entries.push({m,amount:v});
+  }
+  const total=entries.reduce((s,e)=>s+e.amount,0);
+  const count=entries.length;
+  const avg=count?total/count:0;
+  const maxAmt=count?Math.max(...entries.map(e=>e.amount)):0;
+  const accentVar=isInc?'var(--accent2)':'var(--danger)';
+  const accentGlowVar=isInc?'var(--accent2-glow)':'rgba(220,38,38,0.14)';
+
+  const rows=entries.map(e=>{
+    const barPct=maxAmt?Math.max(6,Math.round((e.amount/maxAmt)*100)):0;
+    return `<div class="cd-row">
+      <div class="cd-date"><span class="cd-date-num" style="font-size:0.82rem">${MONTHS[e.m].slice(0,3)}</span></div>
+      <div class="cd-amt">
+        <div class="cd-amt-track"><div class="cd-amt-fill" style="width:${barPct}%"></div></div>
+        <span class="cd-amt-val">${fmt(e.amount)}</span>
+      </div>
+      <div class="cd-note"><span class="cd-dash">—</span></div>
+    </div>`;
+  }).join('');
+  const listBody=rows||`<div class="cd-empty">🗒️ No entries logged for ${escHtml(f.label)} in ${curYear}</div>`;
+
+  document.getElementById('categoryDetailTitle').textContent=`${f.icon} ${f.label}`;
+  document.getElementById('categoryDetailSub').textContent=`${curYear} activity`;
+  document.getElementById('categoryDetailBody').innerHTML=`
+    <div class="cd-stats">
+      <div class="cd-stat cd-stat-hero" style="background:linear-gradient(135deg, ${accentGlowVar}, transparent);border-color:${accentGlowVar}">
+        <div class="cd-stat-label">Total ${isInc?'Received':'Spent'}</div>
+        <div class="cd-stat-val" style="color:${accentVar}">${fmt(total)}</div>
+      </div>
+      <div class="cd-stat"><div class="cd-stat-label">Months</div><div class="cd-stat-val">${count}</div></div>
+      <div class="cd-stat"><div class="cd-stat-label">Avg / Month</div><div class="cd-stat-val">${fmt(Math.round(avg))}</div></div>
+    </div>
+    <div class="cd-panel">
+      <div class="cd-panel-head"><span>Monthly breakdown</span><span class="cd-panel-count">${count} ${count===1?'month':'months'}</span></div>
+      <div class="cd-list" style="--cd-accent:${accentVar}">${listBody}</div>
+    </div>
+  `;
+  document.getElementById('categoryDetailModal').classList.add('open');
+}
 
 // ─── DAY QUICK-VIEW (view-only, tap a day in the month strip) ─────────────────
 // Tapping a day button used to switch straight into editing that day. Now it
@@ -2843,14 +2895,14 @@ function renderAccountListSummary(containerId){
   const balances=computeAccountBalances();
   // Only the Monthly copy gets interactive Add/Transfer controls — a second
   // interactive copy in the Yearly view would collide on the same panel IDs.
-  const interactive=containerId==='accountListSummary';
+  // Both copies open the tap-through, all-time transaction history though —
+  // that's a single shared modal, so there's no ID-collision risk there.
+  const hasControls=containerId==='accountListSummary';
   const rows=ACCOUNTS.map(a=>{
     const bal=balances[a.id]||0;
-    const actions=interactive?`<button class="acct-mini-btn" onclick="event.stopPropagation();toggleAcctPanel('${a.id}','add')" title="Add balance">➕</button><button class="acct-mini-btn" onclick="event.stopPropagation();toggleAcctPanel('${a.id}','transfer')" title="Transfer">⇄</button>`:'';
-    const panel=interactive?`<div class="acct-panel" id="acctpanel_${a.id}"></div>`:'';
-    // Only the Monthly copy opens the tap-through transaction history — same
-    // reasoning as the interactive Add/Transfer controls above.
-    const rowAttrs=interactive?` class="account-row ah-clickable" onclick="openAcctHistory('${a.id}')"`:` class="account-row"`;
+    const actions=hasControls?`<button class="acct-mini-btn" onclick="event.stopPropagation();toggleAcctPanel('${a.id}','add')" title="Add balance">➕</button><button class="acct-mini-btn" onclick="event.stopPropagation();toggleAcctPanel('${a.id}','transfer')" title="Transfer">⇄</button>`:'';
+    const panel=hasControls?`<div class="acct-panel" id="acctpanel_${a.id}"></div>`:'';
+    const rowAttrs=` class="account-row ah-clickable" onclick="openAcctHistory('${a.id}')"`;
     return `<div${rowAttrs}>
       <span class="acct-left"><span class="acct-icon">${a.icon}</span><span class="acct-label">${escHtml(a.label)}</span></span>
       <span class="acct-right">
@@ -2860,7 +2912,7 @@ function renderAccountListSummary(containerId){
     </div>${panel}`;
   }).join('');
   const total=ACCOUNTS.reduce((s,a)=>s+(balances[a.id]||0),0);
-  const totalAttrs=interactive?` class="account-row account-total ah-clickable" onclick="openAcctHistory(null)"`:` class="account-row account-total"`;
+  const totalAttrs=` class="account-row account-total ah-clickable" onclick="openAcctHistory(null)"`;
   container.innerHTML=rows+`<div${totalAttrs}><span class="acct-left"><span class="acct-label">Total Balance</span></span><span class="acct-total-val${total<0?' neg':''}">${fmt(total)}</span></div>`;
 }
 
@@ -3191,7 +3243,7 @@ function renderBudgets(catTotals){
     const onPace=elapsedDays<=0||used<=expectedSoFar;
     const paceCls=onPace?'pace-green':'pace-red';
     const paceTitle=elapsedDays>0?`${fmt(used)} spent vs ${fmt(expectedSoFar)} expected by day ${elapsedDays}`:'';
-    return `<div class="budget-row">
+    return `<div class="budget-row" style="cursor:pointer" title="View entries" onclick="openCategoryDetail('${f.id}')">
       <div class="budget-row-top"><span><span class="pace-dot ${paceCls}" title="${paceTitle}"></span>${f.icon} ${escHtml(f.label)}</span><span class="${over?'over-text':''}">${fmt(used)} / ${fmt(f.budget)}</span></div>
       <div class="budget-bar-track"><div class="budget-bar-fill ${cls}" style="width:${pct}%"></div></div>
     </div>`;
@@ -3788,6 +3840,9 @@ function renderYearly(){
     const row=document.createElement('div');
     row.className='breakdown-row';
     row.innerHTML=`<span class="br-left"><span>${f.icon}</span><span>${escHtml(f.label)}</span></span><span class="br-val ${isInc?'inc':'exp'}">${fmt(yrCat[f.id])}</span>`;
+    row.style.cursor='pointer';
+    row.title='View monthly breakdown';
+    row.onclick=()=>openCategoryDetailYear(f.id);
     cb.appendChild(row);
   });
   if(!cb.innerHTML) cb.innerHTML='<div style="color:var(--muted);text-align:center;padding:14px;font-size:0.82rem">No data yet</div>';
