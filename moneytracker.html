@@ -22,7 +22,7 @@
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link rel="stylesheet" href="style.css">
-<script src="https://cdn.jsdelivr.net/npm/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+<script src="https://unpkg.com/@lottiefiles/dotlottie-wc@latest/dist/dotlottie-wc.js" type="module"></script>
 <style>
   /* ── MONEY TRACKER — PAGE-SPECIFIC VARIABLES ── */
   :root {
@@ -976,7 +976,7 @@
      exactly when data is actually ready. ── -->
 <div id="mtSplash" class="mt-splash">
   <div class="mt-splash-inner">
-    <lottie-player id="mtSplashLottie" background="transparent" speed="1" loop autoplay style="width:170px;height:170px;"></lottie-player>
+    <dotlottie-wc id="mtSplashLottie" speed="1" mode="forward" loop autoplay style="width:170px;height:170px;"></dotlottie-wc>
     <script>
       // Random splash animation each time the page opens — add more filenames
       // to this array as you download more Lottie JSONs (all in repo root).
