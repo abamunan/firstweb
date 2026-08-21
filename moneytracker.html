@@ -2,10 +2,27 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Money Tracker</title>
+
+<!-- ── Fullscreen / "installed app" behavior ──────────────────────────
+     Browsers block a normal tab from hiding its own address bar
+     (security rule — a page can't disguise itself as browser chrome).
+     The only real way to get a no-address-bar, app-like window is via
+     "Add to Home Screen": these tags + manifest tell the OS to launch
+     it standalone/fullscreen when opened from that home-screen icon. ── -->
+<meta name="theme-color" content="#0284c7">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Money Tracker">
+<link rel="manifest" href="manifest-moneytracker.json">
+<link rel="apple-touch-icon" href="moneytracker-192.png">
+<link rel="icon" type="image/png" href="icon.png">
+
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 <style>
   /* ── MONEY TRACKER — PAGE-SPECIFIC VARIABLES ── */
   :root {
@@ -37,6 +54,47 @@
     --expense-border: rgba(248,113,113,0.28);
     --accent-glow:    rgba(0,212,255,0.18);
     --card-bg-solid:  #111a2b;
+  }
+
+  /* ── SPLASH SCREEN ──────────────────────────────────────────── */
+  .mt-splash {
+    position: fixed; inset: 0; z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(160deg, #0284c7 0%, #075985 100%);
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+  }
+  [data-theme="dark"] .mt-splash {
+    background: linear-gradient(160deg, #075985 0%, #0c1b2e 100%);
+  }
+  .mt-splash.mt-splash-hide { opacity: 0; visibility: hidden; pointer-events: none; }
+  .mt-splash-inner {
+    display: flex; flex-direction: column; align-items: center; gap: 16px;
+    width: 100%; max-width: 280px; padding: 0 24px;
+  }
+  .mt-splash-title {
+    color: #fff; font-family: var(--font); font-weight: 700; font-size: 1.1rem;
+    letter-spacing: -0.01em;
+  }
+  .mt-splash-progress-track {
+    width: 100%; height: 5px; border-radius: 4px;
+    background: rgba(255,255,255,0.22); overflow: hidden;
+  }
+  .mt-splash-progress-bar {
+    height: 100%; width: 0%; border-radius: 4px;
+    background: #fff; transition: width 0.35s ease;
+  }
+  .mt-splash-credit {
+    display: flex; justify-content: center; gap: 1px;
+    color: rgba(255,255,255,0.85); font-size: 0.74rem; font-weight: 500;
+  }
+  .mt-credit-letter { display: inline-block; opacity: 0; transform: translateY(10px); }
+  .mt-splash-credit.mt-splash-credit-show .mt-credit-letter {
+    animation: mtCreditWave 0.5s ease forwards;
+  }
+  @keyframes mtCreditWave {
+    0%   { opacity: 0; transform: translateY(10px); }
+    55%  { opacity: 1; transform: translateY(-3px); }
+    100% { opacity: 1; transform: translateY(0); }
   }
 
   body {
@@ -912,9 +970,34 @@
 </head>
 <body>
 
+<!-- ── SPLASH SCREEN — shown while Firebase auth/data loads ──────────
+     Progress bar is wired to the real load steps in initApp() below
+     (splashStep() / splashFinish()), not a fake timer — it finishes
+     exactly when data is actually ready. ── -->
+<div id="mtSplash" class="mt-splash">
+  <div class="mt-splash-inner">
+    <lottie-player id="mtSplashLottie" background="transparent" speed="1" loop autoplay style="width:170px;height:170px;"></lottie-player>
+    <script>
+      // Random splash animation each time the page opens — add more filenames
+      // to this array as you download more Lottie JSONs (all in repo root).
+      (function(){
+        var MT_SPLASH_ANIMS = ['loading1.json','loading2.json','loading3.json'];
+        var pick = MT_SPLASH_ANIMS[Math.floor(Math.random()*MT_SPLASH_ANIMS.length)];
+        document.getElementById('mtSplashLottie').setAttribute('src', pick);
+      })();
+    </script>
+    <div class="mt-splash-title">💰 Money Tracker</div>
+    <div class="mt-splash-progress-track">
+      <div class="mt-splash-progress-bar" id="mtSplashBar"></div>
+    </div>
+    <div class="mt-splash-credit" id="mtSplashCredit">Developed by Munan</div>
+  </div>
+</div>
+
 <div class="topbar">
   <div class="topbar-title">💰 Money Tracker</div>
   <div class="topbar-right">
+    <button class="settings-btn" id="fullscreenBtn" onclick="toggleFullscreen()" title="Fullscreen">⛶</button>
     <button class="settings-btn" onclick="openSearch()" title="Search">🔍</button>
     <button class="settings-btn" onclick="openSettings()" title="Settings">⚙️</button>
     <a class="settings-btn home-btn" href="index.html" title="Home">🏠</a>
@@ -1312,6 +1395,86 @@
 // Theme sync — must run before render
 if (localStorage.getItem('theme') === 'dark') {
   document.documentElement.setAttribute('data-theme', 'dark');
+}
+
+// ── Fullscreen toggle (⛶ button) ────────────────────────────────
+// For when the page is opened as a normal browser tab (not installed
+// via "Add to Home Screen"). This can only hide the browser's own
+// nav/toolbar chrome on tap — a page can never auto-hide the address
+// bar itself, that's a browser security rule, not something fixable
+// in code. Installing via "Add to Home Screen" is what gives the true
+// no-address-bar app launch every time (handled by manifest-moneytracker.json).
+function toggleFullscreen(){
+  const btn = document.getElementById('fullscreenBtn');
+  if (!document.fullscreenElement) {
+    const req = document.documentElement.requestFullscreen
+      || document.documentElement.webkitRequestFullscreen
+      || document.documentElement.msRequestFullscreen;
+    if (req) {
+      req.call(document.documentElement).then(()=>{
+        if(btn) btn.textContent = '⛶';
+      }).catch(()=>{
+        showToast('Fullscreen not supported on this browser');
+      });
+    } else {
+      showToast('Fullscreen not supported on this browser');
+    }
+  } else {
+    const exit = document.exitFullscreen
+      || document.webkitExitFullscreen
+      || document.msExitFullscreen;
+    if (exit) exit.call(document);
+  }
+}
+document.addEventListener('fullscreenchange', ()=>{
+  const btn = document.getElementById('fullscreenBtn');
+  if (btn) btn.title = document.fullscreenElement ? 'Exit fullscreen' : 'Fullscreen';
+});
+
+// ── Splash screen control ───────────────────────────────────────
+// splashStep() is called once after each real Firebase load step
+// completes, so the bar reflects actual progress, not a guess.
+// splashFinish() is called once everything is truly ready.
+const MT_SPLASH_TOTAL_STEPS = 4; // loadMonthFromFirestore, loadSettingsRemote, loadLedgerRemote, loadDebtsRemote
+let mtSplashStepCount = 0;
+function wrapCreditLetters(){
+  const el = document.getElementById('mtSplashCredit');
+  if (!el || el.dataset.wrapped) return;
+  const text = el.textContent;
+  el.innerHTML = '';
+  [...text].forEach((ch, i)=>{
+    const span = document.createElement('span');
+    span.className = 'mt-credit-letter';
+    span.textContent = ch === ' ' ? '\u00A0' : ch;
+    span.style.animationDelay = (i * 35) + 'ms';
+    el.appendChild(span);
+  });
+  el.dataset.wrapped = '1';
+}
+wrapCreditLetters();
+function splashStep(){
+  mtSplashStepCount++;
+  const pct = Math.min(100, Math.round((mtSplashStepCount / MT_SPLASH_TOTAL_STEPS) * 100));
+  const bar = document.getElementById('mtSplashBar');
+  if (bar) bar.style.width = pct + '%';
+}
+function splashFinish(){
+  const bar = document.getElementById('mtSplashBar');
+  const credit = document.getElementById('mtSplashCredit');
+  const splash = document.getElementById('mtSplash');
+  if (bar) bar.style.width = '100%';
+  if (credit) credit.classList.add('mt-splash-credit-show');
+  // Hold long enough for the letter-wave to fully ripple through
+  // (last letter delay + its animation length), then a brief beat, then fade.
+  const letterCount = credit ? credit.querySelectorAll('.mt-credit-letter').length : 0;
+  const waveDuration = letterCount ? (letterCount - 1) * 35 + 500 : 550;
+  const holdTime = waveDuration + 150;
+  setTimeout(()=>{
+    if (splash) {
+      splash.classList.add('mt-splash-hide');
+      setTimeout(()=> splash.remove(), 550);
+    }
+  }, holdTime);
 }
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -4437,15 +4600,20 @@ async function initApp(){
       // Load current month + categories/budgets/goal from Firestore, then init UI
       showToast('Loading data…');
       await loadMonthFromFirestore(curYear,curMonth);
+      splashStep();
       await loadSettingsRemote();
+      splashStep();
       await loadLedgerRemote();
+      splashStep();
       await loadDebtsRemote();
+      splashStep();
       renderFieldRows();
       initSelectors();
       const today=new Date();
       const startDay=curYear===today.getFullYear()&&curMonth===today.getMonth()?today.getDate():1;
       navOffset=Math.max(0,startDay-4);
       await selectDay(Math.min(startDay,daysInMonth(curYear,curMonth)));
+      splashFinish();
     });
   } catch(e){
     console.error("Firebase init failed:",e);
@@ -4455,10 +4623,16 @@ async function initApp(){
     const startDay=curYear===today.getFullYear()&&curMonth===today.getMonth()?today.getDate():1;
     navOffset=Math.max(0,startDay-4);
     await selectDay(Math.min(startDay,daysInMonth(curYear,curMonth)));
+    splashFinish();
   }
 }
 
 initApp();
+// Failsafe: never let the splash trap the user if something unexpected fails mid-load
+setTimeout(()=>{
+  const splash = document.getElementById('mtSplash');
+  if (splash && !splash.classList.contains('mt-splash-hide')) splashFinish();
+}, 15000);
 </script>
 <script src="footer.js"></script>
 </body>
