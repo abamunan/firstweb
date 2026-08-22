@@ -363,6 +363,19 @@
   }
   .btn-outline:hover { background: rgba(22,163,74,0.12); box-shadow: 0 4px 16px var(--accent2-glow); }
 
+  .btn-danger {
+    width: 100%; padding: 13px;
+    background: var(--danger);
+    color: #fff; border: none; border-radius: var(--card-radius);
+    font-family: var(--font); font-size: 0.9rem; font-weight: 700;
+    cursor: pointer; transition: var(--trans); margin-bottom: 8px;
+    box-shadow: 0 4px 18px var(--danger-glow);
+    letter-spacing: 0.01em;
+  }
+  .btn-danger:hover { transform: translateY(-2px); box-shadow: 0 8px 28px var(--danger-glow); filter: brightness(1.08); }
+  .btn-danger:active { transform: scale(0.98); }
+  .btn-danger:disabled { opacity: 0.6; cursor: not-allowed; transform: none!important; box-shadow: none!important; }
+
   /* ── VISIBILITY ─────────────────────────────── */
   .hidden { display: none!important; }
   .summary-section { display: none; }
@@ -588,6 +601,21 @@
   }
   .modal-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
   .modal-body { padding: 14px 16px 22px; overflow-y: auto; }
+  /* Centered popup variant (used for Remove All Data confirmation) — appears
+     mid-screen rather than sliding up from the bottom like the other sheets. */
+  .modal-overlay.center { align-items: center; padding: 20px; }
+  .modal-overlay.center .modal-box {
+    border-radius: 20px; border-bottom: 1px solid var(--card-border);
+    animation: modalPop 0.2s ease;
+  }
+  @keyframes modalPop { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .rd-warning-box {
+    background: rgba(220,38,38,0.08); border: 1px solid var(--expense-border);
+    border-radius: 12px; padding: 14px; font-size: 0.84rem; line-height: 1.55;
+    color: var(--text-main); margin-bottom: 18px;
+  }
+  .rd-btn-row { display: flex; gap: 10px; }
+  .rd-btn-row > button { flex: 1 1 0; width: auto; margin-bottom: 0; }
   /* Category detail modal (Summary breakdown row → tap to view entries) */
   .cd-stats { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 8px; margin-bottom: 16px; }
   .cd-stat { border: 1px solid var(--card-border); border-radius: 12px; padding: 11px 12px; background: var(--surface); }
@@ -1219,6 +1247,40 @@
         </label>
         <div class="settings-sub" style="margin-top:22px">Export every entry as a spreadsheet-friendly CSV file — one row per transaction, works in Excel/Sheets</div>
         <button class="btn-primary" onclick="exportAllDataCSV()">📄 Export All Data (CSV)</button>
+        <div class="settings-sub" style="margin-top:22px;color:var(--danger)">⚠️ Permanently erase every day recorded, plus categories, accounts, budgets, goal, ledger and debts — on this device and in the cloud. Make sure you've downloaded a backup first.</div>
+        <button class="btn-danger" onclick="openRemoveDataModal()">🗑️ Remove All Data</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay center" id="removeDataModal">
+  <div class="modal-box" style="max-width:420px">
+    <div class="modal-header">
+      <h3>🗑️ Remove All Data</h3>
+      <button class="modal-close" onclick="closeRemoveDataModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="rd-stage" id="rdStage1">
+        <div class="rd-warning-box">⚠️ <strong>This cannot be undone.</strong><br>This will permanently delete every day you've recorded, all categories, accounts, budgets, the savings goal, ledger entries, and debts/loans — both on this device and in your cloud backup.</div>
+        <div class="rd-btn-row">
+          <button class="btn-outline" onclick="closeRemoveDataModal()">Cancel</button>
+          <button class="btn-danger" onclick="rdShowStage(2)">Agreed</button>
+        </div>
+      </div>
+      <div class="rd-stage" id="rdStage2" style="display:none">
+        <div class="rd-warning-box">You've agreed to permanently erase all stored data. Tap Delete below to continue.</div>
+        <div class="rd-btn-row">
+          <button class="btn-outline" onclick="closeRemoveDataModal()">Cancel</button>
+          <button class="btn-danger" onclick="rdShowStage(3)">🗑️ Delete</button>
+        </div>
+      </div>
+      <div class="rd-stage" id="rdStage3" style="display:none">
+        <div class="rd-warning-box"><strong>Are you sure?</strong><br>All previously stored data will be deleted right now. This is your last chance to back out.</div>
+        <div class="rd-btn-row">
+          <button class="btn-outline" onclick="closeRemoveDataModal()">Cancel</button>
+          <button class="btn-danger" id="rdFinalBtn" onclick="confirmRemoveAllData()">Yes, Delete Everything</button>
+        </div>
       </div>
     </div>
   </div>
@@ -4563,6 +4625,85 @@ function exportAllDataCSV(){
   const csv=rows.map(r=>r.map(csvEscape).join(',')).join('\r\n');
   downloadBlob(csv, 'text/csv;charset=utf-8', `money-tracker-export-${new Date().toISOString().slice(0,10)}.csv`);
   showToast('CSV exported ✓');
+}
+
+// ─── REMOVE ALL DATA (staged confirmation popup) ──────────────────────────────
+function openRemoveDataModal(){
+  rdShowStage(1);
+  document.getElementById('removeDataModal').classList.add('open');
+}
+function closeRemoveDataModal(){
+  document.getElementById('removeDataModal').classList.remove('open');
+  rdShowStage(1); // reset back to the first stage for next time
+}
+function rdShowStage(n){
+  [1,2,3].forEach(i=>{
+    const el=document.getElementById('rdStage'+i);
+    if(el) el.style.display = (i===n) ? 'block' : 'none';
+  });
+}
+async function confirmRemoveAllData(){
+  const btn=document.getElementById('rdFinalBtn');
+  if(btn){ btn.disabled=true; btn.textContent='Deleting…'; }
+  try{
+    // 1) Wipe every recorded day, locally...
+    allDayEntries().forEach(({key})=>localStorage.removeItem(key));
+    invalidateDayEntriesCache();
+
+    // ...and in Firestore, plus the settings/ledger/debts meta docs.
+    if(window._mtAuth && window._mtDb){
+      const uid=window._mtAuth.currentUser?.uid;
+      if(uid){
+        try{
+          const {doc,deleteDoc,collection,getDocs}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+          const col=collection(window._mtDb,"users",uid,"moneytracker");
+          const snap=await getDocs(col);
+          const ids=snap.docs.map(d=>d.id);
+          const BATCH=15;
+          for(let i=0;i<ids.length;i+=BATCH){
+            await Promise.all(ids.slice(i,i+BATCH).map(id=>deleteDoc(doc(window._mtDb,"users",uid,"moneytracker",id))));
+          }
+          await Promise.all([
+            deleteDoc(doc(window._mtDb,"users",uid,"moneytracker_meta","settings")),
+            deleteDoc(doc(window._mtDb,"users",uid,"moneytracker_meta","ledger")),
+            deleteDoc(doc(window._mtDb,"users",uid,"moneytracker_meta","debts"))
+          ]);
+        }catch(e){ console.error('Firestore wipe failed:',e); }
+      }
+    }
+
+    // 2) Reset categories, accounts, goal, ledger and debts back to defaults
+    EXPENSE_FIELDS=DEFAULT_EXPENSE_FIELDS.map(f=>({...f}));
+    INCOME_FIELDS=DEFAULT_INCOME_FIELDS.map(f=>({...f}));
+    ACCOUNTS=DEFAULT_ACCOUNTS.map(a=>({...a}));
+    SAVINGS_GOAL=0;
+    LEDGER=[];
+    DEBTS=[];
+    rebuildAllFields();
+    saveCategoriesLocal();
+    saveGoalLocalOnly();
+    saveAccountsLocal();
+    saveLedgerLocal();
+    saveDebtsLocal();
+
+    // 3) Refresh whatever's currently on screen
+    extraShownIds=new Set();
+    renderFieldRows();
+    renderSettingsLists();
+    loadDay(currentDay);
+    if(document.getElementById('summarySection').classList.contains('active')) renderSummary();
+    if(document.getElementById('yearlySection').classList.contains('active')) renderYearly();
+    if(document.getElementById('insightsSection').classList.contains('active')) renderInsightsTab();
+
+    closeRemoveDataModal();
+    closeSettings();
+    showToast('All data deleted ✓');
+  }catch(err){
+    console.error('Remove all data failed:',err);
+    showToast('Something went wrong — check console','error');
+  }finally{
+    if(btn){ btn.disabled=false; btn.textContent='Yes, Delete Everything'; }
+  }
 }
 
 // ── FIREBASE INIT + AUTH CHECK ──────────────────────────────
