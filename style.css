@@ -6,7 +6,13 @@
 
 /* ── DESIGN TOKENS ─────────────────────────────────────────── */
 :root {
-    --main-bg:    linear-gradient(180deg, #0ea5e9 0%, #bae6fd 50%, #ffffff 100%);
+    --main-bg:
+        radial-gradient(at 12% 8%,  rgba(56,189,248,0.55) 0px, transparent 55%),
+        radial-gradient(at 85% 15%, rgba(168,85,247,0.35) 0px, transparent 55%),
+        radial-gradient(at 78% 78%, rgba(236,72,153,0.30) 0px, transparent 55%),
+        radial-gradient(at 15% 85%, rgba(45,212,191,0.35) 0px, transparent 55%),
+        radial-gradient(at 50% 50%, rgba(14,165,233,0.25) 0px, transparent 60%),
+        linear-gradient(180deg, #e0f2fe 0%, #f0f9ff 45%, #ffffff 100%);
     --card-bg:    rgba(255,255,255,0.55);
     --card-border:rgba(14,165,233,0.25);
     --text-main:  #0f172a;
@@ -18,7 +24,13 @@
 }
 
 [data-theme="dark"] {
-    --main-bg:    linear-gradient(180deg, #020617 0%, #030816 40%, #0c1a33 100%);
+    --main-bg:
+        radial-gradient(at 10% 10%, rgba(0,212,255,0.28) 0px, transparent 50%),
+        radial-gradient(at 88% 12%, rgba(168,85,247,0.28) 0px, transparent 50%),
+        radial-gradient(at 80% 82%, rgba(236,72,153,0.20) 0px, transparent 50%),
+        radial-gradient(at 12% 82%, rgba(45,212,191,0.22) 0px, transparent 50%),
+        radial-gradient(at 50% 50%, rgba(2,6,23,0.6) 0px, transparent 65%),
+        linear-gradient(180deg, #020617 0%, #030816 45%, #0c1a33 100%);
     --card-bg:    rgba(255,255,255,0.07);
     --card-border:rgba(0,212,255,0.18);
     --text-main:  #f1f5f9;
@@ -48,10 +60,10 @@ body {
 .blobs { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
 .blob  { position: absolute; border-radius: 50%; filter: blur(90px); opacity: .32; animation: drift 9s ease-in-out infinite alternate; }
 .blob-1 { width: 560px; height: 560px; background: #7dd3fc; top: -160px; left: -120px; }
-.blob-2 { width: 440px; height: 440px; background: #bae6fd; top: 35%; right: -100px; animation-delay: -3s; }
-.blob-3 { width: 360px; height: 360px; background: #e0f2fe; bottom: -80px; left: 30%; animation-delay: -6s; }
+.blob-2 { width: 440px; height: 440px; background: #d8b4fe; top: 35%; right: -100px; animation-delay: -3s; }
+.blob-3 { width: 360px; height: 360px; background: #99f6e4; bottom: -80px; left: 30%; animation-delay: -6s; }
 [data-theme="dark"] .blob-1 { background: #0c1a33; }
-[data-theme="dark"] .blob-2 { background: #030816; }
+[data-theme="dark"] .blob-2 { background: #2e1065; }
 [data-theme="dark"] .blob-3 { background: #0f2847; }
 @keyframes drift { from { transform: translate(0,0) scale(1); } to { transform: translate(25px,18px) scale(1.07); } }
 
