@@ -6,12 +6,16 @@
 
 /* ── DESIGN TOKENS ─────────────────────────────────────────── */
 :root {
+    /* Mouse-reactive offset, updated by theme.js (in %, defaults to 0 = centered) */
+    --mx: 0%;
+    --my: 0%;
+
     --main-bg:
-        radial-gradient(at 12% 8%,  rgba(56,189,248,0.55) 0px, transparent 55%),
-        radial-gradient(at 85% 15%, rgba(168,85,247,0.35) 0px, transparent 55%),
-        radial-gradient(at 78% 78%, rgba(236,72,153,0.30) 0px, transparent 55%),
-        radial-gradient(at 15% 85%, rgba(45,212,191,0.35) 0px, transparent 55%),
-        radial-gradient(at 50% 50%, rgba(14,165,233,0.25) 0px, transparent 60%),
+        radial-gradient(at calc(12% + var(--mx)) calc(8% + var(--my)),  rgba(56,189,248,0.55) 0px, transparent 55%),
+        radial-gradient(at calc(85% + var(--mx)) calc(15% + var(--my)), rgba(168,85,247,0.35) 0px, transparent 55%),
+        radial-gradient(at calc(78% + var(--mx)) calc(78% + var(--my)), rgba(236,72,153,0.30) 0px, transparent 55%),
+        radial-gradient(at calc(15% + var(--mx)) calc(85% + var(--my)), rgba(45,212,191,0.35) 0px, transparent 55%),
+        radial-gradient(at calc(50% + var(--mx)) calc(50% + var(--my)), rgba(14,165,233,0.25) 0px, transparent 60%),
         linear-gradient(180deg, #e0f2fe 0%, #f0f9ff 45%, #ffffff 100%);
     --card-bg:    rgba(255,255,255,0.55);
     --card-border:rgba(14,165,233,0.25);
@@ -25,11 +29,11 @@
 
 [data-theme="dark"] {
     --main-bg:
-        radial-gradient(at 10% 10%, rgba(0,212,255,0.28) 0px, transparent 50%),
-        radial-gradient(at 88% 12%, rgba(168,85,247,0.28) 0px, transparent 50%),
-        radial-gradient(at 80% 82%, rgba(236,72,153,0.20) 0px, transparent 50%),
-        radial-gradient(at 12% 82%, rgba(45,212,191,0.22) 0px, transparent 50%),
-        radial-gradient(at 50% 50%, rgba(2,6,23,0.6) 0px, transparent 65%),
+        radial-gradient(at calc(10% + var(--mx)) calc(10% + var(--my)), rgba(0,212,255,0.28) 0px, transparent 50%),
+        radial-gradient(at calc(88% + var(--mx)) calc(12% + var(--my)), rgba(168,85,247,0.28) 0px, transparent 50%),
+        radial-gradient(at calc(80% + var(--mx)) calc(82% + var(--my)), rgba(236,72,153,0.20) 0px, transparent 50%),
+        radial-gradient(at calc(12% + var(--mx)) calc(82% + var(--my)), rgba(45,212,191,0.22) 0px, transparent 50%),
+        radial-gradient(at calc(50% + var(--mx)) calc(50% + var(--my)), rgba(2,6,23,0.6) 0px, transparent 65%),
         linear-gradient(180deg, #020617 0%, #030816 45%, #0c1a33 100%);
     --card-bg:    rgba(255,255,255,0.07);
     --card-border:rgba(0,212,255,0.18);
@@ -50,10 +54,24 @@ body {
     background-attachment: fixed;
     color: var(--text-main);
     font-family: 'Poppins', 'Hind Siliguri', sans-serif;
-    transition: background .5s ease, color .3s ease;
+    transition: background-color .5s ease, color .3s ease;
     line-height: 1.6;
     font-size: 14px;
     -webkit-font-smoothing: antialiased;
+    animation: meshDrift 22s ease-in-out infinite alternate;
+}
+
+/* Slow, continuous auto color-shift — nudges the mesh centers over time.
+   Combines additively with the mouse-reactive --mx/--my offset above,
+   since both ultimately just move the calc() positions. */
+@keyframes meshDrift {
+    0%   { filter: hue-rotate(0deg) saturate(1); }
+    50%  { filter: hue-rotate(8deg) saturate(1.08); }
+    100% { filter: hue-rotate(-6deg) saturate(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body { animation: none; }
 }
 
 /* ── BACKGROUND BLOBS ──────────────────────────────────────── */
