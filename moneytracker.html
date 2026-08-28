@@ -994,6 +994,108 @@
   .sr-note { font-size: 0.74rem; color: var(--text-soft); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .sr-date { font-size: 0.68rem; color: var(--text-soft); margin-top: 2px; }
   .sr-thumb { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; border: 1px solid var(--card-border); flex-shrink: 0; }
+
+  /* ══════════════════════════════════════════════════════════════════
+     DESKTOP LAYOUT — everything below only applies at ≥900px.
+     Mobile (below 900px) is completely untouched by this block.
+     ══════════════════════════════════════════════════════════════════ */
+  @media (min-width: 900px) {
+
+    /* Left sidebar nav instead of bottom nav */
+    body { padding-left: 220px; padding-bottom: 0; }
+    .bottom-nav {
+      top: 0; bottom: 0; left: 0; right: auto; width: 220px;
+      flex-direction: column; align-items: stretch;
+      border-top: none; border-right: 1px solid var(--card-border);
+      box-shadow: 4px 0 24px rgba(0,0,0,0.06);
+      padding-top: 22px; gap: 2px;
+    }
+    .bnav-btn {
+      flex: none; flex-direction: row; justify-content: flex-start;
+      gap: 12px; padding: 13px 22px; font-size: 0.86rem;
+    }
+    .bnav-btn::before {
+      top: 0; bottom: 0; left: 0; right: auto;
+      width: 3px; height: auto;
+    }
+    .bnav-btn .icon { font-size: 1.25rem; }
+    .toast { bottom: 26px; }
+
+    /* Wider content column, more breathing room */
+    .main { max-width: 1080px; padding: 22px 28px; }
+    .day-header h2 { font-size: 1.4rem; }
+
+    /* Day view: expenses + income side by side */
+    .day-cards-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start;
+    }
+    .day-cards-grid .section-card { margin-bottom: 0; }
+    .section-card:hover { transform: translateY(-2px); }
+
+    /* Monthly/Yearly summary cards — 3 columns instead of 2 */
+    .summary-grid, .yearly-grid { grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .sum-card .sc-val { font-size: 1.3rem; }
+
+    /* Accounts / Debts / Budgets panels side by side */
+    .summary-panels-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; align-items: start;
+    }
+    .summary-panels-grid .section-title { margin-top: 0; }
+    .summary-panels-grid-2 { grid-template-columns: 1fr 1fr; }
+
+    /* Charts side by side */
+    .charts-grid-2 {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start;
+    }
+    .charts-grid-2 .section-title { margin-top: 0; }
+    .chart-card { height: 260px; }
+
+    /* Day-by-day / month-by-month lists — 2 columns */
+    #dailyList, #monthlyBreakdown, #breakdownList, #yearlyCatBreakdown {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    }
+    #dailyList .daily-row, #monthlyBreakdown .month-row, #breakdownList .breakdown-row { margin-bottom: 0; }
+    #dailyList > div:only-child, #monthlyBreakdown > div:only-child,
+    #breakdownList > div:only-child, #yearlyCatBreakdown > div:only-child { grid-column: 1/-1; }
+
+    /* Modals — centered, roomier, not a bottom sheet */
+    .modal-overlay { align-items: center; padding: 24px; }
+    .modal-overlay .modal-box {
+      border-radius: 20px; border-bottom: 1px solid var(--card-border);
+      animation: modalPop 0.2s ease;
+    }
+    .modal-box { max-width: 640px; max-height: 82vh; }
+    .modal-header h3 { font-size: 1.05rem; }
+    .modal-body { padding: 18px 22px 26px; }
+
+    /* Settings modal — tabs become a left sidebar inside the modal */
+    #settingsModal .modal-box {
+      max-width: 760px;
+      display: grid;
+      grid-template-columns: 190px 1fr;
+      grid-template-rows: auto 1fr;
+      grid-template-areas: "header header" "tabs body";
+      max-height: 78vh;
+    }
+    #settingsModal .modal-header { grid-area: header; }
+    #settingsModal .modal-tabs {
+      grid-area: tabs; flex-direction: column;
+      border-bottom: none; border-right: 1px solid var(--card-border);
+      padding: 10px 0; overflow-y: auto;
+    }
+    #settingsModal .modal-tab {
+      text-align: left; padding: 11px 18px;
+      border-bottom: none; border-left: 2px solid transparent;
+    }
+    #settingsModal .modal-tab.active { border-left-color: var(--accent); background: var(--surface); }
+    #settingsModal .modal-body { grid-area: body; }
+
+    /* Slightly roomier touch targets now that we're on a mouse, not a thumb */
+    .field-row { padding: 11px 18px; }
+    .field-label { font-size: 0.86rem; }
+    .btn-primary, .btn-danger { padding: 14px; font-size: 0.94rem; cursor: pointer; }
+    .breakdown-row:hover, .daily-row:hover, .month-row:hover { cursor: pointer; }
+  }
 </style>
 </head>
 <body>
@@ -1056,6 +1158,7 @@
       <span id="dayLockText">Unlocked — tap to lock</span>
     </div>
     <div id="dayEntryArea">
+    <div class="day-cards-grid">
     <div class="section-card">
       <div class="section-head expense">💸 EXPENSES</div>
       <div id="expenseFieldsContainer"></div>
@@ -1067,6 +1170,7 @@
       <div id="incomeFieldsContainer"></div>
       <div class="add-cat-link" onclick="openAddFieldModal('income')">➕ Add / Remove income sources</div>
       <div class="total-row inc"><span>Total Income</span><span id="totalInc">৳ 0</span></div>
+    </div>
     </div>
     <div class="net-card positive" id="netCard">
       <div class="net-label">Daily Balance (Income − Expense)</div>
@@ -1092,20 +1196,34 @@
     </div>
     <div id="budgetAlertBanner"></div>
     <div id="goalCardContainer"></div>
+    <div class="summary-panels-grid">
+    <div>
     <div class="section-title">Accounts</div>
     <div id="accountListSummary"></div>
     <div class="export-row">
       <button class="btn-excel" onclick="exportMonthExcel()">📊 Excel</button>
       <button class="btn-pdf" onclick="exportMonthPDF()">📄 PDF</button>
     </div>
+    </div>
+    <div>
     <div class="section-title">Debts / Loans</div>
     <div id="debtsSummary"></div>
+    </div>
+    <div>
     <div class="section-title">Budgets</div>
     <div id="budgetListSummary"></div>
+    </div>
+    </div>
+    <div class="charts-grid-2">
+    <div>
     <div class="section-title">Daily Trend</div>
     <div class="chart-card"><canvas id="dailyBarChart"></canvas></div>
+    </div>
+    <div>
     <div class="section-title">Expense Curve</div>
     <div class="chart-card"><canvas id="dailyAreaChart"></canvas></div>
+    </div>
+    </div>
     <div class="section-title">Category Breakdown</div>
     <div class="chart-card"><canvas id="categoryPieChart"></canvas></div>
     <div id="breakdownList"></div>
@@ -1126,14 +1244,20 @@
       <div class="yr-card inc-c"><div class="yc-label">Total Income</div><div class="yc-val" id="yrTotalInc">৳ 0</div></div>
       <div class="yr-card full"><div class="yc-label">Net Balance</div><div class="yc-val" id="yrNet">৳ 0</div></div>
     </div>
+    <div class="summary-panels-grid summary-panels-grid-2">
+    <div>
     <div class="section-title">Accounts</div>
     <div id="accountListSummaryYear"></div>
     <div class="export-row">
       <button class="btn-excel" onclick="exportYearExcel()">📊 Excel</button>
       <button class="btn-pdf" onclick="exportYearPDF()">📄 PDF</button>
     </div>
+    </div>
+    <div>
     <div class="section-title">Debts / Loans</div>
     <div id="debtsSummaryYear"></div>
+    </div>
+    </div>
     <div class="section-title">Monthly Trend</div>
     <div class="chart-card"><canvas id="yearlyBarChart"></canvas></div>
     <div class="section-title">Monthly Breakdown</div>
@@ -4446,6 +4570,7 @@ function pdfStyle(){
     .chart-nodata{color:#999;font-size:11px;text-align:center;padding:10px;border:1px dashed #dde;border-radius:6px;margin-bottom:12px;}
     .pdf-chart-wrap{border:1px solid #dde;border-radius:8px;padding:10px;margin-bottom:16px;text-align:center;background:#fff;}
     .pdf-chart-wrap img{width:100%;max-width:650px;}
+
     .day-block{margin-bottom:14px;}
     .day-block-head{background:#eef4fb;color:#1E3A5F;font-weight:700;padding:6px 10px;font-size:11px;border:1px solid #dde;border-bottom:none;border-radius:4px 4px 0 0;}
     .day-block table{margin-bottom:0;border:1px solid #dde;border-top:none;table-layout:fixed;}
