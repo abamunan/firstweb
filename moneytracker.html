@@ -1001,26 +1001,6 @@
      ══════════════════════════════════════════════════════════════════ */
   @media (min-width: 900px) {
 
-    /* Left sidebar nav instead of bottom nav */
-    body { padding-left: 220px; padding-bottom: 0; }
-    .bottom-nav {
-      top: 0; bottom: 0; left: 0; right: auto; width: 220px;
-      flex-direction: column; align-items: stretch;
-      border-top: none; border-right: 1px solid var(--card-border);
-      box-shadow: 4px 0 24px rgba(0,0,0,0.06);
-      padding-top: 22px; gap: 2px;
-    }
-    .bnav-btn {
-      flex: none; flex-direction: row; justify-content: flex-start;
-      gap: 12px; padding: 13px 22px; font-size: 0.86rem;
-    }
-    .bnav-btn::before {
-      top: 0; bottom: 0; left: 0; right: auto;
-      width: 3px; height: auto;
-    }
-    .bnav-btn .icon { font-size: 1.25rem; }
-    .toast { bottom: 26px; }
-
     /* Wider content column, more breathing room */
     .main { max-width: 1080px; padding: 22px 28px; }
     .day-header h2 { font-size: 1.4rem; }
