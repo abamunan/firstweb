@@ -583,16 +583,17 @@
   /* ── SETTINGS MODAL ─────────────────────────────────────────── */
   .modal-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.08);
-    z-index: 300; display: none; align-items: flex-end; justify-content: center;
+    z-index: 300; display: none; align-items: center; justify-content: center;
+    padding: 20px;
   }
   .modal-overlay.open { display: flex; }
   .modal-box {
     background: var(--card-bg-solid, var(--card-bg)); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
-    border: 1px solid var(--card-border); border-bottom: none;
-    border-radius: 20px 20px 0 0; width: 100%; max-width: 500px; max-height: 85vh;
+    border: 1px solid var(--card-border);
+    border-radius: 20px; width: 100%; max-width: 500px; max-height: 85vh;
     display: flex; flex-direction: column;
-    box-shadow: 0 -8px 40px rgba(0,0,0,0.25);
-    animation: modalUp 0.25s ease;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+    animation: modalPop 0.2s ease;
   }
   @keyframes modalUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
   .modal-header {
@@ -1044,9 +1045,11 @@
     .main { max-width: 1080px; padding: 22px 28px; }
     .day-header h2 { font-size: 1.4rem; }
 
-    /* Day view: expenses + income side by side */
+    /* Day view: expenses + income side by side — auto-fit so a column never
+       gets squished; drops to a single column if the viewport is too narrow */
     .day-cards-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 18px; align-items: start;
     }
     .day-cards-grid .section-card { margin-bottom: 0; }
     .section-card:hover { transform: translateY(-2px); }
@@ -1064,32 +1067,27 @@
 
     /* Accounts / Debts / Budgets panels side by side */
     .summary-panels-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: start;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; align-items: start;
     }
     .summary-panels-grid .section-title { margin-top: 0; }
-    .summary-panels-grid-2 { grid-template-columns: 1fr 1fr; }
+    .summary-panels-grid-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
 
     /* Charts side by side */
     .charts-grid-2 {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 16px; align-items: start;
     }
     .charts-grid-2 .section-title { margin-top: 0; }
     .chart-card { height: 260px; }
 
     /* Day-by-day / month-by-month lists — 2 columns */
     #dailyList, #monthlyBreakdown, #breakdownList, #yearlyCatBreakdown {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 8px;
     }
     #dailyList .daily-row, #monthlyBreakdown .month-row, #breakdownList .breakdown-row { margin-bottom: 0; }
     #dailyList > div:only-child, #monthlyBreakdown > div:only-child,
     #breakdownList > div:only-child, #yearlyCatBreakdown > div:only-child { grid-column: 1/-1; }
 
-    /* Modals — centered, roomier, not a bottom sheet */
-    .modal-overlay { align-items: center; padding: 24px; }
-    .modal-overlay .modal-box {
-      border-radius: 20px; border-bottom: 1px solid var(--card-border);
-      animation: modalPop 0.2s ease;
-    }
+    /* Modals — roomier on desktop */
     .modal-box { max-width: 640px; max-height: 82vh; }
     .modal-header h3 { font-size: 1.05rem; }
     .modal-body { padding: 18px 22px 26px; }
