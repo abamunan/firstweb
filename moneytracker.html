@@ -129,6 +129,18 @@
   .settings-btn:hover { border-color: var(--accent); color: var(--accent); transform: rotate(20deg); }
   .home-btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; line-height: 1; }
   .home-btn:hover { transform: scale(1.1) !important; }
+  .menu-toggle-btn {
+    display: none; background: var(--card-bg); border: 1px solid var(--card-border);
+    border-radius: 8px; color: var(--text-soft);
+    font-size: 1rem; cursor: pointer; padding: 6px 10px; flex-shrink: 0;
+    backdrop-filter: blur(8px); transition: var(--trans);
+  }
+  .menu-toggle-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .nav-drawer-backdrop {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+    z-index: 240; opacity: 0; transition: opacity 0.2s ease;
+  }
+  .nav-drawer-backdrop.open { display: block; opacity: 1; }
   .month-bar {
     display: flex; justify-content: center;
     padding: 10px 14px;
@@ -1001,6 +1013,33 @@
      ══════════════════════════════════════════════════════════════════ */
   @media (min-width: 900px) {
 
+    /* Hamburger menu + slide-out nav drawer (Daily/Monthly/Yearly/Insights + date picker) */
+    .menu-toggle-btn { display: inline-flex; align-items: center; justify-content: center; }
+    .bottom-nav {
+      position: fixed; top: 0; bottom: 0; left: 0; width: 250px;
+      transform: translateX(-100%);
+      transition: transform 0.25s ease;
+      flex-direction: column; align-items: stretch;
+      border-top: none; border-right: 1px solid var(--card-border);
+      box-shadow: 4px 0 32px rgba(0,0,0,0.2);
+      padding: 0 0 16px; gap: 2px;
+      z-index: 250; overflow-y: auto;
+    }
+    .bottom-nav.open { transform: translateX(0); }
+    .bnav-btn {
+      flex: none; flex-direction: row; justify-content: flex-start;
+      gap: 12px; padding: 13px 22px; font-size: 0.86rem;
+    }
+    .bnav-btn::before { top: 0; bottom: 0; left: 0; right: auto; width: 3px; height: auto; }
+    .bnav-btn .icon { font-size: 1.25rem; }
+    .month-bar.in-drawer {
+      justify-content: flex-start; padding: 16px 18px;
+      border-bottom: 1px solid var(--card-border); border-radius: 0;
+      margin-bottom: 6px; background: transparent;
+    }
+    .month-bar.in-drawer .month-selector { width: 100%; }
+    .month-bar.in-drawer select { flex: 1; }
+
     /* Wider content column, more breathing room */
     .main { max-width: 1080px; padding: 22px 28px; }
     .day-header h2 { font-size: 1.4rem; }
@@ -1112,6 +1151,7 @@
 </div>
 
 <div class="topbar">
+  <button class="menu-toggle-btn" id="menuToggleBtn" onclick="toggleNavDrawer()" title="Menu">☰</button>
   <div class="topbar-title">💰 Money Tracker</div>
   <div class="topbar-right">
     <button class="settings-btn" id="fullscreenBtn" onclick="toggleFullscreen()" title="Fullscreen">⛶</button>
@@ -1121,6 +1161,9 @@
   </div>
 </div>
 
+<div class="nav-drawer-backdrop" id="navDrawerBackdrop" onclick="closeNavDrawer()"></div>
+
+<div id="monthBarAnchor"></div>
 <div class="month-bar">
   <div class="month-selector">
     <select id="yearSel" onchange="onMonthChange()"></select>
@@ -1552,7 +1595,7 @@
   </div>
 </div>
 
-<div class="bottom-nav">
+<div class="bottom-nav" id="bottomNav">
   <button class="bnav-btn active" id="bnav-day" onclick="switchView('day')"><span class="icon">📝</span>Daily</button>
 
   <button class="bnav-btn" id="bnav-summary" onclick="switchView('summary')"><span class="icon">📊</span>Monthly</button>
@@ -2697,7 +2740,42 @@ function switchView(view){
   if(view==='summary') renderSummary();
   if(view==='yearly') renderYearly();
   if(view==='insights') renderInsightsTab();
+  closeNavDrawer();
 }
+
+// ─── Desktop nav drawer (Daily/Monthly/Yearly/Insights slide-out menu) ──────
+function toggleNavDrawer(){
+  const d=document.getElementById('bottomNav'), b=document.getElementById('navDrawerBackdrop');
+  if(!d||!b) return;
+  d.classList.toggle('open');
+  b.classList.toggle('open');
+}
+function closeNavDrawer(){
+  const d=document.getElementById('bottomNav'), b=document.getElementById('navDrawerBackdrop');
+  if(!d||!b) return;
+  d.classList.remove('open');
+  b.classList.remove('open');
+}
+function layoutNavForWidth(){
+  const drawer=document.getElementById('bottomNav');
+  const monthBar=document.querySelector('.month-bar');
+  const anchor=document.getElementById('monthBarAnchor');
+  if(!drawer||!monthBar||!anchor) return;
+  if(window.innerWidth>=900){
+    if(monthBar.parentElement!==drawer){
+      drawer.insertBefore(monthBar, drawer.firstElementChild);
+      monthBar.classList.add('in-drawer');
+    }
+  } else {
+    if(monthBar.previousElementSibling!==anchor){
+      anchor.parentElement.insertBefore(monthBar, anchor.nextSibling);
+      monthBar.classList.remove('in-drawer');
+    }
+    closeNavDrawer();
+  }
+}
+window.addEventListener('resize', layoutNavForWidth);
+layoutNavForWidth();
 
 // ─── SEARCH (notes + transactions across every saved day) ───────────────────
 function openSearch(){
