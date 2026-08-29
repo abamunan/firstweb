@@ -1054,21 +1054,23 @@
        gets squished; drops to a single column if the viewport is too narrow */
     .day-cards-grid {
       display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-      gap: 18px; align-items: start;
+      gap: 16px; align-items: start; margin-bottom: 16px;
     }
     .day-cards-grid .section-card { margin-bottom: 0; }
     .section-card:hover { transform: translateY(-2px); }
 
     /* Monthly/Yearly summary cards — keep 2 columns (3rd would sit empty since
        there's only 2 real cards + 1 full-width one), just make them roomier */
-    .summary-grid, .yearly-grid { gap: 12px; margin-bottom: 12px; }
+    .summary-grid, .yearly-grid { gap: 16px; margin-bottom: 16px; }
     .sum-card, .yr-card { padding: 18px 14px; }
     .sum-card .sc-val { font-size: 1.3rem; }
 
-    /* Tighter, consistent vertical rhythm between blocks on desktop */
-    .section-title { margin: 12px 0 8px; }
-    #budgetAlertBanner, #goalCardContainer { margin-bottom: 10px; }
-    .summary-panels-grid, .charts-grid-2 { margin-bottom: 4px; }
+    /* Tighter, consistent vertical rhythm between blocks on desktop —
+       same 16px gap/margin used everywhere so nothing ever looks merged
+       or uneven when the two side-by-side boxes have different heights */
+    .section-title { margin: 16px 0 8px; }
+    #budgetAlertBanner, #goalCardContainer { margin-bottom: 16px; }
+    .summary-panels-grid, .charts-grid-2 { margin-bottom: 16px; }
 
     /* Accounts / Debts / Budgets panels side by side */
     .summary-panels-grid {
@@ -1086,7 +1088,7 @@
 
     /* Day-by-day / month-by-month lists — 2 columns */
     #dailyList, #monthlyBreakdown, #breakdownList, #yearlyCatBreakdown {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 8px;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;
     }
     #dailyList .daily-row, #monthlyBreakdown .month-row, #breakdownList .breakdown-row { margin-bottom: 0; }
     #dailyList > div:only-child, #monthlyBreakdown > div:only-child,
