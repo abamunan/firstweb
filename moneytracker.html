@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="mt-splash-lock">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -57,12 +57,17 @@
   }
 
   /* ── SPLASH SCREEN ──────────────────────────────────────────── */
+  html.mt-splash-lock, html.mt-splash-lock body { overflow: hidden; height: 100%; }
   .mt-splash {
-    position: fixed; inset: 0; z-index: 9999;
+    position: fixed; top: 0; right: 0; bottom: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 9999;
     display: flex; align-items: center; justify-content: center;
     background: linear-gradient(160deg, #0284c7 0%, #075985 100%);
     transition: opacity 0.5s ease, visibility 0.5s ease;
+    overflow: hidden;
   }
+  dotlottie-wc { display: block; }
   [data-theme="dark"] .mt-splash {
     background: linear-gradient(160deg, #075985 0%, #0c1b2e 100%);
   }
@@ -1686,6 +1691,7 @@ function splashFinish(){
   setTimeout(()=>{
     if (splash) {
       splash.classList.add('mt-splash-hide');
+      document.documentElement.classList.remove('mt-splash-lock');
       setTimeout(()=> splash.remove(), 550);
     }
   }, holdTime);
