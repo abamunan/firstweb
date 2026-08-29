@@ -71,6 +71,33 @@
         .project-btn { display:inline-flex; align-items:center; gap:6px; background:var(--accent); color:#fff; border-radius:20px; padding:7px 16px; font-size:.72rem; font-weight:700; text-decoration:none; transition:var(--trans); align-self:flex-start; margin-top:2px; }
         .project-btn:hover { background:#0284c7; transform:translateX(2px); }
 
+        /* ── ACADEMIC SECTION ─── */
+        .academic-section { position:relative; z-index:1; max-width:1100px; margin:0 auto; padding:10px 5% 30px; }
+        .academic-wrapper {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 28px 28px 22px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 32px rgba(2,132,199,.08);
+            position: relative;
+            overflow: hidden;
+        }
+        .academic-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #16a34a, #4ade80, #0ea5e9, #4ade80, #16a34a);
+            background-size: 200%;
+            animation: shimmer 3s linear infinite;
+        }
+        .academic-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+        .academic-title { display:flex; align-items:center; gap:10px; font-size:1.15rem; font-weight:800; letter-spacing:-.02em; }
+        .academic-title i { color:var(--accent); }
+        .academic-subtitle { font-size:.75rem; color:var(--text-soft); font-weight:400; margin-left:4px; opacity:.7; }
+        .academic-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; }
+
         /* Blog preview */
         .blog-section { position:relative; z-index:1; max-width:1100px; margin:0 auto; padding:40px 5% 20px; }
         .blog-section-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; }
@@ -136,6 +163,9 @@
             .projects-section { padding:10px 4% 24px; }
             .projects-wrapper { padding:20px 16px 18px; border-radius:18px; }
             .projects-grid { grid-template-columns:1fr; }
+            .academic-section { padding:10px 4% 24px; }
+            .academic-wrapper { padding:20px 16px 18px; border-radius:18px; }
+            .academic-grid { grid-template-columns:1fr; }
         }
     </style>
 </head>
@@ -315,6 +345,39 @@
     </section>
 
     <!-- Blog Preview -->
+    <section class="academic-section">
+        <div class="academic-wrapper">
+            <div class="academic-header">
+                <div class="academic-title">
+                    <i class="fas fa-graduation-cap"></i>
+                    Academic
+                    <span class="academic-subtitle">— study notes</span>
+                </div>
+            </div>
+            <div class="academic-grid">
+
+                <div class="project-card" style="animation-delay:.05s">
+                    <div class="project-card-top">
+                        <div class="project-icon" style="background:linear-gradient(135deg,#16a34a,#4ade80)">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <div class="project-info">
+                            <div class="project-name">View Notes</div>
+                            <div class="project-desc">PDF study notes by subject — read online with bookmarks, a focus timer, and dark/sepia reading modes.</div>
+                        </div>
+                    </div>
+                    <div class="project-tags">
+                        <span class="project-tag">Study</span>
+                        <span class="project-tag">PDF</span>
+                        <span class="project-tag">Notes</span>
+                    </div>
+                    <a href="notes.html" class="project-btn">Browse <i class="fas fa-arrow-right" style="font-size:.6rem;"></i></a>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
     <section class="blog-section">
         <div class="blog-section-header">
             <div class="blog-section-title"><i class="fas fa-pen-nib"></i> Latest from the Blog</div>

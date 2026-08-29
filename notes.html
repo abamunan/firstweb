@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Munan's study notes — PDF notes by subject, read online with bookmarks and a focus timer." />
+  <meta name="theme-color" content="#4ade80" />
+  <title>Study Notes — Munan</title>
+  <link rel="icon" type="image/png" href="icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <!-- Shared theme logic — blocking, must run before first paint -->
+  <script src="theme.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ╔══════════════════════════════════════════════════════╗ -->
+<!-- ║  ✏️  YOUR NOTES LIST — ONLY EDIT THIS SECTION        ║ -->
+<!-- ║  ADD    → copy one line inside its subject group, or ║ -->
+<!-- ║           start a new subject group                  ║ -->
+<!-- ║  REMOVE → delete the whole { ... } line               ║ -->
+<!-- ║  src can be a full Google Drive link or just the      ║ -->
+<!-- ║  file ID — both work.                                 ║ -->
+<!-- ╚══════════════════════════════════════════════════════╝ -->
+<script>
+const NOTE_SUBJECTS = [
+
+  {
+    subject: "ICT",
+    level: "Intermediate",
+    icon: "fa-solid fa-microchip",
+    color: "#16a34a",
+    notes: [
+      {
+        title: "ICT পূর্ণ সিলাবাস নোট",
+        desc: "HSC/Intermediate ICT এর সম্পূর্ণ সিলাবাস কভার করা নোট — সব অধ্যায়ের গুরুত্বপূর্ণ টপিক, সংজ্ঞা ও উদাহরণসহ।",
+        src: "https://drive.google.com/file/d/1Qod88YiLFRdS-52HhsRWVIuu-kdSgwoy/view",
+      },
+    ],
+  },
+
+  /*
+  ┌──────────────────────────────────────────────────────┐
+  │  ADD A NEW SUBJECT GROUP → copy this block:           │
+  │  {                                                     │
+  │    subject: "", level: "", icon: "fa-solid fa-book",  │
+  │    color: "#0284c7",                                   │
+  │    notes: [                                            │
+  │      { title: "", desc: "", src: "" },                │
+  │    ],                                                  │
+  │  },                                                    │
+  └──────────────────────────────────────────────────────┘
+  */
+
+]; // ← do not delete
+</script>
+<!-- ══════════════════════════════════════════════════════ -->
+
+
+<!-- Background blobs (using style.css blob classes) -->
+<div class="blobs" aria-hidden="true">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+</div>
+
+<!-- Navbar -->
+<nav class="navbar" id="navbar">
+  <div class="nav-logo">Munan<span>.hub</span></div>
+  <a href="index.html" class="back-btn">
+    <span class="back-icon"><i class="fa-solid fa-arrow-left"></i></span>
+    <span class="back-label">Home</span>
+  </a>
+</nav>
+
+<!-- Page -->
+<div class="page">
+
+  <header>
+    <div class="notes-badge"><i class="fa-solid fa-graduation-cap"></i> Academic</div>
+    <h1>Study <span>Notes</span></h1>
+    <p class="sub">PDF notes by subject — read online with bookmarks and a focus timer.</p>
+    <div class="search-wrap">
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input id="q" type="text" placeholder="Search notes…" autocomplete="off" />
+        <span id="cnt"></span>
+      </div>
+    </div>
+  </header>
+
+  <div id="subjects"></div>
+
+</div>
+
+
+<style>
+/* ================================================================
+   notes.html — Page-specific styles only
+   Shared styles (reset, body, blobs, navbar, animations, footer)
+   come from style.css
+   ================================================================ */
+
+/* ── PAGE-SPECIFIC TOKENS ────────────────────────────────────── */
+:root {
+  --notes-card-bg : rgba(255,255,255,.72);
+  --notes-card-bdr: rgba(190,242,210,.72);
+  --text          : #1a2535;
+  --text-mid      : #4a5a72;
+  --text-soft-t   : #7a8fa8;
+  --notes-accent  : #16a34a;
+  --radius        : 18px;
+}
+[data-theme="dark"] {
+  --notes-card-bg : rgba(255,255,255,.07);
+  --notes-card-bdr: rgba(74,222,128,.18);
+  --text          : #f1f5f9;
+  --text-mid      : #cbd5e1;
+  --text-soft-t   : #94a3b8;
+  --notes-accent  : #4ade80;
+}
+
+/* ── BODY OVERRIDES ──────────────────────────────────────────── */
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-height: 100vh;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ── NAVBAR OVERRIDES (back-btn custom icon) ─────────────────── */
+.back-btn {
+  border-radius: 12px;
+  padding: 7px 16px 7px 10px;
+  gap: 10px;
+}
+.back-icon {
+  width: 28px; height: 28px; border-radius: 7px;
+  background: linear-gradient(135deg,#4ade80,#16a34a);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: .78rem;
+  box-shadow: 0 2px 6px rgba(22,163,74,.35);
+  flex-shrink: 0; transition: var(--trans);
+}
+.back-btn:hover .back-icon { transform: translateX(-2px); }
+.back-label {
+  font-family: 'Sora', sans-serif; font-size: .82rem;
+  font-weight: 700; color: var(--text);
+}
+[data-theme="dark"] .back-label { color: var(--text-main); }
+
+/* ── PAGE WRAPPER ────────────────────────────────────────────── */
+.page {
+  position: relative; z-index: 1;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 80px 22px 80px;
+  flex: 1;
+}
+
+/* ── HEADER ──────────────────────────────────────────────────── */
+header {
+  text-align: center; margin-bottom: 40px;
+  animation: fadeDown .65s ease both;
+}
+
+.notes-badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: rgba(255,255,255,.65); border: 1px solid rgba(255,255,255,.8);
+  border-radius: 50px; padding: 5px 16px;
+  font-family: 'Sora', sans-serif; font-size: .72rem; font-weight: 700;
+  letter-spacing: .07em; text-transform: uppercase; color: #158a3e;
+  backdrop-filter: blur(8px); margin-bottom: 16px;
+}
+[data-theme="dark"] .notes-badge {
+  background: rgba(74,222,128,.1);
+  border-color: rgba(74,222,128,.25);
+  color: var(--notes-accent);
+}
+
+h1 {
+  font-family: 'Sora', sans-serif;
+  font-size: clamp(1.9rem, 5vw, 3.1rem);
+  font-weight: 700; letter-spacing: -.03em; line-height: 1.1;
+  margin-bottom: 12px;
+  color: var(--text);
+}
+h1 span {
+  background: linear-gradient(120deg,#16a34a,#4ade80,#86efac);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+
+.sub {
+  color: var(--text-mid); font-size: 1rem; font-weight: 300;
+  max-width: 440px; margin: 0 auto 28px; line-height: 1.6;
+}
+
+/* ── SEARCH ──────────────────────────────────────────────────── */
+.search-wrap { display: flex; justify-content: center; }
+
+.search-box {
+  display: flex; align-items: center; gap: 11px;
+  background: rgba(255,255,255,.82); border: 1.5px solid rgba(180,235,200,.7);
+  border-radius: 50px; padding: 12px 20px;
+  width: 100%; max-width: 430px;
+  box-shadow: 0 4px 24px rgba(100,190,140,.14);
+  backdrop-filter: blur(12px); transition: var(--trans);
+}
+.search-box:focus-within {
+  border-color: #7ee8a8;
+  box-shadow: 0 4px 28px rgba(80,190,120,.2), 0 0 0 4px rgba(126,232,168,.14);
+}
+[data-theme="dark"] .search-box {
+  background: rgba(255,255,255,.06);
+  border-color: rgba(74,222,128,.2);
+}
+[data-theme="dark"] .search-box:focus-within {
+  border-color: var(--notes-accent);
+  box-shadow: 0 4px 28px rgba(74,222,128,.15), 0 0 0 4px rgba(74,222,128,.1);
+}
+.search-box i      { color: var(--text-soft-t); font-size: .9rem; }
+.search-box input  {
+  flex: 1; border: none; background: transparent; outline: none;
+  font-family: 'DM Sans', sans-serif; font-size: .96rem; color: var(--text);
+}
+.search-box input::placeholder { color: var(--text-soft-t); }
+#cnt {
+  font-family: 'Sora', sans-serif; font-size: .73rem; font-weight: 700;
+  background: rgba(180,235,200,.4); border-radius: 20px; padding: 2px 10px;
+  color: var(--text-mid); white-space: nowrap;
+}
+[data-theme="dark"] #cnt {
+  background: rgba(74,222,128,.12);
+  color: var(--notes-accent);
+}
+
+/* ── SUBJECT GROUPS ──────────────────────────────────────────── */
+.subject-group { margin-bottom: 40px; animation: fadeDown .6s ease both; }
+.subject-heading {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+}
+.subject-icon {
+  width: 38px; height: 38px; border-radius: 11px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; color: #fff; flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(0,0,0,.12);
+}
+.subject-name { font-family: 'Sora', sans-serif; font-size: 1.1rem; font-weight: 700; color: var(--text); letter-spacing: -.01em; }
+.subject-level {
+  font-family: 'Sora', sans-serif; font-size: .68rem; font-weight: 700;
+  letter-spacing: .05em; text-transform: uppercase;
+  background: rgba(180,235,200,.4); color: var(--text-soft-t);
+  padding: 3px 10px; border-radius: 20px; margin-left: 2px;
+}
+[data-theme="dark"] .subject-level {
+  background: rgba(74,222,128,.1);
+  color: var(--notes-accent);
+}
+
+/* ── CARD GRID ───────────────────────────────────────────────── */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(265px, 1fr)); gap: 20px; }
+
+/* ── NOTE CARD ────────────────────────────────────────────────── */
+.note-card {
+  position: relative; overflow: hidden;
+  background: var(--notes-card-bg); border: 1.5px solid var(--notes-card-bdr);
+  border-radius: var(--radius); padding: 24px 22px 20px;
+  display: flex; flex-direction: column; gap: 12px;
+  box-shadow: 0 2px 12px rgba(90,170,120,.10);
+  backdrop-filter: blur(14px);
+  transition: transform var(--trans), box-shadow var(--trans), border-color var(--trans);
+  animation: cardIn .5s ease both;
+}
+.note-card:hover {
+  transform: translateY(-7px) scale(1.016);
+  box-shadow: 0 20px 55px rgba(60,150,100,.2);
+  border-color: rgba(130,238,168,.75);
+}
+[data-theme="dark"] .note-card:hover {
+  box-shadow: 0 20px 55px rgba(74,222,128,.15);
+  border-color: rgba(74,222,128,.45);
+}
+.note-card::after {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  border-radius: var(--radius) var(--radius) 0 0;
+  background: linear-gradient(90deg, transparent, #4ade80, transparent);
+  opacity: 0; transition: opacity var(--trans);
+}
+.note-card:hover::after { opacity: 1; }
+
+.note-card-top { display: flex; align-items: flex-start; gap: 12px; }
+.note-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: linear-gradient(135deg,#4ade80,#16a34a);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; color: #fff;
+  box-shadow: 0 4px 14px rgba(0,0,0,.1);
+  transition: transform var(--trans); flex-shrink: 0;
+}
+.note-card:hover .note-icon { transform: scale(1.12) rotate(-4deg); }
+
+.note-title { font-family: 'Sora', sans-serif; font-size: 1.02rem; font-weight: 700; letter-spacing: -.01em; color: var(--text); line-height: 1.3; }
+.note-desc { font-size: .84rem; color: var(--text-mid); line-height: 1.6; font-weight: 300; flex: 1; }
+
+/* ── READ BUTTON (renamed from .btn to avoid style.css conflict) ── */
+.note-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 8px 18px; border-radius: 50px; align-self: flex-start;
+  font-family: 'Sora', sans-serif; font-size: .78rem; font-weight: 600;
+  text-decoration: none; color: #158a3e;
+  background: #fff; border: 1.5px solid rgba(130,238,168,.5);
+  box-shadow: 0 2px 10px rgba(90,170,120,.1); transition: var(--trans);
+}
+.note-btn:hover { background: linear-gradient(120deg,#daf9e4,#eafff2); border-color: #7ee8a8; transform: translateX(2px); }
+[data-theme="dark"] .note-btn {
+  background: rgba(74,222,128,.08);
+  color: var(--notes-accent);
+  border-color: rgba(74,222,128,.25);
+}
+[data-theme="dark"] .note-btn:hover {
+  background: var(--notes-accent);
+  color: #020617;
+  border-color: var(--notes-accent);
+}
+
+/* ── EMPTY STATE ─────────────────────────────────────────────── */
+.empty { text-align: center; padding: 60px 20px; display: none; }
+.empty.show { display: block; }
+.empty i { font-size: 2.4rem; color: var(--text-soft-t); margin-bottom: 12px; display: block; }
+.empty p { color: var(--text-mid); }
+
+/* ── RESPONSIVE ──────────────────────────────────────────────── */
+@media (max-width: 580px) {
+  .page { padding: 72px 14px 56px; }
+  .grid { grid-template-columns: 1fr; }
+}
+</style>
+
+
+<script>
+/* ── RENDER ENGINE — no need to edit ─────────────── */
+const subjectsEl = document.getElementById('subjects');
+const input      = document.getElementById('q');
+const cnt        = document.getElementById('cnt');
+
+const totalNotes = NOTE_SUBJECTS.reduce((sum, s) => sum + s.notes.length, 0);
+
+function buildReaderUrl(note) {
+  const params = new URLSearchParams();
+  params.set('src', note.src);
+  params.set('title', note.title);
+  if (note.desc) params.set('caption', note.desc);
+  return 'reader.html?' + params.toString();
+}
+
+function render(q) {
+  q = (q || '').toLowerCase().trim();
+  subjectsEl.innerHTML = '';
+
+  let shown = 0;
+  let groupIdx = 0;
+
+  NOTE_SUBJECTS.forEach((group) => {
+    const matches = group.notes.filter(n =>
+      !q ||
+      n.title.toLowerCase().includes(q) ||
+      (n.desc || '').toLowerCase().includes(q) ||
+      group.subject.toLowerCase().includes(q)
+    );
+    if (!matches.length) return;
+
+    shown += matches.length;
+
+    const section = document.createElement('div');
+    section.className = 'subject-group';
+    section.style.animationDelay = (groupIdx * 0.08) + 's';
+    groupIdx++;
+
+    section.innerHTML = `
+      <div class="subject-heading">
+        <div class="subject-icon" style="background:${group.color || '#16a34a'}"><i class="${group.icon || 'fa-solid fa-book'}"></i></div>
+        <span class="subject-name">${group.subject}</span>
+        ${group.level ? `<span class="subject-level">${group.level}</span>` : ''}
+      </div>
+      <div class="grid"></div>
+    `;
+
+    const grid = section.querySelector('.grid');
+    matches.forEach((n, i) => {
+      const card = document.createElement('div');
+      card.className = 'note-card';
+      card.style.animationDelay = (i * 0.055) + 's';
+      card.innerHTML = `
+        <div class="note-card-top">
+          <div class="note-icon"><i class="fa-solid fa-file-pdf"></i></div>
+        </div>
+        <div class="note-title">${n.title}</div>
+        <div class="note-desc">${n.desc || ''}</div>
+        <a class="note-btn" href="${buildReaderUrl(n)}" title="Read ${n.title}">
+          Read <i class="fa-solid fa-book-open" style="font-size:.7rem"></i>
+        </a>
+      `;
+      grid.appendChild(card);
+    });
+
+    subjectsEl.appendChild(section);
+  });
+
+  cnt.textContent = shown + ' note' + (shown !== 1 ? 's' : '');
+
+  if (!shown) {
+    subjectsEl.innerHTML = `<div class="empty show">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <p>No notes found for "<b>${q}</b>" — try a different keyword.</p>
+    </div>`;
+  }
+}
+
+input.addEventListener('input', e => render(e.target.value));
+render();
+
+/* Hide navbar on scroll */
+let lastScroll = window.scrollY;
+window.addEventListener('scroll', () => {
+  const nav = document.getElementById('navbar');
+  if (window.scrollY > lastScroll && window.scrollY > 70) nav.classList.add('navbar-hidden');
+  else nav.classList.remove('navbar-hidden');
+  lastScroll = window.scrollY;
+});
+</script>
+
+<script src="footer.js"></script>
+</body>
+</html>
