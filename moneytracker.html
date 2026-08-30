@@ -42,6 +42,22 @@
     --font:           'Poppins', sans-serif;
     --accent-glow:    rgba(2,132,199,0.18);
     --card-bg-solid:  #ffffff;
+    /* Performance/consistency pass: reuses --trans (small UI elements) as-is;
+       adds one sibling token for larger overlay/panel-scale transitions
+       (drawers, backdrops, toasts) so their timing is consistent too. */
+    --trans-panel:    220ms ease-in-out;
+    /* Radius scale — same pixel values already used throughout, just named
+       so the repeated roles (small controls / rows-cards / larger panels)
+       are consolidated instead of re-typed. Values unchanged. */
+    --radius-sm:      8px;
+    --radius-md:      10px;
+    --radius-lg:      12px;
+    /* Shadow scale — consolidates exact, repeated box-shadow values used for
+       cards and focus rings. Values unchanged. */
+    --shadow-card:      0 2px 12px rgba(2,132,199,0.06);
+    --shadow-focus:     0 0 0 3px var(--accent-glow);
+    --shadow-btn-accent: 0 4px 18px var(--accent-glow);
+    --shadow-btn-danger: 0 4px 18px var(--danger-glow);
   }
   [data-theme="dark"] {
     --surface:        rgba(255,255,255,0.06);
@@ -85,8 +101,9 @@
     background: rgba(255,255,255,0.22); overflow: hidden;
   }
   .mt-splash-progress-bar {
-    height: 100%; width: 0%; border-radius: 4px;
-    background: #fff; transition: width 0.35s ease;
+    height: 100%; width: 100%; border-radius: 4px;
+    transform: scaleX(0); transform-origin: left;
+    background: #fff; transition: transform 0.35s ease;
   }
   .mt-splash-credit {
     display: flex; justify-content: center; gap: 1px;
@@ -127,7 +144,7 @@
   .topbar-right { display: flex; align-items: center; gap: 8px; }
   .settings-btn {
     background: var(--card-bg); border: 1px solid var(--card-border);
-    border-radius: 8px; color: var(--text-soft);
+    border-radius: var(--radius-sm); color: var(--text-soft);
     font-size: 0.95rem; cursor: pointer; padding: 6px 9px; flex-shrink: 0;
     backdrop-filter: blur(8px); transition: var(--trans);
   }
@@ -136,14 +153,14 @@
   .home-btn:hover { transform: scale(1.1) !important; }
   .menu-toggle-btn {
     display: none; background: var(--card-bg); border: 1px solid var(--card-border);
-    border-radius: 8px; color: var(--text-soft);
+    border-radius: var(--radius-sm); color: var(--text-soft);
     font-size: 1rem; cursor: pointer; padding: 6px 10px; flex-shrink: 0;
     backdrop-filter: blur(8px); transition: var(--trans);
   }
   .menu-toggle-btn:hover { border-color: var(--accent); color: var(--accent); }
   .nav-drawer-backdrop {
     display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45);
-    z-index: 240; opacity: 0; transition: opacity 0.2s ease;
+    z-index: 240; opacity: 0; transition: opacity var(--trans-panel);
   }
   .nav-drawer-backdrop.open { display: block; opacity: 1; }
   .month-bar {
@@ -158,7 +175,7 @@
     flex: 1; min-width: 0;
     background: var(--card-bg);
     border: 1px solid var(--card-border);
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     color: var(--text-main);
     font-family: var(--font);
     font-size: 0.8rem; font-weight: 500;
@@ -166,7 +183,7 @@
     backdrop-filter: blur(8px);
     transition: var(--trans);
   }
-  .month-selector select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+  .month-selector select:focus { border-color: var(--accent); box-shadow: var(--shadow-focus); }
 
   /* ── DAY NAV ────────────────────────────────── */
   .day-nav {
@@ -180,7 +197,7 @@
   .day-nav::-webkit-scrollbar { display: none; }
   .day-btn {
     min-width: 36px; height: 36px;
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     border: 1px solid var(--card-border);
     background: transparent;
     color: var(--text-soft);
@@ -201,7 +218,7 @@
   }
   .nav-arrow {
     background: var(--card-bg); border: 1px solid var(--card-border);
-    border-radius: 8px; color: var(--text-soft);
+    border-radius: var(--radius-sm); color: var(--text-soft);
     font-size: 0.85rem; cursor: pointer; padding: 6px 8px; flex-shrink: 0;
     transition: var(--trans);
   }
@@ -220,7 +237,7 @@
   /* ── DAY LOCK ────────────────────────────────── */
   .day-lock-bar {
     display: flex; align-items: center; justify-content: center; gap: 7px;
-    padding: 9px 14px; margin-bottom: 14px; border-radius: 10px;
+    padding: 9px 14px; margin-bottom: 14px; border-radius: var(--radius-md);
     font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: var(--trans);
     border: 1px solid var(--card-border); background: var(--surface); color: var(--text-soft);
   }
@@ -279,7 +296,7 @@
     width: 80px;
     background: var(--surface);
     border: 1px solid var(--card-border);
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     padding: 6px 10px;
     font-family: var(--font); font-size: 0.85rem; font-weight: 600;
     color: var(--accent); text-align: right; outline: none;
@@ -288,7 +305,7 @@
   .field-input:focus {
     border-color: var(--accent);
     background: var(--surface2);
-    box-shadow: 0 0 0 3px var(--accent-glow);
+    box-shadow: var(--shadow-focus);
   }
   .field-input::placeholder { color: var(--text-soft); font-size: 0.74rem; font-weight: 400; }
   .field-input.income-inp { color: var(--accent2); }
@@ -297,7 +314,7 @@
   .note-btn {
     background: transparent; border: none;
     font-size: 0.92rem; line-height: 1; padding: 5px 6px;
-    border-radius: 8px; cursor: pointer; flex-shrink: 0;
+    border-radius: var(--radius-sm); cursor: pointer; flex-shrink: 0;
     opacity: 0.32; transition: var(--trans);
   }
   .note-btn:hover { opacity: 0.75; background: var(--surface); }
@@ -315,7 +332,7 @@
     width: 100%;
     background: var(--surface);
     border: 1px solid var(--card-border);
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     padding: 6px 10px;
     font-family: var(--font); font-size: 0.78rem; font-weight: 400;
     color: var(--text-main); outline: none;
@@ -324,7 +341,7 @@
   .note-input:focus {
     border-color: var(--accent);
     background: var(--surface2);
-    box-shadow: 0 0 0 3px var(--accent-glow);
+    box-shadow: var(--shadow-focus);
   }
   .note-input::placeholder { color: var(--text-soft); font-size: 0.74rem; }
 
@@ -363,7 +380,7 @@
     color: #fff; border: none; border-radius: var(--card-radius);
     font-family: var(--font); font-size: 0.9rem; font-weight: 700;
     cursor: pointer; transition: var(--trans); margin-bottom: 8px;
-    box-shadow: 0 4px 18px var(--accent-glow);
+    box-shadow: var(--shadow-btn-accent);
     letter-spacing: 0.01em;
   }
   .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px var(--accent-glow); filter: brightness(1.08); }
@@ -386,7 +403,7 @@
     color: #fff; border: none; border-radius: var(--card-radius);
     font-family: var(--font); font-size: 0.9rem; font-weight: 700;
     cursor: pointer; transition: var(--trans); margin-bottom: 8px;
-    box-shadow: 0 4px 18px var(--danger-glow);
+    box-shadow: var(--shadow-btn-danger);
     letter-spacing: 0.01em;
   }
   .btn-danger:hover { transform: translateY(-2px); box-shadow: 0 8px 28px var(--danger-glow); filter: brightness(1.08); }
@@ -437,7 +454,7 @@
     border: 1px solid var(--card-border);
     border-radius: var(--card-radius); padding: 14px; text-align: center;
     backdrop-filter: blur(12px);
-    box-shadow: 0 2px 12px rgba(2,132,199,0.06);
+    box-shadow: var(--shadow-card);
     transition: var(--trans);
   }
   .sum-card:hover { border-color: var(--accent); transform: translateY(-2px); }
@@ -464,7 +481,7 @@
   .export-row button {
     flex: 1; padding: 10px;
     background: var(--card-bg); border: 1px solid var(--card-border);
-    border-radius: 12px; font-family: var(--font); font-size: 0.78rem; font-weight: 600;
+    border-radius: var(--radius-lg); font-family: var(--font); font-size: 0.78rem; font-weight: 600;
     cursor: pointer; color: var(--text-main); transition: var(--trans);
     backdrop-filter: blur(8px);
   }
@@ -484,7 +501,7 @@
     margin-bottom: 14px;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    box-shadow: 0 2px 12px rgba(2,132,199,0.06);
+    box-shadow: var(--shadow-card);
     position: relative;
     height: 230px;
   }
@@ -503,7 +520,7 @@
     padding: 9px 14px;
     background: var(--card-bg);
     border: 1px solid var(--card-border);
-    border-radius: 10px; margin-bottom: 5px; font-size: 0.81rem;
+    border-radius: var(--radius-md); margin-bottom: 5px; font-size: 0.81rem;
     backdrop-filter: blur(8px); transition: var(--trans);
   }
   .breakdown-row:hover { border-color: var(--accent); background: var(--surface); }
@@ -518,7 +535,7 @@
     padding: 9px 13px;
     background: var(--card-bg);
     border: 1px solid var(--card-border);
-    border-radius: 10px; margin-bottom: 5px; font-size: 0.78rem;
+    border-radius: var(--radius-md); margin-bottom: 5px; font-size: 0.78rem;
     cursor: pointer; backdrop-filter: blur(8px); transition: var(--trans);
   }
   .daily-row:hover { border-color: var(--accent); background: var(--surface); transform: translateX(3px); }
@@ -550,7 +567,7 @@
     background: var(--card-bg); border: 1px solid var(--card-border);
     border-radius: var(--card-radius); padding: 14px; text-align: center;
     backdrop-filter: blur(12px); transition: var(--trans);
-    box-shadow: 0 2px 12px rgba(2,132,199,0.06);
+    box-shadow: var(--shadow-card);
   }
   .yr-card:hover { border-color: var(--accent); transform: translateY(-2px); }
   .yr-card .yc-label { font-size: 0.65rem; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 5px; font-weight: 600; }
@@ -565,15 +582,15 @@
     background: var(--accent);
     color: #fff; padding: 8px 22px; border-radius: 50px;
     font-size: 0.78rem; font-weight: 600;
-    opacity: 0; transition: opacity 0.3s, transform 0.3s;
+    opacity: 0; transition: opacity var(--trans-panel), transform var(--trans-panel);
     pointer-events: none; z-index: 200; white-space: nowrap;
-    box-shadow: 0 4px 18px var(--accent-glow);
+    box-shadow: var(--shadow-btn-accent);
     transform: translateX(-50%) translateY(6px);
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   .toast.error {
     background: var(--danger);
-    box-shadow: 0 4px 18px var(--danger-glow);
+    box-shadow: var(--shadow-btn-danger);
   }
 
   /* ── ADD-CATEGORY LINK (inside day sections) ──────────────── */
@@ -608,7 +625,7 @@
   .modal-header h3 { font-size: 0.95rem; font-weight: 700; color: var(--text-main); }
   .modal-close {
     background: transparent; border: none; font-size: 1.05rem; color: var(--text-soft);
-    cursor: pointer; padding: 4px 9px; border-radius: 8px; transition: var(--trans);
+    cursor: pointer; padding: 4px 9px; border-radius: var(--radius-sm); transition: var(--trans);
   }
   .modal-close:hover { background: var(--surface); color: var(--danger); }
   .modal-tabs { display: flex; border-bottom: 1px solid var(--card-border); flex-shrink: 0; }
@@ -629,14 +646,14 @@
   @keyframes modalPop { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
   .rd-warning-box {
     background: rgba(220,38,38,0.08); border: 1px solid var(--expense-border);
-    border-radius: 12px; padding: 14px; font-size: 0.84rem; line-height: 1.55;
+    border-radius: var(--radius-lg); padding: 14px; font-size: 0.84rem; line-height: 1.55;
     color: var(--text-main); margin-bottom: 18px;
   }
   .rd-btn-row { display: flex; gap: 10px; }
   .rd-btn-row > button { flex: 1 1 0; width: auto; margin-bottom: 0; }
   /* Category detail modal (Summary breakdown row → tap to view entries) */
   .cd-stats { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 8px; margin-bottom: 16px; }
-  .cd-stat { border: 1px solid var(--card-border); border-radius: 12px; padding: 11px 12px; background: var(--surface); }
+  .cd-stat { border: 1px solid var(--card-border); border-radius: var(--radius-lg); padding: 11px 12px; background: var(--surface); }
   .cd-stat-hero { border-width: 1px; }
   .cd-stat-label { font-size: 0.62rem; color: var(--text-soft); text-transform: uppercase; letter-spacing: .5px; font-weight: 600; margin-bottom: 5px; }
   .cd-stat-val { font-family: var(--font); font-size: 0.98rem; font-weight: 700; color: var(--text-main); }
@@ -657,7 +674,7 @@
   /* Account history modal (Monthly Summary → tap Cash/Card/Total → full ledger) */
   .account-row.ah-clickable { cursor: pointer; transition: var(--trans); }
   .account-row.ah-clickable:hover { border-color: var(--accent); }
-  .ah-stat-hero { border: 1px solid var(--card-border); border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; background: var(--surface); text-align: center; }
+  .ah-stat-hero { border: 1px solid var(--card-border); border-radius: var(--radius-lg); padding: 14px 16px; margin-bottom: 16px; background: var(--surface); text-align: center; }
   .ah-stat-label { font-size: 0.62rem; color: var(--text-soft); text-transform: uppercase; letter-spacing: .5px; font-weight: 600; margin-bottom: 6px; }
   .ah-stat-val { font-family: var(--font); font-size: 1.35rem; font-weight: 800; color: var(--accent2); }
   .ah-stat-val.neg { color: var(--danger); }
@@ -685,23 +702,23 @@
   .cat-row:last-child { border-bottom: none; }
   .cat-icon-input {
     width: 42px; text-align: center; background: var(--surface);
-    border: 1px solid var(--card-border); border-radius: 8px; padding: 7px 4px;
+    border: 1px solid var(--card-border); border-radius: var(--radius-sm); padding: 7px 4px;
     font-size: 0.9rem; color: var(--text-main); outline: none; font-family: var(--font); flex-shrink: 0;
   }
   .cat-label-input {
     flex: 1; min-width: 0; background: var(--surface);
-    border: 1px solid var(--card-border); border-radius: 8px; padding: 7px 10px;
+    border: 1px solid var(--card-border); border-radius: var(--radius-sm); padding: 7px 10px;
     font-size: 0.8rem; color: var(--text-main); outline: none; font-family: var(--font);
   }
-  .cat-icon-input:focus, .cat-label-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+  .cat-icon-input:focus, .cat-label-input:focus { border-color: var(--accent); box-shadow: var(--shadow-focus); }
   .cat-del-btn {
     background: transparent; border: none; font-size: 0.9rem; cursor: pointer;
-    opacity: 0.5; padding: 5px 7px; border-radius: 8px; flex-shrink: 0; transition: var(--trans);
+    opacity: 0.5; padding: 5px 7px; border-radius: var(--radius-sm); flex-shrink: 0; transition: var(--trans);
   }
   .cat-del-btn:hover { opacity: 1; background: rgba(220,38,38,0.12); }
   .cat-pin-btn {
     background: transparent; border: none; font-size: 0.95rem; cursor: pointer;
-    opacity: 0.45; padding: 5px 6px; border-radius: 8px; flex-shrink: 0; transition: var(--trans);
+    opacity: 0.45; padding: 5px 6px; border-radius: var(--radius-sm); flex-shrink: 0; transition: var(--trans);
   }
   .cat-pin-btn:hover { opacity: 1; background: var(--surface); }
   .cat-pin-btn.pinned { opacity: 1; color: #f5a623; }
@@ -718,7 +735,7 @@
     padding: 5px 6px; white-space: nowrap; flex-shrink: 0;
   }
   .day-add-btn, .day-remove-btn {
-    font-family: var(--font); font-size: 0.7rem; font-weight: 600; border-radius: 8px;
+    font-family: var(--font); font-size: 0.7rem; font-weight: 600; border-radius: var(--radius-sm);
     padding: 5px 9px; cursor: pointer; border: 1px solid var(--card-border);
     background: var(--surface); white-space: nowrap; flex-shrink: 0; transition: var(--trans);
   }
@@ -749,7 +766,7 @@
   .debt-summary-val.receive, .debt-summary-label.receive { color: var(--accent2); }
   .debt-summary-strip { display: flex; gap: 10px; padding: 12px 16px 0; }
   .debt-sum-box {
-    flex: 1; border-radius: 10px; border: 1px solid var(--card-border);
+    flex: 1; border-radius: var(--radius-md); border: 1px solid var(--card-border);
     background: var(--surface); padding: 10px 12px; text-align: center;
   }
   .debt-sum-label { display: block; font-size: 0.68rem; color: var(--text-soft); margin-bottom: 2px; }
@@ -768,12 +785,12 @@
   .debt-add-row { display: flex; gap: 8px; }
   .debt-input {
     flex: 1; min-width: 0; background: var(--surface);
-    border: 1px solid var(--card-border); border-radius: 8px; padding: 7px 10px;
+    border: 1px solid var(--card-border); border-radius: var(--radius-sm); padding: 7px 10px;
     font-size: 0.8rem; color: var(--text-main); outline: none; font-family: var(--font);
   }
-  .debt-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+  .debt-input:focus { border-color: var(--accent); box-shadow: var(--shadow-focus); }
   .debt-row {
-    background: var(--surface); border: 1px solid var(--card-border); border-radius: 10px;
+    background: var(--surface); border: 1px solid var(--card-border); border-radius: var(--radius-md);
     padding: 10px 12px; margin-bottom: 8px; transition: var(--trans);
   }
   .debt-row.settled { opacity: 0.55; }
@@ -787,7 +804,7 @@
   .debt-check input { width: 15px; height: 15px; cursor: pointer; accent-color: var(--accent); }
   .add-cat-row { display: flex; gap: 8px; margin-top: 9px; }
   .cat-add-btn {
-    background: var(--accent); color: #fff; border: none; border-radius: 8px;
+    background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm);
     width: 38px; font-size: 0.9rem; cursor: pointer; flex-shrink: 0; transition: var(--trans);
   }
   .cat-add-btn:hover { filter: brightness(1.1); }
@@ -812,14 +829,14 @@
   .goal-saved.neg { color: var(--danger); }
   .goal-of { font-size: 0.76rem; color: var(--text-soft); }
   .goal-bar-track { height: 8px; border-radius: 6px; background: var(--surface); overflow: hidden; margin-bottom: 6px; }
-  .goal-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 6px; transition: width 0.5s ease; }
+  .goal-bar-fill { height: 100%; width: 100%; transform-origin: left; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 6px; transition: transform 0.5s ease; }
   .goal-pct { font-size: 0.72rem; color: var(--text-soft); text-align: right; }
 
   /* ── ACCOUNTS (Cash / bKash / Card balances) ─────────────────── */
   .account-row {
     display: flex; align-items: center; justify-content: space-between; gap: 10px;
     background: var(--card-bg); border: 1px solid var(--card-border);
-    border-radius: 10px; padding: 9px 13px; margin-bottom: 6px; backdrop-filter: blur(8px);
+    border-radius: var(--radius-md); padding: 9px 13px; margin-bottom: 6px; backdrop-filter: blur(8px);
   }
   .acct-left { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-main); min-width: 0; }
   .acct-icon { font-size: 1.05rem; flex-shrink: 0; }
@@ -844,7 +861,7 @@
     display: flex; align-items: center; justify-content: center; padding: 0; transition: var(--trans);
   }
   .acct-mini-btn:hover { border-color: var(--accent); color: var(--accent); }
-  .acct-panel { display: none; gap: 7px; align-items: center; background: var(--surface); border: 1px solid var(--card-border); border-radius: 10px; padding: 8px 10px; margin: -2px 0 6px; }
+  .acct-panel { display: none; gap: 7px; align-items: center; background: var(--surface); border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 8px 10px; margin: -2px 0 6px; }
   .acct-panel.open { display: flex; }
   .acct-panel-input {
     flex: 1; min-width: 0; background: var(--card-bg); border: 1px solid var(--card-border);
@@ -886,12 +903,13 @@
   /* ── BUDGET ROWS ───────────────────────────────────────────── */
   .budget-row {
     background: var(--card-bg); border: 1px solid var(--card-border);
-    border-radius: 10px; padding: 10px 13px; margin-bottom: 6px; backdrop-filter: blur(8px);
+    border-radius: var(--radius-md); padding: 10px 13px; margin-bottom: 6px; backdrop-filter: blur(8px);
+    transition: var(--trans);
   }
   .budget-row-top { display: flex; justify-content: space-between; font-size: 0.78rem; margin-bottom: 7px; color: var(--text-main); }
   .budget-row-top .over-text { color: var(--danger); font-weight: 700; }
   .budget-bar-track { height: 6px; border-radius: 4px; background: var(--surface); overflow: hidden; }
-  .budget-bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+  .budget-bar-fill { height: 100%; width: 100%; transform-origin: left; border-radius: 4px; transition: transform 0.5s ease; }
   .budget-bar-fill.ok { background: var(--accent2); }
   .budget-bar-fill.warn { background: #d97706; }
   .budget-bar-fill.over { background: var(--danger); }
@@ -916,7 +934,7 @@
   .insight-row {
     display: flex; align-items: center; gap: 9px;
     background: var(--card-bg); border: 1px solid var(--card-border);
-    border-radius: 10px; padding: 9px 13px; margin-bottom: 5px; font-size: 0.8rem;
+    border-radius: var(--radius-md); padding: 9px 13px; margin-bottom: 5px; font-size: 0.8rem;
     backdrop-filter: blur(8px); color: var(--text-main);
   }
   .insight-icon { font-size: 1rem; }
@@ -928,7 +946,7 @@
   .ins-stat-card {
     background: var(--card-bg); border: 1px solid var(--card-border);
     border-radius: var(--card-radius); padding: 12px 14px; text-align: center;
-    backdrop-filter: blur(12px); box-shadow: 0 2px 12px rgba(2,132,199,0.06);
+    backdrop-filter: blur(12px); box-shadow: var(--shadow-card);
   }
   .ins-stat-label { font-size: 0.63rem; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px; font-weight: 600; }
   .ins-stat-val { font-size: 1.05rem; font-weight: 800; color: var(--text-main); }
@@ -937,7 +955,7 @@
   .ins-card {
     background: var(--card-bg); border: 1px solid var(--card-border);
     border-radius: var(--card-radius); padding: 13px 15px; margin-bottom: 10px;
-    backdrop-filter: blur(12px); box-shadow: 0 2px 12px rgba(2,132,199,0.06);
+    backdrop-filter: blur(12px); box-shadow: var(--shadow-card);
   }
   .ins-card-title { font-size: 0.72rem; font-weight: 700; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
   .ins-card-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 0.81rem; border-bottom: 1px solid var(--card-border); }
@@ -960,7 +978,7 @@
   .ins-forecast-range { font-size: 1.1rem; font-weight: 800; color: var(--text-main); }
   .ins-forecast-note { font-size: 0.74rem; color: var(--text-soft); margin-top: 6px; line-height: 1.4; }
   .ins-pace-compare { display: flex; gap: 10px; }
-  .ins-pace-compare > div { flex: 1; text-align: center; padding: 10px; border-radius: 12px; background: var(--surface); }
+  .ins-pace-compare > div { flex: 1; text-align: center; padding: 10px; border-radius: var(--radius-lg); background: var(--surface); }
   .ins-pace-compare .icp-label { font-size: 0.62rem; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
   .ins-pace-compare .icp-val { font-size: 0.98rem; font-weight: 800; color: var(--text-main); }
 
@@ -969,37 +987,20 @@
   .ibw-tag.best { background: rgba(22,163,74,0.14); color: var(--accent2); }
   .ibw-tag.worst { background: rgba(220,38,38,0.14); color: var(--danger); }
 
-  /* ── RECEIPT ATTACH ─────────────────────────────────────────── */
-  .receipt-preview:empty { display: none; }
-  .receipt-preview { margin-top: 8px; }
-  .receipt-thumb-wrap { position: relative; display: inline-block; }
-  .receipt-thumb {
-    width: 60px; height: 60px; object-fit: cover; border-radius: 10px;
-    border: 1px solid var(--card-border); cursor: pointer; display: block;
-  }
-  .receipt-remove {
-    position: absolute; top: -6px; right: -6px;
-    width: 20px; height: 20px; border-radius: 50%;
-    background: var(--danger); color: #fff; border: none;
-    font-size: 0.62rem; cursor: pointer; line-height: 1;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  }
-
   /* ── SEARCH ──────────────────────────────────────────────────── */
   .search-input-box {
     width: 100%; background: var(--surface);
-    border: 1px solid var(--card-border); border-radius: 12px;
+    border: 1px solid var(--card-border); border-radius: var(--radius-lg);
     padding: 10px 14px; margin-bottom: 12px;
     font-family: var(--font); font-size: 0.85rem; color: var(--text-main);
     outline: none; transition: var(--trans);
   }
-  .search-input-box:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+  .search-input-box:focus { border-color: var(--accent); box-shadow: var(--shadow-focus); }
   .search-hint { text-align: center; color: var(--text-soft); font-size: 0.8rem; padding: 18px 10px; }
   .search-result-row {
     display: flex; align-items: center; gap: 10px;
     padding: 10px 12px; background: var(--card-bg);
-    border: 1px solid var(--card-border); border-radius: 12px;
+    border: 1px solid var(--card-border); border-radius: var(--radius-lg);
     margin-bottom: 6px; cursor: pointer; transition: var(--trans);
   }
   .search-result-row:hover { border-color: var(--accent); background: var(--surface); transform: translateX(2px); }
@@ -1011,7 +1012,41 @@
   .sr-amt.inc { color: var(--accent2); }
   .sr-note { font-size: 0.74rem; color: var(--text-soft); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .sr-date { font-size: 0.68rem; color: var(--text-soft); margin-top: 2px; }
-  .sr-thumb { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; border: 1px solid var(--card-border); flex-shrink: 0; }
+
+  /* ── TAP / ACTIVE FEEDBACK ───────────────────────────────────────────
+     Every tappable button/row below already has `transition: var(--trans)`
+     (or an equivalent transform-based hover) on its base rule, so adding
+     a :active transform here is enough to get a smooth press effect —
+     no new transition properties needed. Placed after all :hover rules
+     so it wins the cascade on press even for rows that also have a hover
+     transform. Scale-only (no width/height/position), so this never
+     triggers layout. Native inputs/selects are intentionally excluded —
+     a shrinking text field while typing/tapping-to-focus reads as buggy,
+     not responsive. */
+  .settings-btn:active, .menu-toggle-btn:active, .day-btn:active, .nav-arrow:active,
+  .modal-close:active, .modal-tab:active, .debt-tab:active, .search-result-row:active,
+  .cat-del-btn:active, .cat-pin-btn:active, .cat-add-btn:active, .day-add-btn:active,
+  .day-remove-btn:active, .add-cat-link:active, .breakdown-row:active, .daily-row:active,
+  .month-row:active, .debt-summary-card:active, .account-row.ah-clickable:active,
+  .export-row button:active, .acct-mini-btn:active, .acct-panel-btn:active,
+  .btn-outline:active, .bnav-btn:active, .goal-edit:active, .goal-card.empty:active,
+  .budget-row:active, .home-btn:active, .note-btn:active {
+    transform: scale(0.96);
+  }
+
+  /* ── REDUCED MOTION ───────────────────────────────────────────────────
+     Keeps every functional state change (modals opening, tabs switching,
+     locking a day, etc.) working exactly the same — those are driven by
+     class toggles, not by the transitions/animations themselves — but
+     removes the animated motion for anyone who's asked the OS for it. */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 
   /* ══════════════════════════════════════════════════════════════════
      DESKTOP LAYOUT — everything below only applies at ≥900px.
@@ -1024,7 +1059,7 @@
     .bottom-nav {
       position: fixed; top: 0; bottom: 0; left: 0; width: 250px;
       transform: translateX(-100%);
-      transition: transform 0.25s ease;
+      transition: transform var(--trans-panel);
       flex-direction: column; align-items: stretch;
       border-top: none; border-right: 1px solid var(--card-border);
       box-shadow: 4px 0 32px rgba(0,0,0,0.2);
@@ -1521,22 +1556,6 @@
   </div>
 </div>
 
-<div class="modal-overlay" id="receiptViewerModal">
-  <div class="modal-box" style="max-width:420px">
-    <div class="modal-header">
-      <h3 id="receiptViewerTitle">🧾 Receipt</h3>
-      <button class="modal-close" onclick="closeReceiptViewer()">✕</button>
-    </div>
-    <div class="modal-body" style="text-align:center">
-      <img id="receiptViewerImg" style="max-width:100%;border-radius:12px;margin-bottom:12px" alt="Receipt">
-      <div style="display:flex;gap:8px">
-        <button class="btn-outline" style="margin-bottom:0" onclick="replaceReceiptFromViewer()">🔄 Replace</button>
-        <button class="btn-outline" style="margin-bottom:0;background:rgba(220,38,38,0.06);color:var(--danger);border-color:var(--expense-border)" onclick="removeReceiptFromViewer()">🗑 Remove</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <div class="modal-overlay" id="categoryDetailModal">
   <div class="modal-box" style="max-width:480px">
     <div class="modal-header">
@@ -1677,13 +1696,13 @@ function splashStep(){
   mtSplashStepCount++;
   const pct = Math.min(100, Math.round((mtSplashStepCount / MT_SPLASH_TOTAL_STEPS) * 100));
   const bar = document.getElementById('mtSplashBar');
-  if (bar) bar.style.width = pct + '%';
+  if (bar) bar.style.transform = 'scaleX(' + (pct / 100) + ')';
 }
 function splashFinish(){
   const bar = document.getElementById('mtSplashBar');
   const credit = document.getElementById('mtSplashCredit');
   const splash = document.getElementById('mtSplash');
-  if (bar) bar.style.width = '100%';
+  if (bar) bar.style.transform = 'scaleX(1)';
   if (credit) credit.classList.add('mt-splash-credit-show');
   // Hold long enough for the letter-wave to fully ripple through
   // (last letter delay + its animation length), then a brief beat, then fade.
@@ -1762,23 +1781,21 @@ function computeExtraShownForData(data){
     if(f.pinned) return;
     const hasAmount=(parseFloat(data[f.id])||0)>0;
     const hasNote=!!(data['note_'+f.id]&&String(data['note_'+f.id]).trim());
-    const hasReceipt=!!data['receipt_'+f.id];
     const manuallyShown=!!data['shown_'+f.id];
-    if(hasAmount||hasNote||hasReceipt||manuallyShown) s.add(f.id);
+    if(hasAmount||hasNote||manuallyShown) s.add(f.id);
   });
   return s;
 }
 function visibleFieldList(fields){
   return fields.filter(f=>f.pinned||extraShownIds.has(f.id));
 }
-// True if a non-pinned field has real data (amount/note/receipt) — in that case it
+// True if a non-pinned field has real data (amount/note) — in that case it
 // must stay in the Day view and can't be manually removed from display.
 function fieldForcedShown(f,data){
   if(f.pinned) return false;
   const hasAmount=(parseFloat(data[f.id])||0)>0;
   const hasNote=!!(data['note_'+f.id]&&String(data['note_'+f.id]).trim());
-  const hasReceipt=!!data['receipt_'+f.id];
-  return hasAmount||hasNote||hasReceipt;
+  return hasAmount||hasNote;
 }
 
 // One-time migration: older saves stored a static "balance" number per account.
@@ -1996,7 +2013,6 @@ async function loadSettingsRemote(){
 
 let currentDay=1, navOffset=0;
 let curYear=new Date().getFullYear(), curMonth=new Date().getMonth();
-let currentReceipts={}; // receipt-photo data URLs for the currently loaded day, keyed by field id
 
 function isLeap(y){return (y%4===0&&y%100!==0)||y%400===0;}
 function daysInMonth(y,m){return m===1&&isLeap(y)?29:DAYS_IN_MONTH[m];}
@@ -2118,7 +2134,7 @@ async function onMonthChange(){
 // ─── DYNAMIC FIELD ROWS (built from EXPENSE_FIELDS / INCOME_FIELDS) ──────────
 function fieldRowHTML(f,isIncome){
   const acctSelect=`<div class="acct-select-wrap" title="${isIncome?'Deposit to':'Pay from'}"><span class="acct-select-icon" id="accticon_${f.id}"></span><select class="field-acct-select" id="acct_${f.id}" onchange="updateAcctIcon('${f.id}')">${ACCOUNTS.map(a=>`<option value="${a.id}">${a.icon} ${escHtml(a.label)}</option>`).join('')}</select></div>`;
-  return `<div class="field-row"><span class="field-icon">${f.icon}</span><span class="field-label">${escHtml(f.label)}</span><input class="field-input${isIncome?' income-inp':''}" type="text" inputmode="decimal" autocomplete="off" placeholder="0" id="f_${f.id}">${acctSelect}<button class="note-btn" type="button" onclick="toggleNote('${f.id}')" id="nbtn_${f.id}" title="Add note">📝</button><input type="file" accept="image/*" style="display:none" id="rfile_${f.id}" onchange="onReceiptFileChosen('${f.id}',this.files[0])"></div><div class="note-row" id="noterow_${f.id}"><input class="note-input" type="text" placeholder="Note (optional)" id="note_${f.id}" maxlength="200"><div class="receipt-preview" id="rprev_${f.id}"></div></div>`;
+  return `<div class="field-row"><span class="field-icon">${f.icon}</span><span class="field-label">${escHtml(f.label)}</span><input class="field-input${isIncome?' income-inp':''}" type="text" inputmode="decimal" autocomplete="off" placeholder="0" id="f_${f.id}">${acctSelect}<button class="note-btn" type="button" onclick="toggleNote('${f.id}')" id="nbtn_${f.id}" title="Add note">📝</button></div><div class="note-row" id="noterow_${f.id}"><input class="note-input" type="text" placeholder="Note (optional)" id="note_${f.id}" maxlength="200"></div>`;
 }
 
 // Tracks which fields were actually rendered last, so loadDay() can skip a
@@ -2329,13 +2345,30 @@ function budgetRowHTML(f){
 function accountRowHTML(a){
   return `<div class="cat-row"><input class="cat-icon-input" value="${escHtml(a.icon)}" onchange="updateAccountField('${a.id}','icon',this.value)"><input class="cat-label-input" value="${escHtml(a.label)}" onchange="updateAccountField('${a.id}','label',this.value)"><input class="field-input" type="number" style="width:92px" placeholder="Opening" value="${a.opening||0}" onchange="updateAccountField('${a.id}','opening',this.value)"><button class="cat-del-btn" onclick="deleteAccount('${a.id}')" title="Delete">🗑</button></div>`;
 }
+// Cheap signature over exactly what catRowHTML/budgetRowHTML/accountRowHTML
+// read, so a redundant re-open of Settings (nothing edited since last time)
+// can skip rebuilding 3 lists of inputs+listeners. Any mutation to these
+// arrays (updateCategoryField, addCategory, deleteCategory, addAccount,
+// deleteAccount, restore, etc.) changes the signature, so it never goes stale.
+let _renderedSettingsListsSig=null;
+function settingsListsSignature(){
+  return JSON.stringify([
+    EXPENSE_FIELDS.map(f=>[f.id,f.icon,f.label,f.pinned?1:0,f.budget||0]),
+    INCOME_FIELDS.map(f=>[f.id,f.icon,f.label,f.pinned?1:0]),
+    ACCOUNTS.map(a=>[a.id,a.icon,a.label,a.opening||0])
+  ]);
+}
 function renderSettingsLists(){
   const ce=document.getElementById('catListExpense'), ci=document.getElementById('catListIncome'), bl=document.getElementById('budgetList'), gi=document.getElementById('goalInput'), al=document.getElementById('accountList');
-  if(ce) ce.innerHTML=EXPENSE_FIELDS.map(catRowHTML).join('');
-  if(ci) ci.innerHTML=INCOME_FIELDS.map(catRowHTML).join('');
-  if(bl) bl.innerHTML=EXPENSE_FIELDS.map(budgetRowHTML).join('')||'<div style="color:var(--muted);text-align:center;padding:14px;font-size:0.82rem">No expense categories yet</div>';
+  const sig=settingsListsSignature();
+  if(sig!==_renderedSettingsListsSig){
+    if(ce) ce.innerHTML=EXPENSE_FIELDS.map(catRowHTML).join('');
+    if(ci) ci.innerHTML=INCOME_FIELDS.map(catRowHTML).join('');
+    if(bl) bl.innerHTML=EXPENSE_FIELDS.map(budgetRowHTML).join('')||'<div style="color:var(--muted);text-align:center;padding:14px;font-size:0.82rem">No expense categories yet</div>';
+    if(al) al.innerHTML=ACCOUNTS.map(accountRowHTML).join('')||'<div style="color:var(--muted);text-align:center;padding:14px;font-size:0.82rem">No accounts yet</div>';
+    _renderedSettingsListsSig=sig;
+  }
   if(gi) gi.value=SAVINGS_GOAL||'';
-  if(al) al.innerHTML=ACCOUNTS.map(accountRowHTML).join('')||'<div style="color:var(--muted);text-align:center;padding:14px;font-size:0.82rem">No accounts yet</div>';
 }
 function openSettings(tab){
   renderSettingsLists();
@@ -2359,23 +2392,18 @@ function saveGoal(){
 // loadDay() so other flows (adding a category for today, pin/settings changes) can
 // re-populate the DOM after a re-render without re-fetching or resetting visibility.
 function applyDayValuesToDOM(data){
-  currentReceipts={};
   ALL_FIELDS.forEach(f=>{
     const el=document.getElementById('f_'+f.id);
     if(el) el.value=data[f.id]||'';
     const noteEl=document.getElementById('note_'+f.id);
     const noteVal=data['note_'+f.id]||'';
     if(noteEl) noteEl.value=noteVal;
-    currentReceipts[f.id]=data['receipt_'+f.id]||null;
-    renderReceiptPreview(f.id);
-    const hasReceipt=!!currentReceipts[f.id];
     const row=document.getElementById('noterow_'+f.id);
     const frow=document.getElementById('nbtn_'+f.id)?.closest('.field-row');
-    const showRow=!!noteVal||hasReceipt;
+    const showRow=!!noteVal;
     if(row) row.classList.toggle('open', showRow);
     if(frow) frow.classList.toggle('note-open', showRow);
     updateNoteIndicator(f.id, !!noteVal);
-    updateReceiptIndicator(f.id, hasReceipt);
     const acctEl=document.getElementById('acct_'+f.id);
     if(acctEl) acctEl.value=data['acct_'+f.id]||defaultIncomeAccountId()||'';
     updateAcctIcon(f.id);
@@ -2396,7 +2424,7 @@ function loadDay(d){
 // controls:
 //   ⭐/☆  pin toggle   — permanent: pinned categories show in Day view every day
 //   +/−   for today     — temporary: shows/hides this one category just for today
-// A category with a real amount/note/receipt today can't be removed from display —
+// A category with a real amount/note today can't be removed from display —
 // it must stay visible until that data is cleared.
 function openAddFieldModal(type){
   window._addFieldModalType=type;
@@ -2479,111 +2507,6 @@ function updateNoteIndicator(id,hasNote){
   document.getElementById('nbtn_'+id)?.classList.toggle('has-note', hasNote);
 }
 
-// ── RECEIPT PHOTOS (per item, Day section only) ──────────────
-function updateReceiptIndicator(id,hasReceipt){
-  document.getElementById('rbtn_'+id)?.classList.toggle('has-receipt', hasReceipt);
-}
-
-function renderReceiptPreview(id){
-  const c=document.getElementById('rprev_'+id);
-  if(!c) return;
-  const url=currentReceipts[id];
-  c.innerHTML=url?`<div class="receipt-thumb-wrap"><img src="${url}" class="receipt-thumb" onclick="openReceiptViewer('${id}')" alt="Receipt"><button type="button" class="receipt-remove" onclick="event.stopPropagation();removeReceipt('${id}')" title="Remove">✕</button></div>`:'';
-}
-
-function triggerReceipt(id){
-  if(currentReceipts[id]){ openReceiptViewer(id); return; }
-  document.getElementById('rfile_'+id)?.click();
-}
-
-// Resizes + compresses the chosen photo client-side (canvas → JPEG) so it stays
-// small enough to fit comfortably in a Firestore document alongside everything else.
-function compressImageFile(file){
-  return new Promise((resolve,reject)=>{
-    if(!file||!file.type||!file.type.startsWith('image/')){ reject(new Error('Not an image')); return; }
-    const reader=new FileReader();
-    reader.onerror=()=>reject(new Error('Read failed'));
-    reader.onload=()=>{
-      const img=new Image();
-      img.onerror=()=>reject(new Error('Image load failed'));
-      img.onload=()=>{
-        const maxDim=700;
-        let{width,height}=img;
-        if(width>height&&width>maxDim){ height=Math.round(height*maxDim/width); width=maxDim; }
-        else if(height>=width&&height>maxDim){ width=Math.round(width*maxDim/height); height=maxDim; }
-        const canvas=document.createElement('canvas');
-        canvas.width=width; canvas.height=height;
-        canvas.getContext('2d').drawImage(img,0,0,width,height);
-        let quality=0.55, dataUrl=canvas.toDataURL('image/jpeg',quality);
-        while(dataUrl.length>150000&&quality>0.25){ quality-=0.08; dataUrl=canvas.toDataURL('image/jpeg',quality); }
-        resolve(dataUrl);
-      };
-      img.src=reader.result;
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-async function onReceiptFileChosen(id,file){
-  if(!file) return;
-  const fileInput=document.getElementById('rfile_'+id);
-  showToast('Processing photo…');
-  try{
-    const dataUrl=await compressImageFile(file);
-    currentReceipts[id]=dataUrl;
-    renderReceiptPreview(id);
-    const row=document.getElementById('noterow_'+id);
-    const frow=document.getElementById('nbtn_'+id)?.closest('.field-row');
-    if(row) row.classList.add('open');
-    if(frow) frow.classList.add('note-open');
-    updateReceiptIndicator(id,true);
-    scheduleAutoSave();
-    showToast('Receipt attached ✓');
-  }catch(e){
-    console.error('Receipt processing failed:',e);
-    showToast('Could not use that photo','error');
-  }finally{
-    if(fileInput) fileInput.value='';
-  }
-}
-
-function removeReceipt(id){
-  delete currentReceipts[id];
-  renderReceiptPreview(id);
-  updateReceiptIndicator(id,false);
-  const noteEl=document.getElementById('note_'+id);
-  const hasNote=noteEl&&noteEl.value.trim().length>0;
-  if(!hasNote){
-    const row=document.getElementById('noterow_'+id);
-    const frow=document.getElementById('nbtn_'+id)?.closest('.field-row');
-    if(row) row.classList.remove('open');
-    if(frow) frow.classList.remove('note-open');
-  }
-  scheduleAutoSave();
-  showToast('Receipt removed');
-}
-
-function openReceiptViewer(id){
-  const url=currentReceipts[id];
-  if(!url) return;
-  const f=ALL_FIELDS.find(x=>x.id===id);
-  document.getElementById('receiptViewerTitle').textContent=(f?f.icon+' '+f.label:'🧾 Receipt');
-  document.getElementById('receiptViewerImg').src=url;
-  window._receiptViewerId=id;
-  document.getElementById('receiptViewerModal').classList.add('open');
-}
-function closeReceiptViewer(){ document.getElementById('receiptViewerModal').classList.remove('open'); }
-function replaceReceiptFromViewer(){
-  const id=window._receiptViewerId;
-  closeReceiptViewer();
-  document.getElementById('rfile_'+id)?.click();
-}
-function removeReceiptFromViewer(){
-  const id=window._receiptViewerId;
-  closeReceiptViewer();
-  if(id) removeReceipt(id);
-}
-
 function getVal(id){return parseFloat(document.getElementById(id)?.value)||0;}
 
 function fmt(n,sign=false){
@@ -2620,7 +2543,6 @@ function collectDayData(){
     const noteEl=document.getElementById('note_'+f.id);
     const noteVal=noteEl?noteEl.value.trim():'';
     if(noteVal) data['note_'+f.id]=noteVal;
-    if(currentReceipts[f.id]) data['receipt_'+f.id]=currentReceipts[f.id];
     const acctEl=document.getElementById('acct_'+f.id);
     if(acctEl) data['acct_'+f.id]=acctEl.value;
   });
@@ -2735,6 +2657,13 @@ function shiftNav(delta){
 }
 
 // ─── SWITCH VIEW ─────────────────────────────────────────────────────────────
+// Tracks the view last rendered by switchView() itself, so re-tapping the
+// tab you're already on doesn't redo the chart/list rebuild for nothing.
+// Any other flow that mutates data (onMonthChange, category edits, import,
+// etc.) already calls renderSummary()/renderYearly()/renderInsightsTab()
+// directly via its own `.classList.contains('active')` check elsewhere in
+// the file — those are unaffected and still always refresh.
+let _lastRenderedView=null;
 function switchView(view){
   document.getElementById('daySection').className=(view==='day'?'':'hidden');
   document.getElementById('summarySection').className='summary-section'+(view==='summary'?' active':'');
@@ -2743,9 +2672,12 @@ function switchView(view){
   ['day','summary','yearly','insights'].forEach(v=>{
     document.getElementById('bnav-'+v).className='bnav-btn'+(v===view?' active':'');
   });
-  if(view==='summary') renderSummary();
-  if(view==='yearly') renderYearly();
-  if(view==='insights') renderInsightsTab();
+  if(view!==_lastRenderedView){
+    if(view==='summary') renderSummary();
+    if(view==='yearly') renderYearly();
+    if(view==='insights') renderInsightsTab();
+    _lastRenderedView=view;
+  }
   closeNavDrawer();
 }
 
@@ -2784,10 +2716,16 @@ window.addEventListener('resize', layoutNavForWidth);
 layoutNavForWidth();
 
 // ─── SEARCH (notes + transactions across every saved day) ───────────────────
+let searchDebounceTimer=null;
+const SEARCH_PAGE_SIZE=30; // initial rows shown before "Show more" — same idea as AH_PAGE_SIZE for account history
+let searchFullResults=[]; // full (capped-at-150) result set for the current query
+let searchShowingAll=false;
 function openSearch(){
   document.getElementById('searchModal').classList.add('open');
   const input=document.getElementById('searchInput');
   input.value='';
+  clearTimeout(searchDebounceTimer);
+  searchFullResults=[]; searchShowingAll=false;
   document.getElementById('searchResults').innerHTML='<div class="search-hint">Type to search your notes and transactions…</div>';
   setTimeout(()=>input.focus(),50);
 }
@@ -2804,7 +2742,7 @@ function searchAllTransactions(query){
       if(amt<=0&&!note) return;
       const haystack=(f.label+' '+note).toLowerCase();
       if(haystack.includes(q)){
-        results.push({y,mo,d,field:f,amount:amt,note,receipt:data['receipt_'+f.id]||null,isIncome:INCOME_FIELDS.some(x=>x.id===f.id)});
+        results.push({y,mo,d,field:f,amount:amt,note,isIncome:INCOME_FIELDS.some(x=>x.id===f.id)});
       }
     });
   });
@@ -2812,32 +2750,49 @@ function searchAllTransactions(query){
   return results.slice(0,150);
 }
 
-function performSearch(){
-  const q=document.getElementById('searchInput').value;
-  const box=document.getElementById('searchResults');
-  if(!q.trim()){
-    box.innerHTML='<div class="search-hint">Type to search your notes and transactions…</div>';
-    return;
-  }
-  const results=searchAllTransactions(q);
-  if(!results.length){
-    box.innerHTML='<div class="search-hint">No matches found</div>';
-    return;
-  }
-  box.innerHTML=results.map(r=>{
-    const dateStr=new Date(r.y,r.mo,r.d).toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'});
-    const amtClass=r.isIncome?'inc':'exp';
-    const thumb=r.receipt?`<img src="${r.receipt}" class="sr-thumb" alt="">`:'';
-    return `<div class="search-result-row" onclick="jumpToSearchResult(${r.y},${r.mo},${r.d})">
+function searchResultRowHTML(r){
+  const dateStr=new Date(r.y,r.mo,r.d).toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'});
+  const amtClass=r.isIncome?'inc':'exp';
+  return `<div class="search-result-row" onclick="jumpToSearchResult(${r.y},${r.mo},${r.d})">
       <span class="sr-icon">${r.field.icon}</span>
       <div class="sr-main">
         <div class="sr-label-line"><span>${escHtml(r.field.label)}</span><span class="sr-amt ${amtClass}">${fmt(r.amount)}</span></div>
         ${r.note?`<div class="sr-note">📝 ${escHtml(r.note)}</div>`:''}
         <div class="sr-date">${dateStr}</div>
       </div>
-      ${thumb}
     </div>`;
-  }).join('');
+}
+// Renders only the first page of results (plus a "Show more" button) instead of
+// dumping up to 150 rows into the DOM at once — same pattern as renderAcctHistoryList().
+function renderSearchResults(){
+  const box=document.getElementById('searchResults');
+  if(!searchFullResults.length){ box.innerHTML='<div class="search-hint">No matches found</div>'; return; }
+  const list=searchShowingAll?searchFullResults:searchFullResults.slice(0,SEARCH_PAGE_SIZE);
+  let html=list.map(searchResultRowHTML).join('');
+  if(!searchShowingAll&&searchFullResults.length>SEARCH_PAGE_SIZE){
+    html+=`<button class="btn-outline" style="margin-top:2px" onclick="showAllSearchResults()">Show all ${searchFullResults.length} results</button>`;
+  }
+  box.innerHTML=html;
+}
+function showAllSearchResults(){ searchShowingAll=true; renderSearchResults(); }
+
+// Debounced (~200ms) so search doesn't re-run on every keystroke — but an
+// emptied query clears synchronously with no delay, since that's just
+// restoring the static hint text, not a search.
+function performSearch(){
+  const q=document.getElementById('searchInput').value;
+  const box=document.getElementById('searchResults');
+  clearTimeout(searchDebounceTimer);
+  if(!q.trim()){
+    searchFullResults=[]; searchShowingAll=false;
+    box.innerHTML='<div class="search-hint">Type to search your notes and transactions…</div>';
+    return;
+  }
+  searchDebounceTimer=setTimeout(()=>{
+    searchFullResults=searchAllTransactions(q);
+    searchShowingAll=false;
+    renderSearchResults();
+  },200);
 }
 
 async function jumpToSearchResult(y,mo,d){
@@ -3295,7 +3250,7 @@ function renderSavingsGoalCard(catTotals){
   container.innerHTML=`<div class="goal-card">
     <div class="goal-head"><span>🎯 Savings Goal — ${MONTHS[curMonth]}</span><span class="goal-edit" onclick="openSettings('goal')" title="Edit goal">✏️</span></div>
     <div class="goal-amounts"><span class="goal-saved${saved<0?' neg':''}">${fmt(saved)}</span><span class="goal-of">of ${fmt(SAVINGS_GOAL)} target</span></div>
-    <div class="goal-bar-track"><div class="goal-bar-fill" style="width:${pct}%"></div></div>
+    <div class="goal-bar-track"><div class="goal-bar-fill" style="transform:scaleX(${pct/100})"></div></div>
     <div class="goal-pct">${pct.toFixed(0)}% reached</div>
   </div>`;
 }
@@ -3665,7 +3620,7 @@ function renderBudgets(catTotals){
     const paceTitle=elapsedDays>0?`${fmt(used)} spent vs ${fmt(expectedSoFar)} expected by day ${elapsedDays}`:'';
     return `<div class="budget-row" style="cursor:pointer" title="View entries" onclick="openCategoryDetail('${f.id}')">
       <div class="budget-row-top"><span><span class="pace-dot ${paceCls}" title="${paceTitle}"></span>${f.icon} ${escHtml(f.label)}</span><span class="${over?'over-text':''}">${fmt(used)} / ${fmt(f.budget)}</span></div>
-      <div class="budget-bar-track"><div class="budget-bar-fill ${cls}" style="width:${pct}%"></div></div>
+      <div class="budget-bar-track"><div class="budget-bar-fill ${cls}" style="transform:scaleX(${pct/100})"></div></div>
     </div>`;
   }).join('');
 }
@@ -4275,161 +4230,195 @@ function showToast(msg,err=false){
   t.className='toast show'+(err?' error':'');
   setTimeout(()=>t.className='toast',2200);
 }
+// Lets the browser paint (e.g. a just-shown toast) before a heavy synchronous
+// block runs — a microtask (plain Promise) isn't enough for that, it needs an
+// actual macrotask boundary.
+function yieldToUI(){ return new Promise(r=>setTimeout(r,0)); }
 
 // ─── EXPORT: TODAY PDF ────────────────────────────────────────────────────────
 function exportDayPDF(){
-  const data=getDay(curYear,curMonth,currentDay);
-  const exp=EXPENSE_FIELDS.reduce((s,f)=>s+(data[f.id]||0),0);
-  const inc=INCOME_FIELDS.reduce((s,f)=>s+(data[f.id]||0),0);
-  const net=inc-exp;
-  const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  let rows='';
-  EXPENSE_FIELDS.forEach(f=>{
-    const v=data[f.id]||0;
-    const note=data['note_'+f.id]||'';
-    if(v) rows+=`<tr><td>${f.icon} ${escHtml(f.label)}</td><td>Expense</td><td class="num exp">${v.toLocaleString('en-IN')}</td><td>${esc(note)}</td></tr>`;
-  });
-  rows+=`<tr class="subtotal"><td colspan="2">Total Expense</td><td class="num exp">${exp.toLocaleString('en-IN')}</td><td></td></tr>`;
-  INCOME_FIELDS.forEach(f=>{
-    const v=data[f.id]||0;
-    const note=data['note_'+f.id]||'';
-    if(v) rows+=`<tr><td>${f.icon} ${escHtml(f.label)}</td><td>Income</td><td class="num inc">${v.toLocaleString('en-IN')}</td><td>${esc(note)}</td></tr>`;
-  });
-  rows+=`<tr class="subtotal"><td colspan="2">Total Income</td><td class="num inc">${inc.toLocaleString('en-IN')}</td><td></td></tr>`;
-  rows+=`<tr class="grand"><td colspan="2">Net Balance</td><td class="num ${net>=0?'inc':'exp'}">${net.toLocaleString('en-IN')}</td><td></td></tr>`;
-  printHTML(pdfStyle()+`<h1>💰 Money Tracker — Day ${currentDay}</h1><div class="sub">${new Date(curYear,curMonth,currentDay).toLocaleDateString('en-US',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div><table><tr><th>Category</th><th>Type</th><th class="num">Amount (৳)</th><th>Note</th></tr>${rows}</table>`);
-  showToast('PDF ready ✓');
+  const printWin=window.open('','_blank'); // opened synchronously so popup blockers don't kill it
+  showToast('Generating PDF…');
+  setTimeout(()=>{
+    try{
+      if(!printWin) throw new Error('popup-blocked');
+      const data=getDay(curYear,curMonth,currentDay);
+      const exp=EXPENSE_FIELDS.reduce((s,f)=>s+(data[f.id]||0),0);
+      const inc=INCOME_FIELDS.reduce((s,f)=>s+(data[f.id]||0),0);
+      const net=inc-exp;
+      const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      let rows='';
+      EXPENSE_FIELDS.forEach(f=>{
+        const v=data[f.id]||0;
+        const note=data['note_'+f.id]||'';
+        if(v) rows+=`<tr><td>${f.icon} ${escHtml(f.label)}</td><td>Expense</td><td class="num exp">${v.toLocaleString('en-IN')}</td><td>${esc(note)}</td></tr>`;
+      });
+      rows+=`<tr class="subtotal"><td colspan="2">Total Expense</td><td class="num exp">${exp.toLocaleString('en-IN')}</td><td></td></tr>`;
+      INCOME_FIELDS.forEach(f=>{
+        const v=data[f.id]||0;
+        const note=data['note_'+f.id]||'';
+        if(v) rows+=`<tr><td>${f.icon} ${escHtml(f.label)}</td><td>Income</td><td class="num inc">${v.toLocaleString('en-IN')}</td><td>${esc(note)}</td></tr>`;
+      });
+      rows+=`<tr class="subtotal"><td colspan="2">Total Income</td><td class="num inc">${inc.toLocaleString('en-IN')}</td><td></td></tr>`;
+      rows+=`<tr class="grand"><td colspan="2">Net Balance</td><td class="num ${net>=0?'inc':'exp'}">${net.toLocaleString('en-IN')}</td><td></td></tr>`;
+      printHTML(pdfStyle()+`<h1>💰 Money Tracker — Day ${currentDay}</h1><div class="sub">${new Date(curYear,curMonth,currentDay).toLocaleDateString('en-US',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div><table><tr><th>Category</th><th>Type</th><th class="num">Amount (৳)</th><th>Note</th></tr>${rows}</table>`, printWin);
+      showToast('PDF ready ✓');
+    }catch(err){
+      console.error('Day PDF export failed:',err);
+      showToast(err&&err.message==='popup-blocked'?'Popup blocked — allow popups to export PDF':'PDF export failed — check console','error');
+    }
+  },10);
 }
 
 // ─── EXPORT: MONTH PDF ────────────────────────────────────────────────────────
 function exportMonthPDF(){
-  const{totalExp,totalInc,net,catTotals,daily}=calcMonth(curYear,curMonth);
-  let catRows='',dayRows='';
-  EXPENSE_FIELDS.forEach(f=>{if(catTotals[f.id]) catRows+=`<tr><td>${f.icon} ${escHtml(f.label)}</td><td>Expense</td><td class="num exp">${catTotals[f.id].toLocaleString('en-IN')}</td></tr>`;});
-  INCOME_FIELDS.forEach(f=>{if(catTotals[f.id]) catRows+=`<tr><td>${f.icon} ${escHtml(f.label)}</td><td>Income</td><td class="num inc">${catTotals[f.id].toLocaleString('en-IN')}</td></tr>`;});
-  daily.forEach(({day,exp,inc,net:n})=>{
-    dayRows+=`<tr><td>Day ${day}</td><td class="num exp">${exp.toLocaleString('en-IN')}</td><td class="num inc">${inc.toLocaleString('en-IN')}</td><td class="num ${n>=0?'inc':'exp'}">${n.toLocaleString('en-IN')}</td></tr>`;
-  });
+  const printWin=window.open('','_blank'); // opened synchronously so popup blockers don't kill it
+  showToast('Generating PDF…');
+  setTimeout(()=>{
+    try{
+      if(!printWin) throw new Error('popup-blocked');
+      const{totalExp,totalInc,net,catTotals,daily}=calcMonth(curYear,curMonth);
+      let catRows='',dayRows='';
+      EXPENSE_FIELDS.forEach(f=>{if(catTotals[f.id]) catRows+=`<tr><td>${f.icon} ${escHtml(f.label)}</td><td>Expense</td><td class="num exp">${catTotals[f.id].toLocaleString('en-IN')}</td></tr>`;});
+      INCOME_FIELDS.forEach(f=>{if(catTotals[f.id]) catRows+=`<tr><td>${f.icon} ${escHtml(f.label)}</td><td>Income</td><td class="num inc">${catTotals[f.id].toLocaleString('en-IN')}</td></tr>`;});
+      daily.forEach(({day,exp,inc,net:n})=>{
+        dayRows+=`<tr><td>Day ${day}</td><td class="num exp">${exp.toLocaleString('en-IN')}</td><td class="num inc">${inc.toLocaleString('en-IN')}</td><td class="num ${n>=0?'inc':'exp'}">${n.toLocaleString('en-IN')}</td></tr>`;
+      });
 
-  // Detailed day section: every recorded day (1..30/31), one by one — only
-  // fields with a non-zero amount are listed, zero fields are skipped.
-  let dayDetailHtml='';
-  daily.forEach(({day,net:n,data})=>{
-    const dateStr=new Date(curYear,curMonth,day).toLocaleDateString('en-US',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-    let dRows='';
-    EXPENSE_FIELDS.forEach(f=>{
-      const v=data[f.id]||0;
-      if(!v) return;
-      const note=data['note_'+f.id]||'';
-      dRows+=`<tr><td>${f.icon} ${escHtml(f.label)}</td><td>Expense</td><td class="num exp">${v.toLocaleString('en-IN')}</td><td>${escHtml(note)}</td></tr>`;
-    });
-    INCOME_FIELDS.forEach(f=>{
-      const v=data[f.id]||0;
-      if(!v) return;
-      const note=data['note_'+f.id]||'';
-      dRows+=`<tr><td>${f.icon} ${escHtml(f.label)}</td><td>Income</td><td class="num inc">${v.toLocaleString('en-IN')}</td><td>${escHtml(note)}</td></tr>`;
-    });
-    dRows+=`<tr class="grand"><td colspan="2">Net Balance</td><td class="num ${n>=0?'inc':'exp'}">${n.toLocaleString('en-IN')}</td><td></td></tr>`;
-    dayDetailHtml+=`<div class="day-block"><div class="day-block-head">Day ${day} · ${dateStr}</div><table><tr><th>Category</th><th>Type</th><th class="num">Amount (৳)</th><th>Note</th></tr>${dRows}</table></div>`;
-  });
-  if(!dayDetailHtml) dayDetailHtml='<div class="chart-nodata">No day-by-day data recorded yet</div>';
+      // Detailed day section: every recorded day (1..30/31), one by one — only
+      // fields with a non-zero amount are listed, zero fields are skipped.
+      let dayDetailHtml='';
+      daily.forEach(({day,net:n,data})=>{
+        const dateStr=new Date(curYear,curMonth,day).toLocaleDateString('en-US',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+        let dRows='';
+        EXPENSE_FIELDS.forEach(f=>{
+          const v=data[f.id]||0;
+          if(!v) return;
+          const note=data['note_'+f.id]||'';
+          dRows+=`<tr><td>${f.icon} ${escHtml(f.label)}</td><td>Expense</td><td class="num exp">${v.toLocaleString('en-IN')}</td><td>${escHtml(note)}</td></tr>`;
+        });
+        INCOME_FIELDS.forEach(f=>{
+          const v=data[f.id]||0;
+          if(!v) return;
+          const note=data['note_'+f.id]||'';
+          dRows+=`<tr><td>${f.icon} ${escHtml(f.label)}</td><td>Income</td><td class="num inc">${v.toLocaleString('en-IN')}</td><td>${escHtml(note)}</td></tr>`;
+        });
+        dRows+=`<tr class="grand"><td colspan="2">Net Balance</td><td class="num ${n>=0?'inc':'exp'}">${n.toLocaleString('en-IN')}</td><td></td></tr>`;
+        dayDetailHtml+=`<div class="day-block"><div class="day-block-head">Day ${day} · ${dateStr}</div><table><tr><th>Category</th><th>Type</th><th class="num">Amount (৳)</th><th>Note</th></tr>${dRows}</table></div>`;
+      });
+      if(!dayDetailHtml) dayDetailHtml='<div class="chart-nodata">No day-by-day data recorded yet</div>';
 
-  // Insights (top category + month-over-month changes, same logic as the on-screen Insights card)
-  const{y:py,m:pm}=getPrevMonth(curYear,curMonth);
-  // Same like-for-like comparison as the on-screen card: cap the previous month
-  // at the same day-of-month reached this month, rather than its full total.
-  const elapsedDaysForCompare=getElapsedDaysInMonth(curYear,curMonth)||daysInMonth(curYear,curMonth);
-  const prevData=calcMonthUpTo(py,pm,elapsedDaysForCompare);
-  let insightsHtml='';
-  const topEntries=EXPENSE_FIELDS.map(f=>({f,val:catTotals[f.id]||0})).filter(e=>e.val>0).sort((a,b)=>b.val-a.val);
-  if(topEntries.length){
-    const top=topEntries[0];
-    const share=totalExp>0?((top.val/totalExp)*100).toFixed(0):0;
-    insightsHtml+=`<div class="insight-box">🔥 <strong>Top Spending Category:</strong> ${top.f.icon} ${escHtml(top.f.label)} — ${top.val.toLocaleString('en-IN')} (${share}% of this month's expense)</div>`;
-  }
-  const changes=[];
-  ALL_FIELDS.forEach(f=>{
-    const isInc=INCOME_FIELDS.some(x=>x.id===f.id);
-    const cur=catTotals[f.id]||0;
-    const prevVal=prevData.catTotals[f.id]||0;
-    if(cur===0&&prevVal===0) return;
-    if(prevVal===0) return;
-    const pct=((cur-prevVal)/prevVal)*100;
-    if(Math.abs(pct)<1) return;
-    changes.push({f,isInc,pct});
-  });
-  changes.sort((a,b)=>Math.abs(b.pct)-Math.abs(a.pct));
-  if(changes.length){
-    insightsHtml+='<ul class="insight-list">'+changes.slice(0,3).map(c=>{
-      const up=c.pct>0;
-      const goodDirection=c.isInc?up:!up;
-      const arrow=up?'▲':'▼';
-      return `<li>${c.f.icon} ${escHtml(c.f.label)} <span class="${goodDirection?'inc':'exp'}">${arrow} ${Math.abs(c.pct).toFixed(0)}%</span> vs last month (${MONTHS[pm]})</li>`;
-    }).join('')+'</ul>';
-  } else {
-    insightsHtml+='<div class="chart-nodata">Not enough history yet to compare with last month</div>';
-  }
-  if(!insightsHtml) insightsHtml='<div class="chart-nodata">No insights available yet</div>';
+      // Insights (top category + month-over-month changes, same logic as the on-screen Insights card)
+      const{y:py,m:pm}=getPrevMonth(curYear,curMonth);
+      // Same like-for-like comparison as the on-screen card: cap the previous month
+      // at the same day-of-month reached this month, rather than its full total.
+      const elapsedDaysForCompare=getElapsedDaysInMonth(curYear,curMonth)||daysInMonth(curYear,curMonth);
+      const prevData=calcMonthUpTo(py,pm,elapsedDaysForCompare);
+      let insightsHtml='';
+      const topEntries=EXPENSE_FIELDS.map(f=>({f,val:catTotals[f.id]||0})).filter(e=>e.val>0).sort((a,b)=>b.val-a.val);
+      if(topEntries.length){
+        const top=topEntries[0];
+        const share=totalExp>0?((top.val/totalExp)*100).toFixed(0):0;
+        insightsHtml+=`<div class="insight-box">🔥 <strong>Top Spending Category:</strong> ${top.f.icon} ${escHtml(top.f.label)} — ${top.val.toLocaleString('en-IN')} (${share}% of this month's expense)</div>`;
+      }
+      const changes=[];
+      ALL_FIELDS.forEach(f=>{
+        const isInc=INCOME_FIELDS.some(x=>x.id===f.id);
+        const cur=catTotals[f.id]||0;
+        const prevVal=prevData.catTotals[f.id]||0;
+        if(cur===0&&prevVal===0) return;
+        if(prevVal===0) return;
+        const pct=((cur-prevVal)/prevVal)*100;
+        if(Math.abs(pct)<1) return;
+        changes.push({f,isInc,pct});
+      });
+      changes.sort((a,b)=>Math.abs(b.pct)-Math.abs(a.pct));
+      if(changes.length){
+        insightsHtml+='<ul class="insight-list">'+changes.slice(0,3).map(c=>{
+          const up=c.pct>0;
+          const goodDirection=c.isInc?up:!up;
+          const arrow=up?'▲':'▼';
+          return `<li>${c.f.icon} ${escHtml(c.f.label)} <span class="${goodDirection?'inc':'exp'}">${arrow} ${Math.abs(c.pct).toFixed(0)}%</span> vs last month (${MONTHS[pm]})</li>`;
+        }).join('')+'</ul>';
+      } else {
+        insightsHtml+='<div class="chart-nodata">Not enough history yet to compare with last month</div>';
+      }
+      if(!insightsHtml) insightsHtml='<div class="chart-nodata">No insights available yet</div>';
 
-  // Charts — captured as images from the currently rendered canvases
-  const chartsHtml=
-    canvasImg('comparisonChart','Category Comparison — This Month vs Last Month')+
-    canvasImg('dailyBarChart','Daily Trend')+
-    canvasImg('dailyAreaChart','Expense Curve')+
-    canvasImg('categoryPieChart','Category Breakdown');
+      // Charts — captured as images from the currently rendered canvases
+      const chartsHtml=
+        canvasImg('comparisonChart','Category Comparison — This Month vs Last Month')+
+        canvasImg('dailyBarChart','Daily Trend')+
+        canvasImg('dailyAreaChart','Expense Curve')+
+        canvasImg('categoryPieChart','Category Breakdown');
 
-  printHTML(pdfStyle()+`
-    <h1>💰 Money Tracker — ${MONTHS[curMonth]} ${curYear}</h1>
-    <div class="sub">Monthly Report | Generated: ${new Date().toLocaleDateString('en-US',{day:'numeric',month:'long',year:'numeric'})}</div>
-    <div class="overview">
-      <div class="ov"><div class="ol">Total Expense</div><div class="ov-val exp">${totalExp.toLocaleString('en-IN')}</div></div>
-      <div class="ov"><div class="ol">Total Income</div><div class="ov-val inc">${totalInc.toLocaleString('en-IN')}</div></div>
-      <div class="ov"><div class="ol">Net Balance</div><div class="ov-val ${net>=0?'inc':'exp'}">${net.toLocaleString('en-IN')}</div></div>
-    </div>
-    <div class="sh">Insights</div>
-    ${insightsHtml}
-    ${chartsHtml}
-    <div class="sh">Category Breakdown</div>
-    <table><tr><th>Category</th><th>Type</th><th class="num">Amount (৳)</th></tr>${catRows}</table>
-    <div class="sh">Day by Day (Summary)</div>
-    <table><tr><th>Day</th><th class="num">Expense</th><th class="num">Income</th><th class="num">Net</th></tr>${dayRows}</table>
-    <div class="sh">Day by Day (Detailed — non-zero fields only)</div>
-    ${dayDetailHtml}`);
-  showToast('PDF ready ✓');
+      printHTML(pdfStyle()+`
+        <h1>💰 Money Tracker — ${MONTHS[curMonth]} ${curYear}</h1>
+        <div class="sub">Monthly Report | Generated: ${new Date().toLocaleDateString('en-US',{day:'numeric',month:'long',year:'numeric'})}</div>
+        <div class="overview">
+          <div class="ov"><div class="ol">Total Expense</div><div class="ov-val exp">${totalExp.toLocaleString('en-IN')}</div></div>
+          <div class="ov"><div class="ol">Total Income</div><div class="ov-val inc">${totalInc.toLocaleString('en-IN')}</div></div>
+          <div class="ov"><div class="ol">Net Balance</div><div class="ov-val ${net>=0?'inc':'exp'}">${net.toLocaleString('en-IN')}</div></div>
+        </div>
+        <div class="sh">Insights</div>
+        ${insightsHtml}
+        ${chartsHtml}
+        <div class="sh">Category Breakdown</div>
+        <table><tr><th>Category</th><th>Type</th><th class="num">Amount (৳)</th></tr>${catRows}</table>
+        <div class="sh">Day by Day (Summary)</div>
+        <table><tr><th>Day</th><th class="num">Expense</th><th class="num">Income</th><th class="num">Net</th></tr>${dayRows}</table>
+        <div class="sh">Day by Day (Detailed — non-zero fields only)</div>
+        ${dayDetailHtml}`, printWin);
+      showToast('PDF ready ✓');
+    }catch(err){
+      console.error('Month PDF export failed:',err);
+      showToast(err&&err.message==='popup-blocked'?'Popup blocked — allow popups to export PDF':'PDF export failed — check console','error');
+    }
+  },10);
 }
 
 // ─── EXPORT: YEAR PDF ─────────────────────────────────────────────────────────
 function exportYearPDF(){
-  let yrExp=0,yrInc=0;
-  const yrCat={};
-  ALL_FIELDS.forEach(f=>yrCat[f.id]=0);
-  let mRows='',catRows='';
-  for(let m=0;m<12;m++){
-    const{totalExp,totalInc,net,catTotals}=calcMonth(curYear,m);
-    if(totalExp>0||totalInc>0){
-      yrExp+=totalExp; yrInc+=totalInc;
-      ALL_FIELDS.forEach(f=>yrCat[f.id]+=catTotals[f.id]);
-      mRows+=`<tr><td>${MONTHS[m]}</td><td class="num exp">${totalExp.toLocaleString('en-IN')}</td><td class="num inc">${totalInc.toLocaleString('en-IN')}</td><td class="num ${net>=0?'inc':'exp'}">${net.toLocaleString('en-IN')}</td></tr>`;
+  const printWin=window.open('','_blank'); // opened synchronously so popup blockers don't kill it
+  showToast('Generating PDF…');
+  setTimeout(()=>{
+    try{
+      if(!printWin) throw new Error('popup-blocked');
+      let yrExp=0,yrInc=0;
+      const yrCat={};
+      ALL_FIELDS.forEach(f=>yrCat[f.id]=0);
+      let mRows='',catRows='';
+      for(let m=0;m<12;m++){
+        const{totalExp,totalInc,net,catTotals}=calcMonth(curYear,m);
+        if(totalExp>0||totalInc>0){
+          yrExp+=totalExp; yrInc+=totalInc;
+          ALL_FIELDS.forEach(f=>yrCat[f.id]+=catTotals[f.id]);
+          mRows+=`<tr><td>${MONTHS[m]}</td><td class="num exp">${totalExp.toLocaleString('en-IN')}</td><td class="num inc">${totalInc.toLocaleString('en-IN')}</td><td class="num ${net>=0?'inc':'exp'}">${net.toLocaleString('en-IN')}</td></tr>`;
+        }
+      }
+      const yrNet=yrInc-yrExp;
+      EXPENSE_FIELDS.forEach(f=>{if(yrCat[f.id]) catRows+=`<tr><td>${f.icon} ${escHtml(f.label)}</td><td>Expense</td><td class="num exp">${yrCat[f.id].toLocaleString('en-IN')}</td></tr>`;});
+      INCOME_FIELDS.forEach(f=>{if(yrCat[f.id]) catRows+=`<tr><td>${f.icon} ${escHtml(f.label)}</td><td>Income</td><td class="num inc">${yrCat[f.id].toLocaleString('en-IN')}</td></tr>`;});
+      const chartsHtml=canvasImg('yearlyBarChart','Monthly Trend')+canvasImg('yearlyPieChart','Category Breakdown (Full Year)');
+      printHTML(pdfStyle()+`
+        <h1>💰 Money Tracker — ${curYear} Annual Report</h1>
+        <div class="sub">Generated: ${new Date().toLocaleDateString('en-US',{day:'numeric',month:'long',year:'numeric'})}</div>
+        <div class="overview">
+          <div class="ov"><div class="ol">Total Expense</div><div class="ov-val exp">${yrExp.toLocaleString('en-IN')}</div></div>
+          <div class="ov"><div class="ol">Total Income</div><div class="ov-val inc">${yrInc.toLocaleString('en-IN')}</div></div>
+          <div class="ov"><div class="ol">Net Balance</div><div class="ov-val ${yrNet>=0?'inc':'exp'}">${yrNet.toLocaleString('en-IN')}</div></div>
+        </div>
+        ${chartsHtml}
+        <div class="sh">Monthly Breakdown</div>
+        <table><tr><th>Month</th><th class="num">Expense</th><th class="num">Income</th><th class="num">Net</th></tr>${mRows}</table>
+        <div class="sh">Category Breakdown (Full Year)</div>
+        <table><tr><th>Category</th><th>Type</th><th class="num">Amount (৳)</th></tr>${catRows}</table>`, printWin);
+      showToast('PDF ready ✓');
+    }catch(err){
+      console.error('Year PDF export failed:',err);
+      showToast(err&&err.message==='popup-blocked'?'Popup blocked — allow popups to export PDF':'PDF export failed — check console','error');
     }
-  }
-  const yrNet=yrInc-yrExp;
-  EXPENSE_FIELDS.forEach(f=>{if(yrCat[f.id]) catRows+=`<tr><td>${f.icon} ${escHtml(f.label)}</td><td>Expense</td><td class="num exp">${yrCat[f.id].toLocaleString('en-IN')}</td></tr>`;});
-  INCOME_FIELDS.forEach(f=>{if(yrCat[f.id]) catRows+=`<tr><td>${f.icon} ${escHtml(f.label)}</td><td>Income</td><td class="num inc">${yrCat[f.id].toLocaleString('en-IN')}</td></tr>`;});
-  const chartsHtml=canvasImg('yearlyBarChart','Monthly Trend')+canvasImg('yearlyPieChart','Category Breakdown (Full Year)');
-  printHTML(pdfStyle()+`
-    <h1>💰 Money Tracker — ${curYear} Annual Report</h1>
-    <div class="sub">Generated: ${new Date().toLocaleDateString('en-US',{day:'numeric',month:'long',year:'numeric'})}</div>
-    <div class="overview">
-      <div class="ov"><div class="ol">Total Expense</div><div class="ov-val exp">${yrExp.toLocaleString('en-IN')}</div></div>
-      <div class="ov"><div class="ol">Total Income</div><div class="ov-val inc">${yrInc.toLocaleString('en-IN')}</div></div>
-      <div class="ov"><div class="ol">Net Balance</div><div class="ov-val ${yrNet>=0?'inc':'exp'}">${yrNet.toLocaleString('en-IN')}</div></div>
-    </div>
-    ${chartsHtml}
-    <div class="sh">Monthly Breakdown</div>
-    <table><tr><th>Month</th><th class="num">Expense</th><th class="num">Income</th><th class="num">Net</th></tr>${mRows}</table>
-    <div class="sh">Category Breakdown (Full Year)</div>
-    <table><tr><th>Category</th><th>Type</th><th class="num">Amount (৳)</th></tr>${catRows}</table>`);
-  showToast('PDF ready ✓');
+  },10);
 }
 
 // ─── EXCEL STYLING HELPERS (ExcelJS) ──────────────────────────────────────────
@@ -4518,103 +4507,117 @@ async function downloadWorkbook(wb,filename){
 // ─── EXPORT: MONTH EXCEL ──────────────────────────────────────────────────────
 async function exportMonthExcel(){
   if(typeof ExcelJS==='undefined'){ showToast('Excel engine still loading — try again in a sec','error'); return; }
-  const{totalExp,totalInc,net,catTotals,daily}=calcMonth(curYear,curMonth);
-  const detailCols=1+EXPENSE_FIELDS.length+1+INCOME_FIELDS.length+1+1; // Day + exp fields + TotalExp + inc fields + TotalInc + Net
-  const lastCol=Math.max(4,detailCols);
-  const wb=new ExcelJS.Workbook();
-  wb.creator='Money Tracker'; wb.created=new Date();
-  const ws=wb.addWorksheet('Monthly Report',{views:[{state:'frozen',ySplit:2}]});
+  showToast('Generating Excel…');
+  await yieldToUI();
+  try{
+    const{totalExp,totalInc,net,catTotals,daily}=calcMonth(curYear,curMonth);
+    const detailCols=1+EXPENSE_FIELDS.length+1+INCOME_FIELDS.length+1+1; // Day + exp fields + TotalExp + inc fields + TotalInc + Net
+    const lastCol=Math.max(4,detailCols);
+    const wb=new ExcelJS.Workbook();
+    wb.creator='Money Tracker'; wb.created=new Date();
+    const ws=wb.addWorksheet('Monthly Report',{views:[{state:'frozen',ySplit:2}]});
 
-  let r=1;
-  r=xlBanner(ws,r,lastCol,`💰 Money Tracker — ${MONTHS[curMonth]} ${curYear}`,{bg:XL_NAVY,size:14,height:26});
-  r=xlSubtitle(ws,r,lastCol,`Generated: ${new Date().toLocaleDateString('en-US',{day:'numeric',month:'long',year:'numeric'})}`);
-  r++;
+    let r=1;
+    r=xlBanner(ws,r,lastCol,`💰 Money Tracker — ${MONTHS[curMonth]} ${curYear}`,{bg:XL_NAVY,size:14,height:26});
+    r=xlSubtitle(ws,r,lastCol,`Generated: ${new Date().toLocaleDateString('en-US',{day:'numeric',month:'long',year:'numeric'})}`);
+    r++;
 
-  r=xlBanner(ws,r,lastCol,'OVERVIEW');
-  r=xlLabelValueRow(ws,r,lastCol,[{label:'Total Expense',value:totalExp,color:XL_EXP},{label:'Total Income',value:totalInc,color:XL_INC}]);
-  r=xlLabelValueRow(ws,r,lastCol,[{label:'Net Balance',value:net,color:net>=0?XL_INC:XL_EXP,big:true}]);
-  r++;
+    r=xlBanner(ws,r,lastCol,'OVERVIEW');
+    r=xlLabelValueRow(ws,r,lastCol,[{label:'Total Expense',value:totalExp,color:XL_EXP},{label:'Total Income',value:totalInc,color:XL_INC}]);
+    r=xlLabelValueRow(ws,r,lastCol,[{label:'Net Balance',value:net,color:net>=0?XL_INC:XL_EXP,big:true}]);
+    r++;
 
-  r=xlBanner(ws,r,lastCol,'CATEGORY BREAKDOWN');
-  r=xlTableHeader(ws,r,['Category','Type','Amount (BDT)']);
-  let band=false;
-  EXPENSE_FIELDS.forEach(f=>{ if(catTotals[f.id]){ r=xlDataRow(ws,r,[f.label,'Expense',catTotals[f.id]],{band,colorMap:{2:'exp'}}); band=!band; } });
-  INCOME_FIELDS.forEach(f=>{ if(catTotals[f.id]){ r=xlDataRow(ws,r,[f.label,'Income',catTotals[f.id]],{band,colorMap:{2:'inc'}}); band=!band; } });
-  r++;
+    r=xlBanner(ws,r,lastCol,'CATEGORY BREAKDOWN');
+    r=xlTableHeader(ws,r,['Category','Type','Amount (BDT)']);
+    let band=false;
+    EXPENSE_FIELDS.forEach(f=>{ if(catTotals[f.id]){ r=xlDataRow(ws,r,[f.label,'Expense',catTotals[f.id]],{band,colorMap:{2:'exp'}}); band=!band; } });
+    INCOME_FIELDS.forEach(f=>{ if(catTotals[f.id]){ r=xlDataRow(ws,r,[f.label,'Income',catTotals[f.id]],{band,colorMap:{2:'inc'}}); band=!band; } });
+    r++;
 
-  r=xlBanner(ws,r,lastCol,'DAY BY DAY');
-  r=xlTableHeader(ws,r,['Day','Total Expense','Total Income','Net Balance']);
-  band=false;
-  daily.forEach(({day,exp,inc,net:n})=>{
-    r=xlDataRow(ws,r,[`Day ${day}`,exp,inc,n],{band,colorMap:{1:'exp',2:'inc',3:n>=0?'inc':'exp'}});
-    band=!band;
-  });
-  r++;
+    r=xlBanner(ws,r,lastCol,'DAY BY DAY');
+    r=xlTableHeader(ws,r,['Day','Total Expense','Total Income','Net Balance']);
+    band=false;
+    daily.forEach(({day,exp,inc,net:n})=>{
+      r=xlDataRow(ws,r,[`Day ${day}`,exp,inc,n],{band,colorMap:{1:'exp',2:'inc',3:n>=0?'inc':'exp'}});
+      band=!band;
+    });
+    r++;
 
-  r=xlBanner(ws,r,lastCol,'DETAILED BREAKDOWN — every category, every day');
-  r=xlTableHeader(ws,r,['Day',...EXPENSE_FIELDS.map(f=>f.label),'Total Exp',...INCOME_FIELDS.map(f=>f.label),'Total Inc','Net']);
-  band=false;
-  daily.forEach(({day,data,exp,inc,net:n})=>{
-    const row=[`Day ${day}`,...EXPENSE_FIELDS.map(f=>data[f.id]||0),exp,...INCOME_FIELDS.map(f=>data[f.id]||0),inc,n];
-    r=xlDataRow(ws,r,row,{band});
-    band=!band;
-  });
+    r=xlBanner(ws,r,lastCol,'DETAILED BREAKDOWN — every category, every day');
+    r=xlTableHeader(ws,r,['Day',...EXPENSE_FIELDS.map(f=>f.label),'Total Exp',...INCOME_FIELDS.map(f=>f.label),'Total Inc','Net']);
+    band=false;
+    daily.forEach(({day,data,exp,inc,net:n})=>{
+      const row=[`Day ${day}`,...EXPENSE_FIELDS.map(f=>data[f.id]||0),exp,...INCOME_FIELDS.map(f=>data[f.id]||0),inc,n];
+      r=xlDataRow(ws,r,row,{band});
+      band=!band;
+    });
 
-  xlColWidths(ws,[14,...EXPENSE_FIELDS.map(()=>12),13,...INCOME_FIELDS.map(()=>12),13,13]);
+    xlColWidths(ws,[14,...EXPENSE_FIELDS.map(()=>12),13,...INCOME_FIELDS.map(()=>12),13,13]);
 
-  await downloadWorkbook(wb,`MoneyTracker_${MONTHS[curMonth]}_${curYear}.xlsx`);
-  showToast('Excel exported ✓');
+    await downloadWorkbook(wb,`MoneyTracker_${MONTHS[curMonth]}_${curYear}.xlsx`);
+    showToast('Excel exported ✓');
+  }catch(err){
+    console.error('Month Excel export failed:',err);
+    showToast('Excel export failed — check console','error');
+  }
 }
 
 // ─── EXPORT: YEAR EXCEL ───────────────────────────────────────────────────────
 async function exportYearExcel(){
   if(typeof ExcelJS==='undefined'){ showToast('Excel engine still loading — try again in a sec','error'); return; }
-  let yrExp=0,yrInc=0;
-  const yrCat={};
-  ALL_FIELDS.forEach(f=>yrCat[f.id]=0);
-  const monthRows=[];
-  for(let m=0;m<12;m++){
-    const{totalExp,totalInc,net,catTotals}=calcMonth(curYear,m);
-    if(totalExp>0||totalInc>0){
-      yrExp+=totalExp; yrInc+=totalInc;
-      ALL_FIELDS.forEach(f=>yrCat[f.id]+=catTotals[f.id]);
-      monthRows.push([MONTHS[m],totalExp,totalInc,net]);
+  showToast('Generating Excel…');
+  await yieldToUI();
+  try{
+    let yrExp=0,yrInc=0;
+    const yrCat={};
+    ALL_FIELDS.forEach(f=>yrCat[f.id]=0);
+    const monthRows=[];
+    for(let m=0;m<12;m++){
+      const{totalExp,totalInc,net,catTotals}=calcMonth(curYear,m);
+      if(totalExp>0||totalInc>0){
+        yrExp+=totalExp; yrInc+=totalInc;
+        ALL_FIELDS.forEach(f=>yrCat[f.id]+=catTotals[f.id]);
+        monthRows.push([MONTHS[m],totalExp,totalInc,net]);
+      }
     }
+    const lastCol=4;
+    const wb=new ExcelJS.Workbook();
+    wb.creator='Money Tracker'; wb.created=new Date();
+    const ws=wb.addWorksheet('Annual Report',{views:[{state:'frozen',ySplit:2}]});
+
+    let r=1;
+    r=xlBanner(ws,r,lastCol,`💰 Money Tracker — ${curYear} Annual Report`,{bg:XL_NAVY,size:14,height:26});
+    r=xlSubtitle(ws,r,lastCol,`Generated: ${new Date().toLocaleDateString('en-US',{day:'numeric',month:'long',year:'numeric'})}`);
+    r++;
+
+    r=xlBanner(ws,r,lastCol,'YEARLY OVERVIEW');
+    r=xlLabelValueRow(ws,r,lastCol,[{label:'Total Expense',value:yrExp,color:XL_EXP},{label:'Total Income',value:yrInc,color:XL_INC}]);
+    r=xlLabelValueRow(ws,r,lastCol,[{label:'Net Balance',value:yrInc-yrExp,color:(yrInc-yrExp)>=0?XL_INC:XL_EXP,big:true}]);
+    r++;
+
+    r=xlBanner(ws,r,lastCol,'MONTHLY BREAKDOWN');
+    r=xlTableHeader(ws,r,['Month','Total Expense','Total Income','Net Balance']);
+    let band=false;
+    monthRows.forEach(row=>{
+      r=xlDataRow(ws,r,row,{band,colorMap:{1:'exp',2:'inc',3:row[3]>=0?'inc':'exp'}});
+      band=!band;
+    });
+    r++;
+
+    r=xlBanner(ws,r,lastCol,'CATEGORY BREAKDOWN (FULL YEAR)');
+    r=xlTableHeader(ws,r,['Category','Type','Amount (BDT)']);
+    band=false;
+    EXPENSE_FIELDS.forEach(f=>{ if(yrCat[f.id]){ r=xlDataRow(ws,r,[f.label,'Expense',yrCat[f.id]],{band,colorMap:{2:'exp'}}); band=!band; } });
+    INCOME_FIELDS.forEach(f=>{ if(yrCat[f.id]){ r=xlDataRow(ws,r,[f.label,'Income',yrCat[f.id]],{band,colorMap:{2:'inc'}}); band=!band; } });
+
+    xlColWidths(ws,[20,16,16,16]);
+
+    await downloadWorkbook(wb,`MoneyTracker_${curYear}_Annual.xlsx`);
+    showToast('Excel exported ✓');
+  }catch(err){
+    console.error('Year Excel export failed:',err);
+    showToast('Excel export failed — check console','error');
   }
-  const lastCol=4;
-  const wb=new ExcelJS.Workbook();
-  wb.creator='Money Tracker'; wb.created=new Date();
-  const ws=wb.addWorksheet('Annual Report',{views:[{state:'frozen',ySplit:2}]});
-
-  let r=1;
-  r=xlBanner(ws,r,lastCol,`💰 Money Tracker — ${curYear} Annual Report`,{bg:XL_NAVY,size:14,height:26});
-  r=xlSubtitle(ws,r,lastCol,`Generated: ${new Date().toLocaleDateString('en-US',{day:'numeric',month:'long',year:'numeric'})}`);
-  r++;
-
-  r=xlBanner(ws,r,lastCol,'YEARLY OVERVIEW');
-  r=xlLabelValueRow(ws,r,lastCol,[{label:'Total Expense',value:yrExp,color:XL_EXP},{label:'Total Income',value:yrInc,color:XL_INC}]);
-  r=xlLabelValueRow(ws,r,lastCol,[{label:'Net Balance',value:yrInc-yrExp,color:(yrInc-yrExp)>=0?XL_INC:XL_EXP,big:true}]);
-  r++;
-
-  r=xlBanner(ws,r,lastCol,'MONTHLY BREAKDOWN');
-  r=xlTableHeader(ws,r,['Month','Total Expense','Total Income','Net Balance']);
-  let band=false;
-  monthRows.forEach(row=>{
-    r=xlDataRow(ws,r,row,{band,colorMap:{1:'exp',2:'inc',3:row[3]>=0?'inc':'exp'}});
-    band=!band;
-  });
-  r++;
-
-  r=xlBanner(ws,r,lastCol,'CATEGORY BREAKDOWN (FULL YEAR)');
-  r=xlTableHeader(ws,r,['Category','Type','Amount (BDT)']);
-  band=false;
-  EXPENSE_FIELDS.forEach(f=>{ if(yrCat[f.id]){ r=xlDataRow(ws,r,[f.label,'Expense',yrCat[f.id]],{band,colorMap:{2:'exp'}}); band=!band; } });
-  INCOME_FIELDS.forEach(f=>{ if(yrCat[f.id]){ r=xlDataRow(ws,r,[f.label,'Income',yrCat[f.id]],{band,colorMap:{2:'inc'}}); band=!band; } });
-
-  xlColWidths(ws,[20,16,16,16]);
-
-  await downloadWorkbook(wb,`MoneyTracker_${curYear}_Annual.xlsx`);
-  showToast('Excel exported ✓');
 }
 
 function pdfStyle(){
@@ -4696,11 +4699,13 @@ function canvasImg(id,label){
   }
 }
 
-function printHTML(body){
-  const w=window.open('','_blank');
+function printHTML(body,w){
+  w=w||window.open('','_blank');
+  if(!w) return null;
   w.document.write(`<html><head><meta charset="UTF-8"></head><body>${body}</body></html>`);
   w.document.close();
   w.onload=()=>w.print();
+  return w;
 }
 
 // Note: per-field input/note listeners are attached inside attachFieldListeners(),
@@ -4730,15 +4735,23 @@ function allDayEntries(){
   return out;
 }
 function exportAllDataJSON(){
-  const days={};
-  allDayEntries().forEach(({key,data})=>{ days[key]=data; });
-  const payload={
-    version:1, exportedAt:new Date().toISOString(),
-    categories:{expense:EXPENSE_FIELDS, income:INCOME_FIELDS},
-    goal:SAVINGS_GOAL, accounts:ACCOUNTS, ledger:LEDGER, debts:DEBTS, days
-  };
-  downloadBlob(JSON.stringify(payload,null,2), 'application/json', `money-tracker-backup-${new Date().toISOString().slice(0,10)}.json`);
-  showToast('Backup downloaded ✓');
+  showToast('Preparing backup…');
+  setTimeout(()=>{
+    try{
+      const days={};
+      allDayEntries().forEach(({key,data})=>{ days[key]=data; });
+      const payload={
+        version:1, exportedAt:new Date().toISOString(),
+        categories:{expense:EXPENSE_FIELDS, income:INCOME_FIELDS},
+        goal:SAVINGS_GOAL, accounts:ACCOUNTS, ledger:LEDGER, debts:DEBTS, days
+      };
+      downloadBlob(JSON.stringify(payload,null,2), 'application/json', `money-tracker-backup-${new Date().toISOString().slice(0,10)}.json`);
+      showToast('Backup downloaded ✓');
+    }catch(err){
+      console.error('Backup export failed:',err);
+      showToast('Backup export failed — check console','error');
+    }
+  },10);
 }
 async function batchSetDays(entries){
   // entries: [{y,m,d,data}] — writes in small parallel batches so a large
@@ -4758,6 +4771,7 @@ async function importAllDataJSON(fileInput){
   if(!payload||typeof payload!=='object'){ showToast('Invalid backup file','error'); fileInput.value=''; return; }
   if(!confirm('This replaces ALL current data (categories, accounts, debts, and every day recorded) with this backup file. Continue?')){ fileInput.value=''; return; }
   showToast('Restoring backup…');
+  await yieldToUI();
   try{
     if(payload.categories){
       if(Array.isArray(payload.categories.expense)&&payload.categories.expense.length) EXPENSE_FIELDS=payload.categories.expense;
@@ -4806,21 +4820,29 @@ function csvEscape(v){
   return /[",\r\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
 }
 function exportAllDataCSV(){
-  const rows=[['Date','Category','Type','Amount','Note','Account']];
-  allDayEntries().forEach(({y,m,d,data})=>{
-    const dateStr=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    ALL_FIELDS.forEach(f=>{
-      const amt=data[f.id];
-      if(!amt) return;
-      const isInc=INCOME_FIELDS.some(x=>x.id===f.id);
-      const note=data['note_'+f.id]||'';
-      const acct=ACCOUNTS.find(a=>a.id===data['acct_'+f.id]);
-      rows.push([dateStr, f.label, isInc?'Income':'Expense', amt, note, acct?acct.label:'']);
-    });
-  });
-  const csv=rows.map(r=>r.map(csvEscape).join(',')).join('\r\n');
-  downloadBlob(csv, 'text/csv;charset=utf-8', `money-tracker-export-${new Date().toISOString().slice(0,10)}.csv`);
-  showToast('CSV exported ✓');
+  showToast('Preparing CSV…');
+  setTimeout(()=>{
+    try{
+      const rows=[['Date','Category','Type','Amount','Note','Account']];
+      allDayEntries().forEach(({y,m,d,data})=>{
+        const dateStr=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        ALL_FIELDS.forEach(f=>{
+          const amt=data[f.id];
+          if(!amt) return;
+          const isInc=INCOME_FIELDS.some(x=>x.id===f.id);
+          const note=data['note_'+f.id]||'';
+          const acct=ACCOUNTS.find(a=>a.id===data['acct_'+f.id]);
+          rows.push([dateStr, f.label, isInc?'Income':'Expense', amt, note, acct?acct.label:'']);
+        });
+      });
+      const csv=rows.map(r=>r.map(csvEscape).join(',')).join('\r\n');
+      downloadBlob(csv, 'text/csv;charset=utf-8', `money-tracker-export-${new Date().toISOString().slice(0,10)}.csv`);
+      showToast('CSV exported ✓');
+    }catch(err){
+      console.error('CSV export failed:',err);
+      showToast('CSV export failed — check console','error');
+    }
+  },10);
 }
 
 // ─── REMOVE ALL DATA (staged confirmation popup) ──────────────────────────────
