@@ -159,7 +159,7 @@
   }
   .menu-toggle-btn:hover { border-color: var(--accent); color: var(--accent); }
   .nav-drawer-backdrop {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+    display: none; position: fixed; top: 0; right: 0; bottom: 0; left: 0; background: rgba(0,0,0,0.45);
     z-index: 240; opacity: 0; transition: opacity var(--trans-panel);
   }
   .nav-drawer-backdrop.open { display: block; opacity: 1; }
@@ -428,6 +428,11 @@
     -webkit-backdrop-filter: blur(20px);
     display: flex; z-index: 100;
     box-shadow: 0 -4px 24px rgba(0,0,0,0.08);
+    /* Own compositor layer — keeps it glued to the screen edge during scroll
+       instead of jittering/detaching, which is what a plain position:fixed
+       bar tends to do on lower-end phones and older mobile browsers. */
+    transform: translateZ(0); -webkit-transform: translateZ(0);
+    will-change: transform; -webkit-backface-visibility: hidden;
   }
   .bnav-btn {
     flex: 1; padding: 10px 6px 8px;
@@ -604,9 +609,13 @@
 
   /* ── SETTINGS MODAL ─────────────────────────────────────────── */
   .modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.08);
+    position: fixed; top: 0; right: 0; bottom: 0; left: 0; background: rgba(0,0,0,0.08);
     z-index: 300; display: none; align-items: center; justify-content: center;
     padding: 20px;
+    /* Force its own compositor layer so it stays pinned to the visible screen
+       even mid-scroll on long pages / older mobile browsers, instead of
+       drifting to wherever it sits in the document. */
+    transform: translateZ(0); -webkit-transform: translateZ(0);
   }
   .modal-overlay.open { display: flex; }
   .modal-box {
@@ -1666,6 +1675,30 @@ function toggleFullscreen(){
     if (exit) exit.call(document);
   }
 }
+// ── Bottom nav: pin to the TRUE visible screen edge (mobile only) ──────────
+// A plain `position:fixed; bottom:0` mostly works, but on phones it can drift
+// or get shoved around by the browser's address bar hiding/showing and by
+// the on-screen keyboard resizing the viewport (classic Android/iOS quirk).
+// The VisualViewport API reports the actual visible area, so we use it to
+// keep #bottomNav strictly glued to the bottom of whatever is on-screen —
+// the same "always fixed" feel as the sticky top navbar.
+(function pinBottomNavToScreen(){
+  const nav = document.getElementById('bottomNav');
+  if (!nav || !window.visualViewport) return; // no VV support → CSS fixed is the fallback
+  const vv = window.visualViewport;
+  function reposition(){
+    // ≥900px switches bottomNav into the desktop side-drawer (top:0;bottom:0)
+    // — leave that layout alone, only manage the mobile bottom-bar case.
+    if (window.innerWidth >= 900) { nav.style.bottom = ''; return; }
+    const gap = (window.innerHeight - vv.height - vv.offsetTop);
+    nav.style.bottom = Math.max(0, gap) + 'px';
+  }
+  vv.addEventListener('resize', reposition);
+  vv.addEventListener('scroll', reposition);
+  window.addEventListener('resize', reposition);
+  reposition();
+})();
+
 document.addEventListener('fullscreenchange', ()=>{
   const btn = document.getElementById('fullscreenBtn');
   if (btn) btn.title = document.fullscreenElement ? 'Exit fullscreen' : 'Fullscreen';
