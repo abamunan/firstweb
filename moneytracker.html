@@ -1684,6 +1684,7 @@ function toggleFullscreen(){
 // area. That mismatch is exactly what makes a "centered" popup appear
 // shifted or partly off-screen depending on where you were scrolled to.
 // visualViewport reports the real thing, so we pin the overlay to it directly.
+let mtRepositionOverlays = function(){};
 (function pinModalOverlaysToScreen(){
   if (!window.visualViewport) return; // no VV support → the CSS fixed/inset:0 fallback above still applies
   const vv = window.visualViewport;
@@ -1695,6 +1696,7 @@ function toggleFullscreen(){
       el.style.height = vv.height + 'px';
     });
   }
+  mtRepositionOverlays = reposition;
   vv.addEventListener('resize', reposition);
   vv.addEventListener('scroll', reposition);
   reposition();
@@ -1707,6 +1709,7 @@ function toggleFullscreen(){
 // The VisualViewport API reports the actual visible area, so we use it to
 // keep #bottomNav strictly glued to the bottom of whatever is on-screen —
 // the same "always fixed" feel as the sticky top navbar.
+let mtRepositionBottomNav = function(){};
 (function pinBottomNavToScreen(){
   const nav = document.getElementById('bottomNav');
   if (!nav || !window.visualViewport) return; // no VV support → CSS fixed is the fallback
@@ -1718,10 +1721,33 @@ function toggleFullscreen(){
     const gap = (window.innerHeight - vv.height - vv.offsetTop);
     nav.style.bottom = Math.max(0, gap) + 'px';
   }
+  mtRepositionBottomNav = reposition;
   vv.addEventListener('resize', reposition);
   vv.addEventListener('scroll', reposition);
   window.addEventListener('resize', reposition);
   reposition();
+})();
+
+// ── Re-pin the instant ANY popup opens ──────────────────────────────────
+// Belt-and-suspenders: covers the rare case where the phone's address bar
+// or viewport changed state between page load and the moment a popup is
+// opened, without a resize/scroll event firing in between. Without this,
+// that one stale reading could — in theory, on some phones — make a popup
+// opened deep into a long page land off from where you're actually looking.
+// This guarantees a fresh read the instant any .open class is toggled on.
+(function watchOverlayOpens(){
+  const targets = document.querySelectorAll('.modal-overlay, .nav-drawer-backdrop');
+  if (!targets.length || !window.MutationObserver) return;
+  const obs = new MutationObserver(muts=>{
+    for (const m of muts){
+      if (m.target.classList.contains('open')){
+        mtRepositionOverlays();
+        mtRepositionBottomNav();
+        break;
+      }
+    }
+  });
+  targets.forEach(el=> obs.observe(el, { attributes: true, attributeFilter: ['class'] }));
 })();
 
 document.addEventListener('fullscreenchange', ()=>{
