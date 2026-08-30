@@ -611,7 +611,7 @@
   .modal-overlay {
     position: fixed; top: 0; right: 0; bottom: 0; left: 0; background: rgba(0,0,0,0.08);
     z-index: 300; display: none; align-items: center; justify-content: center;
-    padding: 20px;
+    padding: 20px; box-sizing: border-box;
     /* Force its own compositor layer so it stays pinned to the visible screen
        even mid-scroll on long pages / older mobile browsers, instead of
        drifting to wherever it sits in the document. */
@@ -622,6 +622,7 @@
     background: var(--card-bg-solid, var(--card-bg)); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
     border: 1px solid var(--card-border);
     border-radius: 20px; width: 100%; max-width: 500px; max-height: 85vh;
+    max-height: 85dvh; /* true visible screen height on phones — vh alone can overshoot when the address bar is showing */
     display: flex; flex-direction: column;
     box-shadow: 0 8px 40px rgba(0,0,0,0.25);
     animation: modalPop 0.2s ease;
@@ -1139,7 +1140,7 @@
     #breakdownList > div:only-child, #yearlyCatBreakdown > div:only-child { grid-column: 1/-1; }
 
     /* Modals — roomier on desktop */
-    .modal-box { max-width: 640px; max-height: 82vh; }
+    .modal-box { max-width: 640px; max-height: 82vh; max-height: 82dvh; }
     .modal-header h3 { font-size: 1.05rem; }
     .modal-body { padding: 18px 22px 26px; }
 
@@ -1675,6 +1676,30 @@ function toggleFullscreen(){
     if (exit) exit.call(document);
   }
 }
+// ── Modal overlays: lock to the TRUE visible screen, live ──────────────────
+// Same idea as the bottom-nav fix above. `position:fixed` on phones is
+// anchored to the browser's *layout* viewport, which isn't always what's
+// actually visible — the address bar showing/hiding, or momentum-scroll
+// mid-animation, can make the layout viewport taller than the real visible
+// area. That mismatch is exactly what makes a "centered" popup appear
+// shifted or partly off-screen depending on where you were scrolled to.
+// visualViewport reports the real thing, so we pin the overlay to it directly.
+(function pinModalOverlaysToScreen(){
+  if (!window.visualViewport) return; // no VV support → the CSS fixed/inset:0 fallback above still applies
+  const vv = window.visualViewport;
+  function reposition(){
+    document.querySelectorAll('.modal-overlay, .nav-drawer-backdrop').forEach(el=>{
+      el.style.top = vv.offsetTop + 'px';
+      el.style.left = vv.offsetLeft + 'px';
+      el.style.width = vv.width + 'px';
+      el.style.height = vv.height + 'px';
+    });
+  }
+  vv.addEventListener('resize', reposition);
+  vv.addEventListener('scroll', reposition);
+  reposition();
+})();
+
 // ── Bottom nav: pin to the TRUE visible screen edge (mobile only) ──────────
 // A plain `position:fixed; bottom:0` mostly works, but on phones it can drift
 // or get shoved around by the browser's address bar hiding/showing and by
