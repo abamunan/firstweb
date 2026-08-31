@@ -1676,79 +1676,17 @@ function toggleFullscreen(){
     if (exit) exit.call(document);
   }
 }
-// ── Modal overlays: lock to the TRUE visible screen, live ──────────────────
-// Same idea as the bottom-nav fix above. `position:fixed` on phones is
-// anchored to the browser's *layout* viewport, which isn't always what's
-// actually visible — the address bar showing/hiding, or momentum-scroll
-// mid-animation, can make the layout viewport taller than the real visible
-// area. That mismatch is exactly what makes a "centered" popup appear
-// shifted or partly off-screen depending on where you were scrolled to.
-// visualViewport reports the real thing, so we pin the overlay to it directly.
-let mtRepositionOverlays = function(){};
-(function pinModalOverlaysToScreen(){
-  if (!window.visualViewport) return; // no VV support → the CSS fixed/inset:0 fallback above still applies
-  const vv = window.visualViewport;
-  function reposition(){
-    document.querySelectorAll('.modal-overlay, .nav-drawer-backdrop').forEach(el=>{
-      el.style.top = vv.offsetTop + 'px';
-      el.style.left = vv.offsetLeft + 'px';
-      el.style.width = vv.width + 'px';
-      el.style.height = vv.height + 'px';
-    });
-  }
-  mtRepositionOverlays = reposition;
-  vv.addEventListener('resize', reposition);
-  vv.addEventListener('scroll', reposition);
-  reposition();
-})();
-
-// ── Bottom nav: pin to the TRUE visible screen edge (mobile only) ──────────
-// A plain `position:fixed; bottom:0` mostly works, but on phones it can drift
-// or get shoved around by the browser's address bar hiding/showing and by
-// the on-screen keyboard resizing the viewport (classic Android/iOS quirk).
-// The VisualViewport API reports the actual visible area, so we use it to
-// keep #bottomNav strictly glued to the bottom of whatever is on-screen —
-// the same "always fixed" feel as the sticky top navbar.
-let mtRepositionBottomNav = function(){};
-(function pinBottomNavToScreen(){
-  const nav = document.getElementById('bottomNav');
-  if (!nav || !window.visualViewport) return; // no VV support → CSS fixed is the fallback
-  const vv = window.visualViewport;
-  function reposition(){
-    // ≥900px switches bottomNav into the desktop side-drawer (top:0;bottom:0)
-    // — leave that layout alone, only manage the mobile bottom-bar case.
-    if (window.innerWidth >= 900) { nav.style.bottom = ''; return; }
-    const gap = (window.innerHeight - vv.height - vv.offsetTop);
-    nav.style.bottom = Math.max(0, gap) + 'px';
-  }
-  mtRepositionBottomNav = reposition;
-  vv.addEventListener('resize', reposition);
-  vv.addEventListener('scroll', reposition);
-  window.addEventListener('resize', reposition);
-  reposition();
-})();
-
-// ── Re-pin the instant ANY popup opens ──────────────────────────────────
-// Belt-and-suspenders: covers the rare case where the phone's address bar
-// or viewport changed state between page load and the moment a popup is
-// opened, without a resize/scroll event firing in between. Without this,
-// that one stale reading could — in theory, on some phones — make a popup
-// opened deep into a long page land off from where you're actually looking.
-// This guarantees a fresh read the instant any .open class is toggled on.
-(function watchOverlayOpens(){
-  const targets = document.querySelectorAll('.modal-overlay, .nav-drawer-backdrop');
-  if (!targets.length || !window.MutationObserver) return;
-  const obs = new MutationObserver(muts=>{
-    for (const m of muts){
-      if (m.target.classList.contains('open')){
-        mtRepositionOverlays();
-        mtRepositionBottomNav();
-        break;
-      }
-    }
-  });
-  targets.forEach(el=> obs.observe(el, { attributes: true, attributeFilter: ['class'] }));
-})();
+// ── Modal overlays & bottom nav: plain CSS position:fixed, on purpose ──────
+// A previous version of this file tried to "help" position:fixed with JS
+// that read window.visualViewport and set explicit inline top/left/width/
+// height/bottom pixel values. That backfired: on a real phone, a screen
+// recording showed the popup's dark backdrop covering only a short strip
+// around the modal box (real content clearly visible, undimmed, above and
+// below it) and the bottom tab bar missing from the screen entirely. Both
+// symptoms match stale JS-computed pixel values getting frozen at the exact
+// moment Chrome's address bar was animating open/closed — the JS "fix" was
+// the bug. Plain `position:fixed` is recalculated by the browser on every
+// frame with no caching involved, so it can't go stale like that. Removed.
 
 document.addEventListener('fullscreenchange', ()=>{
   const btn = document.getElementById('fullscreenBtn');
