@@ -1033,6 +1033,44 @@
   }
 
   /* ══════════════════════════════════════════════════════════════════
+     MOBILE-ONLY OVERRIDES — everything below only applies at ≤899px.
+     Desktop (900px+) is completely untouched by this block.
+     ══════════════════════════════════════════════════════════════════ */
+  @media (max-width: 899px) {
+
+    /* Popups open as bottom sheets — slide up from the screen's bottom
+       edge and dock there, instead of appearing centered. Easier to
+       reach one-handed on a phone. The .center variant (Remove All Data
+       warning) is deliberately left out: it's meant to interrupt as a
+       mid-screen alert, not blend in as a routine sheet. */
+    .modal-overlay:not(.center) { align-items: flex-end; padding: 0; }
+    .modal-overlay:not(.center) .modal-box {
+      width: 100%; max-width: 100%;
+      border-radius: 20px 20px 0 0;
+      animation: mtSheetUp 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+    }
+    .modal-overlay:not(.center) .modal-body {
+      /* Extra bottom breathing room + the phone's home-indicator safe
+         area, so the last field/button never sits under it. */
+      padding-bottom: calc(22px + env(safe-area-inset-bottom, 0px));
+    }
+    @keyframes mtSheetUp {
+      from { transform: translateY(100%); }
+      to   { transform: translateY(0); }
+    }
+
+    /* Bottom nav — pinned to the true bottom edge, including the safe
+       area on notched phones (this app runs standalone via "Add to Home
+       Screen", so there's no browser chrome to fall back on). Still the
+       same plain CSS position:fixed as before (see the note in mt.js on
+       why a JS visualViewport-based fix was tried and reverted) — this
+       only adds the safe-area padding on top of that, nothing that could
+       reintroduce the old jitter-on-scroll bug. */
+    .bottom-nav { padding-bottom: env(safe-area-inset-bottom, 0px); }
+    body { padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
+  }
+
+  /* ══════════════════════════════════════════════════════════════════
      DESKTOP LAYOUT — everything below only applies at ≥900px.
      Mobile (below 900px) is completely untouched by this block.
      ══════════════════════════════════════════════════════════════════ */
