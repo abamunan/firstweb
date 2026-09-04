@@ -3,15 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Abdullah All Munan — Developer, student, and builder from Bangladesh.">
+    <meta name="robots" content="index, follow">
+    <meta name="description" content="Abdullah All Munan (Munan) — developer, student &amp; builder from Bangladesh. Explore my projects, blog posts and webcomics, all built with HTML, JS and curiosity.">
+    <meta name="author" content="Abdullah All Munan">
     <meta name="theme-color" content="#0ea5e9">
-    <title>Munan | Link Hub 2026</title>
+    <title>Munan | Developer Portfolio, Projects, Blog &amp; WebComics</title>
+    <link rel="canonical" href="https://abamunan.github.io/">
     <link rel="icon" type="image/png" href="icon.png">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://abamunan.github.io/">
+    <meta property="og:site_name" content="Munan.hub">
+    <meta property="og:title" content="Munan | Developer Portfolio, Projects, Blog &amp; WebComics">
+    <meta property="og:description" content="Abdullah All Munan (Munan) — developer, student &amp; builder from Bangladesh. Explore my projects, blog posts and webcomics.">
+    <meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Munan | Developer Portfolio, Projects, Blog &amp; WebComics">
+    <meta name="twitter:description" content="Abdullah All Munan (Munan) — developer, student &amp; builder from Bangladesh. Explore my projects, blog posts and webcomics.">
+    <meta name="twitter:image" content="https://abamunan.github.io/Image.jpeg">
+
+    <!-- Performance: warm up connections to third-party origins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600&family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <!-- Shared theme logic — blocking, must run before first paint -->
     <script src="theme.js"></script>
     <link rel="stylesheet" href="style.css">
+
+    <!-- Structured data: helps Google understand who/what this site is -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Abdullah All Munan",
+        "alternateName": "Munan",
+        "url": "https://abamunan.github.io/",
+        "image": "https://abamunan.github.io/Image.jpeg",
+        "jobTitle": "Developer",
+        "description": "Developer, student and builder from Bangladesh.",
+        "sameAs": [
+            "https://github.com/abamunan"
+        ]
+    }
+    </script>
     <style>
         /* ── INDEX-SPECIFIC STYLES ─── */
         .hero { position:relative; z-index:1; padding:110px 20px 50px; text-align:center; }
@@ -70,6 +110,13 @@
         .project-tag { font-size:.6rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; background:rgba(2,132,199,.1); border:1px solid rgba(2,132,199,.2); border-radius:20px; padding:2px 8px; color:var(--accent); }
         .project-btn { display:inline-flex; align-items:center; gap:6px; background:var(--accent); color:#fff; border-radius:20px; padding:7px 16px; font-size:.72rem; font-weight:700; text-decoration:none; transition:var(--trans); align-self:flex-start; margin-top:2px; }
         .project-btn:hover { background:#0284c7; transform:translateX(2px); }
+        .projects-view-all { display:inline-flex; align-items:center; gap:7px; background:var(--card-bg); border:1.5px solid var(--card-border); border-radius:20px; padding:6px 16px; font-size:.75rem; font-weight:700; color:var(--accent); backdrop-filter:blur(8px); transition:var(--trans); text-decoration:none; }
+        .projects-view-all:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
+
+        /* "View All Projects" CTA block inside the projects grid */
+        .view-all-card { text-decoration:none; cursor:pointer; border-style:dashed; justify-content:space-between; }
+        .view-all-card:hover { border-style:solid; }
+        .view-all-arrow { display:inline-flex; align-items:center; gap:6px; color:var(--accent); font-size:.72rem; font-weight:700; margin-top:2px; }
 
         /* ── ACADEMIC SECTION ─── */
         .academic-section { position:relative; z-index:1; max-width:1100px; margin:0 auto; padding:10px 5% 30px; }
@@ -187,7 +234,7 @@
 
     <header class="hero">
         <div class="profile-wrap">
-            <img src="Image.jpeg" alt="Munan" class="profile-photo" width="110" height="110" loading="lazy">
+            <img src="Image.jpeg" alt="Abdullah All Munan — developer and builder from Bangladesh" class="profile-photo" width="110" height="110" fetchpriority="high">
         </div>
         <h1 class="hero-title">Knowledge &amp; <span>Creation</span> Zone</h1>
         <div class="hero-tagline">I'm a <span class="typed-text" id="typed"></span><span class="cursor"></span></div>
@@ -197,7 +244,7 @@
     </header>
 
     <section class="container">
-        <div class="section-label"><span><i class="fas fa-grip"></i>&nbsp; Quick Links</span></div>
+        <div class="section-label"><span role="heading" aria-level="2"><i class="fas fa-grip"></i>&nbsp; Quick Links</span></div>
         <div class="grid">
             <div class="card" style="animation-delay:.05s">
                 <div class="card-icon" style="background:linear-gradient(135deg,#0284c7,#0ea5e9)"><i class="fas fa-user"></i></div>
@@ -241,11 +288,12 @@
     <section class="projects-section">
         <div class="projects-wrapper">
             <div class="projects-header">
-                <div class="projects-title">
+                <div class="projects-title" role="heading" aria-level="2">
                     <i class="fas fa-rocket"></i>
                     My Projects
                     <span class="projects-subtitle">— tools I built</span>
                 </div>
+                <a href="projects.html" class="projects-view-all">View All <i class="fas fa-arrow-right" style="font-size:.65rem;"></i></a>
             </div>
             <div class="projects-grid">
 
@@ -255,7 +303,7 @@
                             <i class="fas fa-keyboard"></i>
                         </div>
                         <div class="project-info">
-                            <div class="project-name">TypeMaster</div>
+                            <div class="project-name" role="heading" aria-level="3">TypeMaster</div>
                             <div class="project-desc">Track your WPM and accuracy in real-time — see your typing progress instantly.</div>
                         </div>
                     </div>
@@ -273,7 +321,7 @@
                             <i class="fas fa-wallet"></i>
                         </div>
                         <div class="project-info">
-                            <div class="project-name">Money Tracker</div>
+                            <div class="project-name" role="heading" aria-level="3">Money Tracker</div>
                             <div class="project-desc">Manage income and expenses with monthly summaries, PDF/CSV export.</div>
                         </div>
                     </div>
@@ -291,7 +339,7 @@
                             <i class="fas fa-images"></i>
                         </div>
                         <div class="project-info">
-                            <div class="project-name">Photo Resizer</div>
+                            <div class="project-name" role="heading" aria-level="3">Photo Resizer</div>
                             <div class="project-desc">Batch resize &amp; compress photos to custom resolution — no upload needed.</div>
                         </div>
                     </div>
@@ -308,7 +356,7 @@
             <i class="fas fa-book"></i>
         </div>
         <div class="project-info">
-            <div class="project-name">Diary</div>
+            <div class="project-name" role="heading" aria-level="3">Diary</div>
             <div class="project-desc">Write dated, sectioned entries privately — track your days and export them as a PDF anytime.</div>
         </div>
     </div>
@@ -326,7 +374,7 @@
             <i class="fas fa-file-pdf"></i>
         </div>
         <div class="project-info">
-            <div class="project-name">PDF Toolkit</div>
+            <div class="project-name" role="heading" aria-level="3">PDF Toolkit</div>
             <div class="project-desc">Split, rotate, merge, or unlock your PDF files instantly — all in your browser, no upload needed.</div>
         </div>
     </div>
@@ -338,17 +386,29 @@
     <a href="pdf-toolkit.html" class="project-btn">Launch <i class="fas fa-arrow-right" style="font-size:.6rem;"></i></a>
 </div>
 
+<a href="projects.html" class="project-card view-all-card" style="animation-delay:.25s">
+    <div class="project-card-top">
+        <div class="project-icon" style="background:linear-gradient(135deg,#0ea5e9,#7c3aed)">
+            <i class="fas fa-layer-group"></i>
+        </div>
+        <div class="project-info">
+            <div class="project-name" role="heading" aria-level="3">View All Projects</div>
+            <div class="project-desc">Browse the full collection — every tool, app and experiment I've built, all in one place.</div>
+        </div>
+    </div>
+    <span class="view-all-arrow">Explore all projects <i class="fas fa-arrow-right" style="font-size:.6rem;"></i></span>
+</a>
 
                 
             </div>
         </div>
     </section>
 
-    <!-- Blog Preview -->
+    <!-- Academic -->
     <section class="academic-section">
         <div class="academic-wrapper">
             <div class="academic-header">
-                <div class="academic-title">
+                <div class="academic-title" role="heading" aria-level="2">
                     <i class="fas fa-graduation-cap"></i>
                     Academic
                     <span class="academic-subtitle">— study notes</span>
@@ -362,7 +422,7 @@
                             <i class="fas fa-book-open"></i>
                         </div>
                         <div class="project-info">
-                            <div class="project-name">View Notes</div>
+                            <div class="project-name" role="heading" aria-level="3">View Notes</div>
                             <div class="project-desc">PDF study notes by subject — read online with bookmarks, a focus timer, and dark/sepia reading modes.</div>
                         </div>
                     </div>
@@ -378,9 +438,10 @@
         </div>
     </section>
 
+    <!-- Blog Preview -->
     <section class="blog-section">
         <div class="blog-section-header">
-            <div class="blog-section-title"><i class="fas fa-pen-nib"></i> Latest from the Blog</div>
+            <div class="blog-section-title" role="heading" aria-level="2"><i class="fas fa-pen-nib"></i> Latest from the Blog</div>
             <a href="blog.html" class="blog-view-all">View All <i class="fas fa-arrow-right" style="font-size:.65rem;"></i></a>
         </div>
         <div class="blog-grid" id="blogPreviewGrid"></div>
@@ -389,7 +450,7 @@
     <!-- Webcomics Preview -->
     <section class="webcomic-section">
         <div class="webcomic-section-header">
-            <div class="webcomic-section-title"><i class="fas fa-book-open"></i> Latest Comics</div>
+            <div class="webcomic-section-title" role="heading" aria-level="2"><i class="fas fa-book-open"></i> Latest Comics</div>
             <a href="webcomic.html" class="webcomic-view-all">View All <i class="fas fa-arrow-right" style="font-size:.65rem;"></i></a>
         </div>
         <div class="webcomic-grid" id="webcomicPreviewGrid"></div>
@@ -420,7 +481,7 @@
                             <span class="blog-tag">${p.tag}</span>
                             <span class="blog-date"><i class="fas fa-calendar-alt"></i> ${p.date}</span>
                         </div>
-                        <div class="blog-card-title">${p.title}</div>
+                        <div class="blog-card-title" role="heading" aria-level="3">${p.title}</div>
                         <div class="blog-card-excerpt">${p.excerpt}</div>
                         <div class="blog-card-footer">
                             <span class="blog-read-time"><i class="fas fa-clock"></i> ${p.readTime}</span>
@@ -447,7 +508,7 @@
                             <span class="webcomic-tag">${comic.genre}</span>
                             <span class="webcomic-status ${comic.status.toLowerCase()}"><i class="fas fa-circle" style="font-size:.4rem;"></i> ${comic.status}</span>
                         </div>
-                        <div class="webcomic-card-title">${comic.title}</div>
+                        <div class="webcomic-card-title" role="heading" aria-level="3">${comic.title}</div>
                         <div class="webcomic-card-excerpt">${comic.description}</div>
                         <div class="webcomic-card-footer">
                             <span class="webcomic-ep-count"><i class="fas fa-images"></i> ${comic.episodes.length} ep${comic.episodes.length !== 1 ? 's' : ''}</span>

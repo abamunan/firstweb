@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Booklet Maker — Saddle-Stitch Page Imposition</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<style>
+  :root{
+    --ink:#1E2A33;
+    --ink-soft:#4A5A63;
+    --paper:#ECEAE2;
+    --paper-card:#F7F5EF;
+    --kraft:#C9B48C;
+    --thread:#B8402A;
+    --thread-dark:#8F311F;
+    --brass:#A9832F;
+    --line:#D9D3C4;
+    --ok:#3E6B4F;
+    --radius:2px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--ink);
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(255,255,255,0.04), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(255,255,255,0.03), transparent 40%);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    min-height:100vh;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:32px 16px 64px;
+  }
+  .stack{
+    position:relative;
+    width:100%;
+    max-width:560px;
+  }
+  .stack::before,
+  .stack::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:var(--kraft);
+    border-radius:var(--radius);
+    pointer-events:none;
+    z-index:0;
+  }
+  .stack::before{
+    transform:rotate(-1.6deg) translate(-3px, 6px);
+    opacity:0.55;
+  }
+  .stack::after{
+    transform:rotate(1.1deg) translate(4px, 3px);
+    opacity:0.35;
+  }
+  .card{
+    position:relative;
+    z-index:1;
+    background:var(--paper-card);
+    border-radius:var(--radius);
+    padding:36px 30px 30px;
+    box-shadow:0 24px 48px rgba(0,0,0,0.35);
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--brass);
+    margin:0 0 10px;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:34px;
+    line-height:1.05;
+    margin:0 0 6px;
+    color:var(--ink);
+  }
+  .subtitle-bn{
+    font-size:14px;
+    color:var(--ink-soft);
+    margin:0 0 18px;
+  }
+  .stitch{
+    height:1px;
+    border:none;
+    background:none;
+    border-top:2px dashed var(--thread);
+    opacity:0.55;
+    margin:0 0 26px;
+  }
+  .drop{
+    border:2px dashed var(--line);
+    border-radius:var(--radius);
+    padding:34px 20px;
+    text-align:center;
+    cursor:pointer;
+    transition:border-color .15s ease, background .15s ease;
+    background:rgba(255,255,255,0.4);
+  }
+  .drop.drag{
+    border-color:var(--thread);
+    background:rgba(184,64,42,0.06);
+  }
+  .drop svg{ width:34px; height:34px; margin-bottom:10px; color:var(--brass); }
+  .drop p{ margin:0; font-size:15px; color:var(--ink); font-weight:500; }
+  .drop span{ display:block; margin-top:4px; font-size:12.5px; color:var(--ink-soft); }
+  input[type="file"]{ display:none; }
+
+  .status{
+    margin-top:18px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    color:var(--ink-soft);
+    display:none;
+  }
+  .status.show{ display:block; }
+  .spinner{
+    display:inline-block;
+    width:12px; height:12px;
+    border:2px solid var(--line);
+    border-top-color:var(--thread);
+    border-radius:50%;
+    animation:spin .7s linear infinite;
+    margin-right:8px;
+    vertical-align:-1px;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  .error{
+    display:none;
+    margin-top:18px;
+    padding:14px 16px;
+    background:rgba(184,64,42,0.08);
+    border-left:3px solid var(--thread);
+    font-size:13.5px;
+    color:var(--thread-dark);
+    border-radius:var(--radius);
+  }
+  .error.show{ display:block; }
+
+  .result{ display:none; margin-top:26px; }
+  .result.show{ display:block; }
+
+  .stats{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    overflow:hidden;
+    margin-bottom:24px;
+  }
+  .stat{
+    background:var(--paper-card);
+    padding:14px 10px;
+    text-align:center;
+  }
+  .stat b{
+    display:block;
+    font-family:'Fraunces', serif;
+    font-size:24px;
+    font-weight:600;
+    color:var(--ink);
+  }
+  .stat span{
+    display:block;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-top:3px;
+  }
+
+  .sig-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--brass);
+    margin:0 0 8px;
+  }
+  .sheet{
+    border:1.5px solid var(--ink);
+    border-radius:var(--radius);
+    display:flex;
+    margin-bottom:8px;
+    background:#fff;
+    position:relative;
+    overflow:hidden;
+  }
+  .sheet::after{
+    content:"";
+    position:absolute;
+    top:0; bottom:0; left:50%;
+    width:0;
+    border-left:1.5px dashed var(--thread);
+  }
+  .half{
+    flex:1;
+    padding:14px 8px;
+    text-align:center;
+  }
+  .half .tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:9.5px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:4px;
+  }
+  .half .pg{
+    font-family:'Fraunces', serif;
+    font-size:22px;
+    font-weight:600;
+  }
+  .half .blank{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--ink-soft);
+    font-style:italic;
+  }
+  .sheet-caption{
+    font-size:12px;
+    color:var(--ink-soft);
+    text-align:center;
+    margin:0 0 22px;
+  }
+
+  .download{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    width:100%;
+    padding:14px;
+    background:var(--thread);
+    color:#fff;
+    border:none;
+    border-radius:var(--radius);
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    transition:background .15s ease;
+  }
+  .download:hover{ background:var(--thread-dark); }
+  .download svg{ width:16px; height:16px; }
+
+  .reset{
+    display:block;
+    margin:14px auto 0;
+    background:none;
+    border:none;
+    color:var(--ink-soft);
+    font-size:12.5px;
+    text-decoration:underline;
+    cursor:pointer;
+    font-family:'IBM Plex Sans', sans-serif;
+  }
+
+  details{
+    margin-top:20px;
+    border-top:1px solid var(--line);
+    padding-top:14px;
+  }
+  summary{
+    cursor:pointer;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    font-family:'IBM Plex Mono', monospace;
+  }
+  .order-list{
+    margin-top:10px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    color:var(--ink-soft);
+    line-height:1.7;
+    word-break:break-word;
+  }
+
+  .howto{
+    margin-top:26px;
+    padding-top:18px;
+    border-top:1px solid var(--line);
+  }
+  .howto p{
+    font-size:13px;
+    color:var(--ink-soft);
+    line-height:1.6;
+    margin:0 0 6px;
+  }
+  .howto .bn{
+    font-size:12.5px;
+    color:var(--ink-soft);
+    opacity:0.85;
+  }
+  .howto b{ color:var(--ink); }
+</style>
+</head>
+<body>
+
+<div class="stack">
+  <div class="card">
+    <p class="eyebrow">Saddle-Stitch Imposition</p>
+    <h1>Booklet Maker</h1>
+    <p class="subtitle-bn">পিডিএফ আপলোড করুন — বই বাঁধাইয়ের জন্য পাতা সাজিয়ে দেবে</p>
+    <hr class="stitch">
+
+    <div class="drop" id="drop" role="button" tabindex="0" aria-label="Upload PDF">
+      <input type="file" id="file" accept="application/pdf,.pdf">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+      <p>Drop your PDF here, or tap to choose a file</p>
+      <span>Any page count — odd or even. Nothing leaves your browser.</span>
+    </div>
+
+    <div class="status" id="status"><span class="spinner"></span>Processing…</div>
+    <div class="error" id="error"></div>
+
+    <div class="result" id="result">
+      <div class="stats">
+        <div class="stat"><b id="statN">–</b><span>Original pages</span></div>
+        <div class="stat"><b id="statPad">–</b><span>Blanks added</span></div>
+        <div class="stat"><b id="statSheets">–</b><span>Sheets to print</span></div>
+      </div>
+
+      <p class="sig-label">Sheet 1 of N — outer signature</p>
+      <div class="sheet">
+        <div class="half"><div class="tag">Front · Left</div><div class="pg" id="fl">–</div></div>
+        <div class="half"><div class="tag">Front · Right</div><div class="pg" id="fr">–</div></div>
+      </div>
+      <div class="sheet">
+        <div class="half"><div class="tag">Back · Left</div><div class="pg" id="bl">–</div></div>
+        <div class="half"><div class="tag">Back · Right</div><div class="pg" id="br">–</div></div>
+      </div>
+      <p class="sheet-caption">Dashed line = fold. This is how sheet 1 will print — every sheet follows the same rule.</p>
+
+      <button class="download" id="download">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v13m0 0l-4-4m4 4l4-4M4 20h16"/></svg>
+        Download booklet-ready PDF
+      </button>
+      <button class="reset" id="reset">Start over with another file</button>
+
+      <details>
+        <summary>Show full page order</summary>
+        <div class="order-list" id="orderList"></div>
+      </details>
+    </div>
+
+    <div class="howto">
+      <p><b>How to print:</b> open the downloaded PDF → print with <b>2 pages per sheet</b> + <b>double-sided (duplex)</b> → fold each sheet in half → nest the sheets together in order → staple the spine.</p>
+      <p class="bn"><b>প্রিন্ট করার নিয়ম:</b> ডাউনলোড করা পিডিএফ প্রিন্ট করুন — ২ পাতা প্রতি শিটে, দুই পাশে (ডুপ্লেক্স) — তারপর প্রতিটি শিট মাঝখান থেকে ভাঁজ করে একটার ভেতর একটা রেখে স্টেপল করুন।</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const dropEl = document.getElementById('drop');
+const fileEl = document.getElementById('file');
+const statusEl = document.getElementById('status');
+const errorEl = document.getElementById('error');
+const resultEl = document.getElementById('result');
+const downloadBtn = document.getElementById('download');
+const resetBtn = document.getElementById('reset');
+
+let outputBytes = null;
+let outputName = 'booklet_ready.pdf';
+
+function computeOrder(N){
+  const order = [];
+  const sheets = N / 4;
+  for(let i = 1; i <= sheets; i++){
+    order.push(
+      N - 2*i + 2,   // front-left
+      2*i - 1,       // front-right
+      2*i,           // back-left
+      N - 2*i + 1    // back-right
+    );
+  }
+  return order;
+}
+
+function showError(msg){
+  errorEl.textContent = msg;
+  errorEl.classList.add('show');
+}
+function clearError(){
+  errorEl.classList.remove('show');
+  errorEl.textContent = '';
+}
+
+async function handleFile(file){
+  clearError();
+  resultEl.classList.remove('show');
+  if(!file) return;
+  if(file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')){
+    showError('That doesn\'t look like a PDF. Please choose a .pdf file.');
+    return;
+  }
+
+  if(typeof PDFLib === 'undefined'){
+    showError('The PDF engine did not load (likely a blocked network request in this preview). Save this HTML file and open it directly in your phone\'s browser (Chrome/Safari) instead of the in-app preview, then try again.');
+    return;
+  }
+  const { PDFDocument } = PDFLib;
+
+  statusEl.classList.add('show');
+
+  try{
+    const arrayBuffer = await file.arrayBuffer();
+    const srcDoc = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
+    const n = srcDoc.getPageCount();
+    if(n === 0) throw new Error('This PDF has no pages.');
+
+    const N = Math.max(4, Math.ceil(n / 4) * 4);
+    const pad = N - n;
+    const order = computeOrder(N);
+
+    const firstPage = srcDoc.getPage(0);
+    const { width, height } = firstPage.getSize();
+
+    const newDoc = await PDFDocument.create();
+    const orderIndices = order.map(p => p <= n ? p - 1 : null);
+    const realIndices = orderIndices.filter(i => i !== null);
+    const copiedPages = await newDoc.copyPages(srcDoc, realIndices);
+
+    let ptr = 0;
+    for(const idx of orderIndices){
+      if(idx === null){
+        newDoc.addPage([width, height]);
+      } else {
+        newDoc.addPage(copiedPages[ptr]);
+        ptr++;
+      }
+    }
+
+    outputBytes = await newDoc.save();
+    const base = file.name.replace(/\.pdf$/i, '');
+    outputName = base + '_booklet.pdf';
+
+    document.getElementById('statN').textContent = n;
+    document.getElementById('statPad').textContent = pad;
+    document.getElementById('statSheets').textContent = N / 4;
+
+    const label = (p) => p <= n ? p : '';
+    const labelBlank = (p) => p <= n ? null : 'blank';
+
+    const setHalf = (id, p) => {
+      const el = document.getElementById(id);
+      if(p <= n){ el.textContent = p; el.classList.remove('blank'); }
+      else { el.innerHTML = '<span class="blank">blank</span>'; }
+    };
+    setHalf('fl', order[0]);
+    setHalf('fr', order[1]);
+    setHalf('bl', order[2]);
+    setHalf('br', order[3]);
+
+    document.getElementById('orderList').textContent = order.join(', ');
+
+    resultEl.classList.add('show');
+  } catch(err){
+    console.error(err);
+    showError('Could not process this PDF (' + (err.message || 'unknown error') + '). If it\'s password-protected, please remove the password first.');
+  } finally {
+    statusEl.classList.remove('show');
+  }
+}
+
+dropEl.addEventListener('click', () => {
+  fileEl.click();
+});
+dropEl.addEventListener('keydown', (e) => {
+  if(e.key === 'Enter' || e.key === ' '){
+    e.preventDefault();
+    fileEl.click();
+  }
+});
+fileEl.addEventListener('change', (e) => handleFile(e.target.files[0]));
+
+['dragenter','dragover'].forEach(evt => {
+  dropEl.addEventListener(evt, (e) => { e.preventDefault(); dropEl.classList.add('drag'); });
+});
+['dragleave','drop'].forEach(evt => {
+  dropEl.addEventListener(evt, (e) => { e.preventDefault(); dropEl.classList.remove('drag'); });
+});
+dropEl.addEventListener('drop', (e) => {
+  const file = e.dataTransfer.files[0];
+  if(file) handleFile(file);
+});
+
+downloadBtn.addEventListener('click', () => {
+  if(!outputBytes) return;
+  const blob = new Blob([outputBytes], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = outputName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+});
+
+resetBtn.addEventListener('click', () => {
+  fileEl.value = '';
+  outputBytes = null;
+  resultEl.classList.remove('show');
+  clearError();
+});
+</script>
+</body>
+</html>

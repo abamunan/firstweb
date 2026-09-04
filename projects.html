@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="index, follow">
+    <meta name="description" content="Every tool, app and experiment built by Abdullah All Munan (Munan) — a full collection of HTML/JS projects, from productivity utilities to browser-based apps.">
+    <meta name="author" content="Abdullah All Munan">
+    <meta name="theme-color" content="#0ea5e9">
+    <title>All Projects | Munan.hub</title>
+    <link rel="canonical" href="https://abamunan.github.io/projects.html">
+    <link rel="icon" type="image/png" href="icon.png">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://abamunan.github.io/projects.html">
+    <meta property="og:site_name" content="Munan.hub">
+    <meta property="og:title" content="All Projects | Munan.hub">
+    <meta property="og:description" content="Every tool, app and experiment built by Abdullah All Munan (Munan) — a full collection of HTML/JS projects.">
+    <meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="All Projects | Munan.hub">
+    <meta name="twitter:description" content="Every tool, app and experiment built by Abdullah All Munan (Munan) — a full collection of HTML/JS projects.">
+    <meta name="twitter:image" content="https://abamunan.github.io/Image.jpeg">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600&family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Shared theme logic — blocking, must run before first paint -->
+    <script src="theme.js"></script>
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Structured data: lists every project as an ItemList for search engines -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "name": "All Projects | Munan.hub",
+        "url": "https://abamunan.github.io/projects.html",
+        "isPartOf": { "@type": "WebSite", "name": "Munan.hub", "url": "https://abamunan.github.io/" },
+        "mainEntity": {
+            "@type": "ItemList",
+            "itemListElement": [
+                { "@type": "ListItem", "position": 1, "name": "Photo Resizer", "url": "https://abamunan.github.io/photo-resizer.html" },
+                { "@type": "ListItem", "position": 2, "name": "PDF Toolkit", "url": "https://abamunan.github.io/pdf-toolkit.html" },
+                { "@type": "ListItem", "position": 3, "name": "Booklet Maker", "url": "https://abamunan.github.io/booklet-maker.html" }
+            ]
+        }
+    }
+    </script>
+
+    <style>
+        /* ── PROJECTS PAGE STYLES (mirrors index.html's projects section) ─── */
+        .page-header { position:relative; z-index:1; padding:100px 5% 10px; max-width:1100px; margin:0 auto; }
+        .page-back { display:inline-flex; align-items:center; gap:7px; font-size:.8rem; font-weight:700; color:var(--text-muted); text-decoration:none; margin-bottom:18px; transition:var(--trans); }
+        .page-back:hover { color:var(--accent); }
+        .page-title { display:flex; align-items:center; gap:12px; font-size:clamp(1.5rem,4vw,2.1rem); font-weight:800; letter-spacing:-.03em; margin-bottom:10px; animation:fadeDown .7s ease both; }
+        .page-title i { color:var(--accent); }
+        .page-subtitle { font-size:.92rem; color:var(--text-muted); max-width:560px; line-height:1.6; animation:fadeDown .7s .1s ease both; }
+
+        .projects-section { position:relative; z-index:1; max-width:1100px; margin:0 auto; padding:20px 5% 60px; }
+        .projects-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; }
+        .project-card { background:rgba(2,132,199,.04); border:1.5px solid rgba(2,132,199,.15); border-radius:16px; padding:18px 18px 16px; display:flex; flex-direction:column; gap:10px; transition:all var(--trans); animation:cardIn .5s ease both; }
+        .project-card:hover { border-color:var(--accent); background:rgba(2,132,199,.08); transform:translateY(-3px); box-shadow:0 10px 28px rgba(2,132,199,.14); }
+        [data-theme="dark"] .project-card { background:rgba(255,255,255,.03); border-color:rgba(255,255,255,.08); }
+        [data-theme="dark"] .project-card:hover { background:rgba(2,132,199,.1); border-color:var(--accent); }
+        .project-card-top { display:flex; align-items:flex-start; gap:12px; }
+        .project-icon { width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:.95rem; color:#fff; flex-shrink:0; }
+        .project-info { flex:1; }
+        .project-name { font-size:.9rem; font-weight:700; color:var(--text-main); margin-bottom:3px; letter-spacing:-.01em; }
+        .project-desc { font-size:.75rem; color:var(--text-muted); line-height:1.5; }
+        .project-tags { display:flex; flex-wrap:wrap; gap:5px; }
+        .project-tag { font-size:.6rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; background:rgba(2,132,199,.1); border:1px solid rgba(2,132,199,.2); border-radius:20px; padding:2px 8px; color:var(--accent); }
+        .project-btn { display:inline-flex; align-items:center; gap:6px; background:var(--accent); color:#fff; border-radius:20px; padding:7px 16px; font-size:.72rem; font-weight:700; text-decoration:none; transition:var(--trans); align-self:flex-start; margin-top:2px; }
+        .project-btn:hover { background:#0284c7; transform:translateX(2px); }
+
+        @media (max-width:768px) {
+            .projects-grid { grid-template-columns:1fr; }
+            .projects-section { padding:10px 4% 40px; }
+            .page-header { padding:90px 4% 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="blobs"><div class="blob blob-1"></div><div class="blob blob-2"></div><div class="blob blob-3"></div></div>
+    <div class="particles" id="particles"></div>
+
+    <nav class="navbar" id="navbar">
+        <div class="nav-logo">Munan<span>.hub</span></div>
+        <div class="nav-right">
+            <a href="login.html" class="nav-login-btn" id="authBtn">
+                <i class="fas fa-user-circle"></i> Login
+            </a>
+        </div>
+    </nav>
+
+    <header class="page-header">
+        <a href="index.html" class="page-back"><i class="fas fa-arrow-left"></i> Back to Home</a>
+        <h1 class="page-title"><i class="fas fa-layer-group"></i> All Projects</h1>
+        <p class="page-subtitle">Every tool, app and experiment I've built — browser-based, no installs, no accounts (unless noted).</p>
+    </header>
+
+    <!-- ── FULL PROJECTS GRID ── -->
+    <section class="projects-section">
+        <div class="projects-grid">
+
+            <div class="project-card" style="animation-delay:.15s">
+                <div class="project-card-top">
+                    <div class="project-icon" style="background:linear-gradient(135deg,#be185d,#f472b6)">
+                        <i class="fas fa-images"></i>
+                    </div>
+                    <div class="project-info">
+                        <div class="project-name" role="heading" aria-level="2">Photo Resizer</div>
+                        <div class="project-desc">Batch resize &amp; compress photos to custom resolution — no upload needed.</div>
+                    </div>
+                </div>
+                <div class="project-tags">
+                    <span class="project-tag">Image</span>
+                    <span class="project-tag">Utility</span>
+                    <span class="project-tag">HTML/JS</span>
+                </div>
+                <a href="photo-resizer.html" class="project-btn">Resize <i class="fas fa-arrow-right" style="font-size:.6rem;"></i></a>
+            </div>
+
+            <div class="project-card" style="animation-delay:.25s">
+                <div class="project-card-top">
+                    <div class="project-icon" style="background:linear-gradient(135deg,#dc2626,#f97316)">
+                        <i class="fas fa-file-pdf"></i>
+                    </div>
+                    <div class="project-info">
+                        <div class="project-name" role="heading" aria-level="2">PDF Toolkit</div>
+                        <div class="project-desc">Split, rotate, merge, or unlock your PDF files instantly — all in your browser, no upload needed.</div>
+                    </div>
+                </div>
+                <div class="project-tags">
+                    <span class="project-tag">Split</span>
+                    <span class="project-tag">Rotate</span>
+                    <span class="project-tag">Unlock</span>
+                </div>
+                <a href="pdf-toolkit.html" class="project-btn">Launch <i class="fas fa-arrow-right" style="font-size:.6rem;"></i></a>
+            </div>
+
+            <div class="project-card" style="animation-delay:.30s">
+                <div class="project-card-top">
+                    <div class="project-icon" style="background:linear-gradient(135deg,#b45309,#f59e0b)">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <div class="project-info">
+                        <div class="project-name" role="heading" aria-level="2">Booklet Maker</div>
+                        <div class="project-desc">Upload a PDF and get pages reordered into saddle-stitch booklet order — print double-sided, fold, and staple.</div>
+                    </div>
+                </div>
+                <div class="project-tags">
+                    <span class="project-tag">PDF</span>
+                    <span class="project-tag">Print</span>
+                    <span class="project-tag">Booklet</span>
+                </div>
+                <a href="booklet-maker.html" class="project-btn">Launch <i class="fas fa-arrow-right" style="font-size:.6rem;"></i></a>
+            </div>
+
+        </div>
+    </section>
+
+    <script>
+        /* ── PARTICLES ─── */
+        const pContainer = document.getElementById('particles');
+        for (let i = 0; i < 16; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            const s = Math.random() * 9 + 3;
+            p.style.cssText = `width:${s}px;height:${s}px;left:${Math.random()*100}%;animation-duration:${Math.random()*14+8}s;animation-delay:${Math.random()*12}s;`;
+            pContainer.appendChild(p);
+        }
+
+        /* ── NAVBAR HIDE ON SCROLL ─── */
+        let lastScroll = window.scrollY;
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if (window.scrollY > lastScroll && window.scrollY > 70) {
+                nav.classList.add('navbar-hidden');
+            } else {
+                nav.classList.remove('navbar-hidden');
+            }
+            lastScroll = window.scrollY;
+        });
+
+        /* ── LOGIN / LOGOUT BUTTON ─── */
+        const authBtn = document.getElementById('authBtn');
+        function updateAuthBtn() {
+            const loggedIn = localStorage.getItem('munan_auth') === 'true';
+            if (loggedIn) {
+                authBtn.href = 'dashboard.html';
+                authBtn.className = 'nav-login-btn';
+                authBtn.innerHTML = '<i class="fas fa-gauge"></i> Dashboard';
+            } else {
+                authBtn.href = 'login.html';
+                authBtn.className = 'nav-login-btn';
+                authBtn.innerHTML = '<i class="fas fa-user-circle"></i> Login';
+            }
+        }
+        updateAuthBtn();
+    </script>
+    <script src="footer.js"></script>
+</body>
+</html>
